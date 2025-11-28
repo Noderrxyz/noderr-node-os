@@ -1,0 +1,35 @@
+{
+  "name": "@noderr/types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript type definitions for Noderr Protocol",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc -w",
+    "clean": "rimraf dist",
+    "prepare": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "types",
+    "typescript",
+    "definitions",
+    "interfaces",
+    "noderr"
+  ],
+  "author": "Noderr Protocol Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noderr/protocol.git",
+    "directory": "packages/types"
+  }
+} 

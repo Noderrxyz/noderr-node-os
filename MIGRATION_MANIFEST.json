@@ -1,0 +1,157 @@
+{
+  "migrationDate": "2025-11-27",
+  "sourceRepo": "Old-Trading-Bot",
+  "targetRepo": "noderr-node-os",
+  "packages": {
+    "all_tiers": [
+      {
+        "name": "core",
+        "path": "packages/core",
+        "description": "Core components for Noderr trading system",
+        "tiers": ["VALIDATOR", "GUARDIAN", "ORACLE"]
+      },
+      {
+        "name": "types",
+        "path": "packages/types",
+        "description": "Shared TypeScript type definitions",
+        "tiers": ["VALIDATOR", "GUARDIAN", "ORACLE"]
+      },
+      {
+        "name": "utils",
+        "path": "packages/utils",
+        "description": "Shared utilities",
+        "tiers": ["VALIDATOR", "GUARDIAN", "ORACLE"]
+      },
+      {
+        "name": "config",
+        "path": "packages/config",
+        "description": "Centralized configuration service",
+        "tiers": ["VALIDATOR", "GUARDIAN", "ORACLE"]
+      },
+      {
+        "name": "decentralized-core",
+        "path": "packages/decentralized-core",
+        "description": "Decentralized node communication and coordination layer",
+        "tiers": ["VALIDATOR", "GUARDIAN", "ORACLE"]
+      },
+      {
+        "name": "execution",
+        "path": "packages/execution",
+        "description": "Unified execution engine - Smart routing, MEV protection",
+        "tiers": ["VALIDATOR", "GUARDIAN", "ORACLE"]
+      },
+      {
+        "name": "integration-layer",
+        "path": "packages/integration-layer",
+        "description": "System orchestration, messaging, and health monitoring",
+        "tiers": ["VALIDATOR", "GUARDIAN", "ORACLE"]
+      },
+      {
+        "name": "network-optimizer",
+        "path": "packages/network-optimizer",
+        "description": "Network stack optimization for ultra-low latency",
+        "tiers": ["VALIDATOR", "GUARDIAN", "ORACLE"]
+      },
+      {
+        "name": "system-orchestrator",
+        "path": "packages/system-orchestrator",
+        "description": "System orchestration logic",
+        "tiers": ["VALIDATOR", "GUARDIAN", "ORACLE"]
+      },
+      {
+        "name": "market-data",
+        "path": "packages/market-data",
+        "description": "Market data handling with RingBuffer",
+        "tiers": ["VALIDATOR", "GUARDIAN", "ORACLE"]
+      }
+    ],
+    "guardian_oracle": [
+      {
+        "name": "risk-engine",
+        "path": "packages/risk-engine",
+        "description": "Institutional-grade risk management engine",
+        "tiers": ["GUARDIAN", "ORACLE"]
+      },
+      {
+        "name": "floor-engine",
+        "path": "packages/floor-engine",
+        "description": "Low-risk yield generation engine",
+        "tiers": ["GUARDIAN", "ORACLE"]
+      },
+      {
+        "name": "safety-control",
+        "path": "packages/safety-control",
+        "description": "Safety controller and reactivation service",
+        "tiers": ["GUARDIAN", "ORACLE"]
+      }
+    ],
+    "oracle_only": [
+      {
+        "name": "ml",
+        "path": "packages/ml",
+        "description": "Unified ML/AI engine - Advanced models, online learning",
+        "tiers": ["ORACLE"]
+      },
+      {
+        "name": "capital-ai",
+        "path": "packages/capital-ai",
+        "description": "Adaptive capital allocation AI module",
+        "tiers": ["ORACLE"]
+      },
+      {
+        "name": "on-chain-service",
+        "path": "packages/on-chain-service",
+        "description": "On-chain interaction service",
+        "tiers": ["ORACLE"]
+      },
+      {
+        "name": "alpha-edge",
+        "path": "packages/alpha-edge",
+        "description": "Alpha generation through market microstructure",
+        "tiers": ["ORACLE"]
+      },
+      {
+        "name": "alpha-exploitation",
+        "path": "packages/alpha-exploitation",
+        "description": "Elite alpha generation module",
+        "tiers": ["ORACLE"]
+      },
+      {
+        "name": "market-intel",
+        "path": "packages/market-intel",
+        "description": "Market intelligence and analysis",
+        "tiers": ["ORACLE"]
+      },
+      {
+        "name": "quant-research",
+        "path": "packages/quant-research",
+        "description": "Quantitative research and strategy development",
+        "tiers": ["ORACLE"]
+      },
+      {
+        "name": "exchanges",
+        "path": "packages/exchanges",
+        "description": "Exchange connectors",
+        "tiers": ["ORACLE"]
+      },
+      {
+        "name": "data-connectors",
+        "path": "packages/data-connectors",
+        "description": "Binance, Coinbase, Chainlink connectors",
+        "tiers": ["ORACLE"]
+      },
+      {
+        "name": "strategy",
+        "path": "packages/strategy",
+        "description": "Strategy executor and worker",
+        "tiers": ["ORACLE"]
+      }
+    ]
+  },
+  "summary": {
+    "totalPackages": 23,
+    "allTiers": 10,
+    "guardianOracle": 3,
+    "oracleOnly": 10
+  }
+}
