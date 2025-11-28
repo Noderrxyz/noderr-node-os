@@ -38,7 +38,7 @@ import {
   SpanEvent,
   SpanStatus,
   SpanLink
-} from '@noderr/types/telemetry';
+} from '../types/telemetry';
 
 interface TracerConfig {
   serviceName: string;

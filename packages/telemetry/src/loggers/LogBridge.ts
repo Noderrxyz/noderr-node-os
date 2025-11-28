@@ -20,7 +20,7 @@ import {
   LogOutput,
   TelemetryEvents,
   TraceContext
-} from '@noderr/types/telemetry';
+} from '../types/telemetry';
 
 interface LogBridgeConfig {
   level?: LogLevel;

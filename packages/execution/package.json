@@ -28,6 +28,10 @@
   "author": "Noderr Protocol Team",
   "license": "MIT",
   "dependencies": {
+    "@noderr/types": "workspace:*",
+    "@noderr/utils": "workspace:*",
+    "@noderr/telemetry": "workspace:*",
+    "@noderr/risk-engine": "workspace:*",
     "@flashbots/ethers-provider-bundle": "^0.6.1",
     "axios": "^1.6.7",
     "bignumber.js": "^9.1.2",

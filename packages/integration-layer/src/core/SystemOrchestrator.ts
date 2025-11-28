@@ -10,7 +10,7 @@ import { Logger } from 'winston';
 import { MessageBus } from '../bus/MessageBus';
 import { HealthMonitor } from '../health/HealthMonitor';
 import { RecoveryManager } from '../recovery/RecoveryManager';
-import { ConfigurationService } from '@noderr/config/ConfigurationService';
+// import { ConfigurationService } from '@noderr/config'; // TODO: Fix config package exports
 import {
   ModuleStatus,
   HealthStatus,
@@ -21,26 +21,26 @@ import {
   ModuleRegistration
 } from '@noderr/types';
 
-// Phase 4: Meta-Governance Intelligence
-import { MetaGovernanceOrchestrator } from '../../../meta-governance/src/MetaGovernanceOrchestrator';
-import { StrategyVotingEngine } from '../../../meta-governance/src/StrategyVotingEngine';
-import { SignalElection } from '../../../meta-governance/src/SignalElection';
-import { RiskPolicyManager } from '../../../meta-governance/src/RiskPolicyManager';
-import { GovernanceAuditLog } from '../../../meta-governance/src/GovernanceAuditLog';
+// Phase 4: Meta-Governance Intelligence (TODO: Sprint 2+)
+// import { MetaGovernanceOrchestrator } from '../../../meta-governance/src/MetaGovernanceOrchestrator';
+// import { StrategyVotingEngine } from '../../../meta-governance/src/StrategyVotingEngine';
+// import { SignalElection } from '../../../meta-governance/src/SignalElection';
+// import { RiskPolicyManager } from '../../../meta-governance/src/RiskPolicyManager';
+// import { GovernanceAuditLog } from '../../../meta-governance/src/GovernanceAuditLog';
 
-// Phase 5: Autonomous Deployment Pipeline
-import { DeploymentOrchestrator } from '../../../deployment-pipeline/src/DeploymentOrchestrator';
-import { CIValidator } from '../../../deployment-pipeline/src/CIValidator';
-import { CanaryLauncher } from '../../../deployment-pipeline/src/CanaryLauncher';
-import { LivePromoter } from '../../../deployment-pipeline/src/LivePromoter';
-import { RollbackEngine } from '../../../deployment-pipeline/src/RollbackEngine';
-import { DeploymentDashboardHook } from '../../../deployment-pipeline/src/DeploymentDashboardHook';
+// Phase 5: Autonomous Deployment Pipeline (TODO: Sprint 2+)
+// import { DeploymentOrchestrator } from '../../../deployment-pipeline/src/DeploymentOrchestrator';
+// import { CIValidator } from '../../../deployment-pipeline/src/CIValidator';
+// import { CanaryLauncher } from '../../../deployment-pipeline/src/CanaryLauncher';
+// import { LivePromoter } from '../../../deployment-pipeline/src/LivePromoter';
+// import { RollbackEngine } from '../../../deployment-pipeline/src/RollbackEngine';
+// import { DeploymentDashboardHook } from '../../../deployment-pipeline/src/DeploymentDashboardHook';
 
 // Phase 6: Adaptive Capital Allocation AI
-import { DynamicWeightAllocator } from '../../../capital-ai/src/DynamicWeightAllocator';
-import { CapitalFlowOptimizer } from '../../../capital-ai/src/CapitalFlowOptimizer';
-import { PortfolioSentinel } from '../../../capital-ai/src/PortfolioSentinel';
-import { CapitalStrategyDashboard } from '../../../capital-ai/src/CapitalStrategyDashboard';
+import { DynamicWeightAllocator } from '@noderr/capital-ai';
+import { CapitalFlowOptimizer } from '@noderr/capital-ai';
+import { PortfolioSentinel } from '@noderr/capital-ai';
+import { CapitalStrategyDashboard } from '@noderr/capital-ai';
 
 // Existing module imports
 // import { AIModuleService } from '../../../ai-core/src';

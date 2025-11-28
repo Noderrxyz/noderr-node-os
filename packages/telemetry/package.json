@@ -27,6 +27,8 @@
   "author": "Noderr Protocol Team",
   "license": "MIT",
   "dependencies": {
+    "@noderr/types": "workspace:*",
+    "@noderr/utils": "workspace:*",
     "@opentelemetry/api": "^1.7.0",
     "@opentelemetry/exporter-prometheus": "^0.45.1",
     "@opentelemetry/exporter-trace-otlp-http": "^0.45.1",

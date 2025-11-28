@@ -18,7 +18,7 @@ import {
   MessageFactory
 } from '@noderr/types';
 import { MessageBus } from '../bus/MessageBus';
-import { SystemOrchestrator } from '@noderr/core/SystemOrchestrator';
+import { SystemOrchestrator } from '../core/SystemOrchestrator';
 
 interface ModuleRecoveryState {
   moduleId: string;

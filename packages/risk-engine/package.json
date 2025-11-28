@@ -13,6 +13,8 @@
     "clean": "rm -rf dist coverage"
   },
   "dependencies": {
+    "@noderr/types": "workspace:*",
+    "@noderr/utils": "workspace:*",
     "ethers": "^5.7.2",
     "mathjs": "^11.11.0",
     "simple-statistics": "^7.8.3",

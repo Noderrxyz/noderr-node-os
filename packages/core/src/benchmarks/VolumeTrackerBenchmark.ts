@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
 import * as winston from 'winston';
 import { VolumeTracker } from '../VolumeTracker';
-import { ComplianceEngine } from '../../compliance/src/ComplianceEngine';
+// import { ComplianceEngine } from '../../compliance/src/ComplianceEngine'; // TODO: Sprint 2+
 import { DistributedStateManager } from '../DistributedStateManager';
 
 interface BenchmarkResult {

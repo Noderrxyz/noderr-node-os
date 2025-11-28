@@ -30,7 +30,7 @@ import {
   SystemMetrics,
   ExportConfig,
   MetricExport
-} from '@noderr/types/telemetry';
+} from '../types/telemetry';
 
 const gzipAsync = promisify(gzip);
 

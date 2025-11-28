@@ -12,17 +12,17 @@ export type {
   SystemAlert 
 } from './SystemOrchestrator';
 
-// Re-export key components for direct access
-export { PositionReconciliation } from '../../execution-engine/src/PositionReconciliation';
-export { OrderLifecycleManager } from '../../execution-engine/src/OrderLifecycleManager';
-export { BacktestingFramework } from '../../backtesting/src/BacktestingFramework';
-export { DynamicRiskLimits } from '../../risk-engine/src/DynamicRiskLimits';
-export { ModelVersioningSystem } from '../../ml-enhanced/src/ModelVersioning';
-export { NetworkPartitionSafety } from '../../decentralized-core/src/NetworkPartitionSafety';
-export { ComplianceEngine } from '../../compliance/src/ComplianceEngine';
-export { MultiAssetManager } from '../../multi-asset/src/MultiAssetManager';
-export { LoadTestingFramework } from '../../testing/src/LoadTestingFramework';
-export { IntegrationTestSuite } from '../../testing/src/IntegrationTestSuite';
+// Re-export key components for direct access (TODO: Sprint 2+)
+// export { PositionReconciliation } from '../../execution-engine/src/PositionReconciliation';
+// export { OrderLifecycleManager } from '../../execution-engine/src/OrderLifecycleManager';
+// export { BacktestingFramework } from '../../backtesting/src/BacktestingFramework';
+// export { DynamicRiskLimits } from '@noderr/risk-engine';
+// export { ModelVersioningSystem } from '../../ml-enhanced/src/ModelVersioning';
+// export { NetworkPartitionSafety } from '@noderr/decentralized-core';
+// export { ComplianceEngine } from '../../compliance/src/ComplianceEngine';
+// export { MultiAssetManager } from '../../multi-asset/src/MultiAssetManager';
+// export { LoadTestingFramework } from '../../testing/src/LoadTestingFramework';
+// export { IntegrationTestSuite } from '../../testing/src/IntegrationTestSuite';
 
 // Default configuration
 export const defaultConfig: SystemConfig = {

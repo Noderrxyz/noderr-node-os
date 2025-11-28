@@ -1,12 +1,13 @@
 import { EventEmitter } from 'events';
 import * as winston from 'winston';
-import { PositionReconciliation } from '../../execution-engine/src/PositionReconciliation';
-import { OrderLifecycleManager } from '../../execution-engine/src/OrderLifecycleManager';
-import { DynamicRiskLimits } from '../../risk-engine/src/DynamicRiskLimits';
-import { ComplianceEngine } from '../../compliance/src/ComplianceEngine';
-import { MultiAssetManager } from '../../multi-asset/src/MultiAssetManager';
-import { ModelVersioningSystem } from '../../ml-enhanced/src/ModelVersioning';
-import { NetworkPartitionSafety } from '../../decentralized-core/src/NetworkPartitionSafety';
+// TODO: Sprint 2+ - Re-enable when packages are migrated
+// import { PositionReconciliation } from '../../execution-engine/src/PositionReconciliation';
+// import { OrderLifecycleManager } from '../../execution-engine/src/OrderLifecycleManager';
+// import { DynamicRiskLimits } from '@noderr/risk-engine';
+// import { ComplianceEngine } from '../../compliance/src/ComplianceEngine';
+// import { MultiAssetManager } from '../../multi-asset/src/MultiAssetManager';
+// import { ModelVersioningSystem } from '../../ml-enhanced/src/ModelVersioning';
+// import { NetworkPartitionSafety } from '@noderr/decentralized-core';
 
 export interface SystemConfig {
   name: string;

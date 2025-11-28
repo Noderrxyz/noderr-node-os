@@ -21,6 +21,8 @@
   "author": "Noderr Team",
   "license": "MIT",
   "dependencies": {
+    "@noderr/types": "workspace:*",
+    "@noderr/utils": "workspace:*",
     "ethers": "^6.10.0",
     "winston": "^3.11.0",
     "dotenv": "^16.3.1"

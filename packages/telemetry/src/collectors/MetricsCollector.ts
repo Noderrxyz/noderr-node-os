@@ -7,7 +7,7 @@
 import { EventEmitter } from 'events';
 import { Logger } from 'winston';
 import { MetricExporter } from '../exporters/MetricExporter';
-import { MetricType, MetricValue } from '@noderr/types/telemetry';
+import { MetricType, MetricValue } from '../types/telemetry';
 
 interface DashboardMetrics {
   // System Health
