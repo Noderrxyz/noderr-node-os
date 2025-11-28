@@ -1,0 +1,130 @@
+/**
+ * Type definitions for Authentication API
+ */
+
+export enum NodeTier {
+  ALL = 'ALL',
+  ORACLE = 'ORACLE',
+  GUARDIAN = 'GUARDIAN',
+}
+
+export enum OperatingSystem {
+  LINUX = 'linux',
+  WINDOWS = 'windows',
+}
+
+export enum NodeStatus {
+  PENDING = 'pending',
+  ACTIVE = 'active',
+  SUSPENDED = 'suspended',
+  REVOKED = 'revoked',
+}
+
+export interface InstallToken {
+  id: string;
+  token: string;
+  applicationId: string;
+  tier: NodeTier;
+  os: OperatingSystem;
+  isUsed: boolean;
+  createdAt: Date;
+  expiresAt: Date;
+}
+
+export interface NodeIdentity {
+  id: string;
+  nodeId: string;
+  publicKey: string;
+  attestationData: AttestationData;
+  tier: NodeTier;
+  os: OperatingSystem;
+  installTokenId: string;
+  status: NodeStatus;
+  lastSeen?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface NodeCredentials {
+  id: string;
+  nodeId: string;
+  apiKeyHash: string;
+  jwtSecret: string;
+  createdAt: Date;
+  expiresAt: Date;
+}
+
+export interface AttestationData {
+  quote: string;
+  signature: string;
+  pcrValues: Record<string, string>;
+  timestamp: string;
+}
+
+export interface SystemInfo {
+  hostname: string;
+  cpuCores: number;
+  memoryGB: number;
+  diskGB: number;
+  osVersion?: string;
+  kernelVersion?: string;
+}
+
+export interface InstallConfigRequest {
+  installToken: string;
+}
+
+export interface InstallConfigResponse {
+  nodeId: string;
+  tier: NodeTier;
+  os: OperatingSystem;
+  config: {
+    deploymentEngineUrl: string;
+    authApiUrl: string;
+    dockerRegistry: string;
+    telemetryEndpoint: string;
+  };
+}
+
+export interface RegisterNodeRequest {
+  installToken: string;
+  publicKey: string;
+  attestation: AttestationData;
+  systemInfo: SystemInfo;
+}
+
+export interface RegisterNodeResponse {
+  nodeId: string;
+  apiKey: string;
+  jwtToken: string;
+  status: string;
+}
+
+export interface VerifyNodeRequest {
+  nodeId: string;
+  apiKey: string;
+  challenge: string;
+}
+
+export interface VerifyNodeResponse {
+  jwtToken: string;
+  expiresAt: string;
+  status: string;
+}
+
+export interface HeartbeatRequest {
+  nodeId: string;
+  jwtToken: string;
+  metrics: {
+    uptime: number;
+    cpu: number;
+    memory: number;
+    version: string;
+  };
+}
+
+export interface HeartbeatResponse {
+  acknowledged: boolean;
+  shouldUpdate: boolean;
+  targetVersion: string;
+}
