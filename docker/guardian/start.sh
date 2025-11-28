@@ -1,0 +1,105 @@
+#!/bin/sh
+set -e
+
+echo "========================================="
+echo "Noderr Node OS - GUARDIAN Tier"
+echo "========================================="
+echo "Node ID: ${NODE_ID:-unknown}"
+echo "Tier: ${NODE_TIER}"
+echo "Version: ${NODE_VERSION:-unknown}"
+echo "========================================="
+
+# Validate required environment variables
+if [ -z "$NODE_ID" ]; then
+    echo "ERROR: NODE_ID environment variable is required"
+    exit 1
+fi
+
+if [ -z "$DEPLOYMENT_ENGINE_URL" ]; then
+    echo "ERROR: DEPLOYMENT_ENGINE_URL environment variable is required"
+    exit 1
+fi
+
+# Check version from Deployment Engine
+echo "Checking for updates..."
+CURRENT_VERSION=$(cat /app/VERSION 2>/dev/null || echo "0.0.0")
+echo "Current version: $CURRENT_VERSION"
+
+# Start telemetry service
+echo "Starting telemetry service..."
+node packages/telemetry/dist/index.js &
+TELEMETRY_PID=$!
+
+# Start market data service
+echo "Starting market data service..."
+node packages/market-data/dist/index.js &
+MARKET_DATA_PID=$!
+
+# Start exchange connectors
+echo "Starting exchange connectors..."
+node packages/exchanges/dist/index.js &
+EXCHANGES_PID=$!
+
+# Start data connectors
+echo "Starting data connectors..."
+node packages/data-connectors/dist/index.js &
+DATA_CONNECTORS_PID=$!
+
+# Start ML service
+echo "Starting ML service..."
+node packages/ml/dist/index.js &
+ML_PID=$!
+
+# Start quant research service
+echo "Starting quant research service..."
+node packages/quant-research/dist/index.js &
+QUANT_PID=$!
+
+# Start market intelligence service
+echo "Starting market intelligence service..."
+node packages/market-intel/dist/index.js &
+INTEL_PID=$!
+
+# Start strategy service
+echo "Starting strategy service..."
+node packages/strategy/dist/index.js &
+STRATEGY_PID=$!
+
+# Start capital AI service
+echo "Starting capital AI service..."
+node packages/capital-ai/dist/index.js &
+CAPITAL_AI_PID=$!
+
+# Start risk engine
+echo "Starting risk engine..."
+node packages/risk-engine/dist/index.js &
+RISK_PID=$!
+
+# Start floor engine
+echo "Starting floor engine..."
+node packages/floor-engine/dist/index.js &
+FLOOR_PID=$!
+
+# Start execution engine
+echo "Starting execution engine..."
+node packages/execution/dist/index.js &
+EXECUTION_PID=$!
+
+# Start integration layer
+echo "Starting integration layer..."
+node packages/integration-layer/dist/index.js &
+INTEGRATION_PID=$!
+
+# Start system orchestrator
+echo "Starting system orchestrator..."
+node packages/system-orchestrator/dist/index.js &
+ORCHESTRATOR_PID=$!
+
+echo "========================================="
+echo "All services started successfully"
+echo "========================================="
+
+# Wait for all background processes
+wait $TELEMETRY_PID $MARKET_DATA_PID $EXCHANGES_PID $DATA_CONNECTORS_PID \
+     $ML_PID $QUANT_PID $INTEL_PID $STRATEGY_PID $CAPITAL_AI_PID \
+     $RISK_PID $FLOOR_PID $EXECUTION_PID $INTEGRATION_PID $ORCHESTRATOR_PID
