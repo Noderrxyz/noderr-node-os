@@ -1,0 +1,137 @@
+# Alertmanager Configuration
+# Alert routing and notification
+
+global:
+  resolve_timeout: 5m
+  # SMTP configuration (update with your SMTP server)
+  smtp_from: 'alerts@noderr.network'
+  smtp_smarthost: 'smtp.example.com:587'
+  smtp_auth_username: 'alerts@noderr.network'
+  smtp_auth_password: '${SMTP_PASSWORD}'
+  smtp_require_tls: true
+
+# Templates
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Route tree
+route:
+  # Default receiver
+  receiver: 'default'
+  
+  # Group alerts by these labels
+  group_by: ['alertname', 'cluster', 'service']
+  
+  # Wait before sending first notification
+  group_wait: 30s
+  
+  # Wait before sending notification about new alerts in group
+  group_interval: 5m
+  
+  # Wait before resending notification
+  repeat_interval: 4h
+  
+  # Child routes
+  routes:
+    # Critical alerts - immediate notification
+    - match:
+        severity: critical
+      receiver: 'critical'
+      group_wait: 10s
+      group_interval: 1m
+      repeat_interval: 30m
+    
+    # Warning alerts - delayed notification
+    - match:
+        severity: warning
+      receiver: 'warning'
+      group_wait: 1m
+      group_interval: 10m
+      repeat_interval: 2h
+    
+    # Node health alerts
+    - match:
+        alertname: NodeDown
+      receiver: 'node-health'
+      group_wait: 30s
+      group_interval: 2m
+      repeat_interval: 1h
+    
+    # Update failures
+    - match:
+        alertname: UpdateFailed
+      receiver: 'update-failures'
+      group_wait: 1m
+      group_interval: 5m
+      repeat_interval: 1h
+
+# Inhibition rules (suppress alerts)
+inhibit_rules:
+  # Suppress warning if critical alert is firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'node_id']
+  
+  # Suppress NodeDown if InstanceDown is firing
+  - source_match:
+      alertname: 'InstanceDown'
+    target_match:
+      alertname: 'NodeDown'
+    equal: ['instance']
+
+# Receivers (notification channels)
+receivers:
+  # Default receiver
+  - name: 'default'
+    email_configs:
+      - to: 'ops@noderr.network'
+        headers:
+          Subject: '[Noderr] {{ .GroupLabels.alertname }}'
+        html: |
+          <h2>Alert: {{ .GroupLabels.alertname }}</h2>
+          <p><strong>Severity:</strong> {{ .CommonLabels.severity }}</p>
+          <p><strong>Summary:</strong> {{ .CommonAnnotations.summary }}</p>
+          <p><strong>Description:</strong> {{ .CommonAnnotations.description }}</p>
+          <hr>
+          {{ range .Alerts }}
+          <p><strong>Instance:</strong> {{ .Labels.instance }}</p>
+          <p><strong>Started:</strong> {{ .StartsAt }}</p>
+          {{ end }}
+  
+  # Critical alerts
+  - name: 'critical'
+    email_configs:
+      - to: 'critical@noderr.network'
+        send_resolved: true
+        headers:
+          Subject: '🚨 [CRITICAL] {{ .GroupLabels.alertname }}'
+    # Add webhook for PagerDuty/Slack/Discord
+    webhook_configs:
+      - url: '${WEBHOOK_URL}'
+        send_resolved: true
+  
+  # Warning alerts
+  - name: 'warning'
+    email_configs:
+      - to: 'warnings@noderr.network'
+        send_resolved: true
+        headers:
+          Subject: '⚠️  [WARNING] {{ .GroupLabels.alertname }}'
+  
+  # Node health alerts
+  - name: 'node-health'
+    email_configs:
+      - to: 'node-ops@noderr.network'
+        send_resolved: true
+        headers:
+          Subject: '[Node Health] {{ .GroupLabels.alertname }}'
+  
+  # Update failures
+  - name: 'update-failures'
+    email_configs:
+      - to: 'deployment@noderr.network'
+        send_resolved: true
+        headers:
+          Subject: '[Update Failed] {{ .GroupLabels.alertname }}'

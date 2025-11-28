@@ -1,0 +1,15 @@
+# Grafana Dashboards Provisioning
+
+apiVersion: 1
+
+providers:
+  - name: 'Noderr Dashboards'
+    orgId: 1
+    folder: 'Noderr'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: true

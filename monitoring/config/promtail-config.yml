@@ -1,0 +1,104 @@
+# Promtail Configuration
+# Log shipping agent
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: info
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    batchwait: 1s
+    batchsize: 1048576  # 1MB
+    timeout: 10s
+    backoff_config:
+      min_period: 500ms
+      max_period: 5m
+      max_retries: 10
+
+scrape_configs:
+  # System logs
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: system
+          __path__: /var/log/*.log
+
+  # Noderr application logs
+  - job_name: noderr
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: noderr
+          __path__: /var/log/noderr/*.log
+
+  # Docker container logs
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          - name: label
+            values: ["noderr.node-os=true"]
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
+        target_label: 'container'
+      - source_labels: ['__meta_docker_container_log_stream']
+        target_label: 'stream'
+      - source_labels: ['__meta_docker_container_label_noderr_version']
+        target_label: 'version'
+      - source_labels: ['__meta_docker_container_label_noderr_tier']
+        target_label: 'tier'
+
+  # Auto-updater logs
+  - job_name: auto-updater
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: auto-updater
+          service: auto-updater
+          __path__: /var/log/noderr/auto-updater*.log
+
+  # Deployment engine logs
+  - job_name: deployment-engine
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: deployment-engine
+          service: deployment-engine
+          __path__: /var/log/noderr/deployment-engine*.log
+
+# Pipeline stages for log processing
+pipeline_stages:
+  # Parse JSON logs
+  - json:
+      expressions:
+        level: level
+        timestamp: timestamp
+        message: message
+        service: service
+        error: error
+  
+  # Extract log level
+  - labels:
+      level:
+      service:
+  
+  # Add timestamp
+  - timestamp:
+      source: timestamp
+      format: RFC3339Nano
+  
+  # Drop debug logs (optional, uncomment to enable)
+  # - drop:
+  #     source: level
+  #     expression: "debug"

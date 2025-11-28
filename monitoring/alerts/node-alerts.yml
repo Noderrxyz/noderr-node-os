@@ -1,0 +1,213 @@
+# Noderr Node Alert Rules
+
+groups:
+  - name: node_health
+    interval: 30s
+    rules:
+      # Node is down
+      - alert: NodeDown
+        expr: up{job="noderr-nodes"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "Noderr node is down"
+          description: "Node {{ $labels.node_id }} ({{ $labels.tier }}) has been down for more than 2 minutes."
+          runbook_url: "https://docs.noderr.network/runbooks/node-down"
+      
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage on {{ $labels.instance }} is {{ $value | humanize }}% for more than 10 minutes."
+      
+      # Critical CPU usage
+      - alert: CriticalCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+        for: 5m
+        labels:
+          severity: critical
+          category: performance
+        annotations:
+          summary: "Critical CPU usage detected"
+          description: "CPU usage on {{ $labels.instance }} is {{ $value | humanize }}% for more than 5 minutes."
+      
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage on {{ $labels.instance }} is {{ $value | humanize }}% for more than 10 minutes."
+      
+      # Critical memory usage
+      - alert: CriticalMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 95
+        for: 5m
+        labels:
+          severity: critical
+          category: performance
+        annotations:
+          summary: "Critical memory usage detected"
+          description: "Memory usage on {{ $labels.instance }} is {{ $value | humanize }}% for more than 5 minutes."
+      
+      # High disk usage
+      - alert: HighDiskUsage
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs"})) * 100 > 80
+        for: 15m
+        labels:
+          severity: warning
+          category: storage
+        annotations:
+          summary: "High disk usage detected"
+          description: "Disk usage on {{ $labels.instance }} {{ $labels.mountpoint }} is {{ $value | humanize }}%."
+      
+      # Critical disk usage
+      - alert: CriticalDiskUsage
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs"})) * 100 > 95
+        for: 5m
+        labels:
+          severity: critical
+          category: storage
+        annotations:
+          summary: "Critical disk usage detected"
+          description: "Disk usage on {{ $labels.instance }} {{ $labels.mountpoint }} is {{ $value | humanize }}%."
+      
+      # Disk will fill in 4 hours
+      - alert: DiskWillFillSoon
+        expr: predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs"}[1h], 4 * 3600) < 0
+        for: 5m
+        labels:
+          severity: warning
+          category: storage
+        annotations:
+          summary: "Disk will fill soon"
+          description: "Disk {{ $labels.mountpoint }} on {{ $labels.instance }} is predicted to fill within 4 hours."
+      
+      # High network errors
+      - alert: HighNetworkErrors
+        expr: rate(node_network_receive_errs_total[5m]) > 100 or rate(node_network_transmit_errs_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          category: network
+        annotations:
+          summary: "High network error rate"
+          description: "Network interface {{ $labels.device }} on {{ $labels.instance }} has high error rate: {{ $value | humanize }} errors/s."
+
+  - name: container_health
+    interval: 30s
+    rules:
+      # Container restarting
+      - alert: ContainerRestarting
+        expr: rate(container_last_seen{name=~"noderr.*"}[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          category: stability
+        annotations:
+          summary: "Container is restarting"
+          description: "Container {{ $labels.name }} is restarting frequently."
+      
+      # Container high CPU
+      - alert: ContainerHighCPU
+        expr: sum(rate(container_cpu_usage_seconds_total{name=~"noderr.*"}[5m])) by (name) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Container high CPU usage"
+          description: "Container {{ $labels.name }} CPU usage is {{ $value | humanize }}%."
+      
+      # Container high memory
+      - alert: ContainerHighMemory
+        expr: (container_memory_usage_bytes{name=~"noderr.*"} / container_spec_memory_limit_bytes{name=~"noderr.*"}) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Container high memory usage"
+          description: "Container {{ $labels.name }} memory usage is {{ $value | humanize }}%."
+
+  - name: update_alerts
+    interval: 1m
+    rules:
+      # Update failed
+      - alert: UpdateFailed
+        expr: noderr_update_status{status="failed"} == 1
+        for: 1m
+        labels:
+          severity: critical
+          category: deployment
+        annotations:
+          summary: "Node update failed"
+          description: "Update to version {{ $labels.version }} failed on node {{ $labels.node_id }}."
+      
+      # Update rolled back
+      - alert: UpdateRolledBack
+        expr: noderr_update_status{status="rolled_back"} == 1
+        for: 1m
+        labels:
+          severity: warning
+          category: deployment
+        annotations:
+          summary: "Node update rolled back"
+          description: "Update to version {{ $labels.version }} was rolled back on node {{ $labels.node_id }}."
+      
+      # Update taking too long
+      - alert: UpdateTakingTooLong
+        expr: noderr_update_duration_seconds > 600
+        for: 1m
+        labels:
+          severity: warning
+          category: deployment
+        annotations:
+          summary: "Update taking too long"
+          description: "Update on node {{ $labels.node_id }} has been running for {{ $value | humanizeDuration }}."
+
+  - name: application_alerts
+    interval: 30s
+    rules:
+      # High error rate
+      - alert: HighErrorRate
+        expr: sum(rate(noderr_errors_total[5m])) by (node_id) > 10
+        for: 5m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "High error rate detected"
+          description: "Node {{ $labels.node_id }} is experiencing {{ $value | humanize }} errors/s."
+      
+      # Critical error rate
+      - alert: CriticalErrorRate
+        expr: sum(rate(noderr_errors_total[5m])) by (node_id) > 50
+        for: 2m
+        labels:
+          severity: critical
+          category: application
+        annotations:
+          summary: "Critical error rate detected"
+          description: "Node {{ $labels.node_id }} is experiencing {{ $value | humanize }} errors/s."
+      
+      # Slow response time
+      - alert: SlowResponseTime
+        expr: histogram_quantile(0.95, rate(noderr_request_duration_seconds_bucket[5m])) > 5
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Slow response time"
+          description: "95th percentile response time on {{ $labels.node_id }} is {{ $value | humanizeDuration }}."
