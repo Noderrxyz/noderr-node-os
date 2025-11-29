@@ -1,13 +1,13 @@
-import { UniversalXAdapter } from '../../src/adapters/UniversalXAdapter';
-import { UniversalAccountService } from '../../src/services/UniversalAccountService';
-import { CrossChainExecutionRouter } from '../../src/adapters/CrossChainExecutionRouter';
+import { UniversalXAdapter } from '@noderr/src/adapters/UniversalXAdapter';
+import { UniversalAccountService } from '@noderr/src/services/UniversalAccountService';
+import { CrossChainExecutionRouter } from '@noderr/src/adapters/CrossChainExecutionRouter';
 import { 
   CrossChainSwapParams, 
   SwapResult, 
   FeeEstimate,
   ChainInfo 
-} from '../../src/adapters/interfaces/ICrossChainAdapter';
-import { Asset, TradeRequest, TradeOrder } from '../../src/adapters/IChainAdapter';
+} from '@noderr/src/adapters/interfaces/ICrossChainAdapter';
+import { Asset, TradeRequest, TradeOrder } from '@noderr/src/adapters/IChainAdapter';
 import axios from 'axios';
 
 // Mock axios

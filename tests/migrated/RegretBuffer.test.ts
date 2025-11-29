@@ -4,7 +4,7 @@
 
 // No need to redeclare global types - they should be in a separate types file or installed via npm
 
-import { RegretBuffer, RegretEntry } from '../RegretBuffer.js';
+import { RegretBuffer, RegretEntry } from '../RegretBuffer';
 import { v4 as uuidv4 } from 'uuid';
 
 // Mock RedisService

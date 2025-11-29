@@ -2,8 +2,8 @@
  * Tests for Volatility Scaler
  */
 
-import { VolatilityScaler } from './volatility-scaler.js';
-import { FusedAlphaFrame, SignalDirection } from './fusion-engine.js';
+import { VolatilityScaler } from './volatility-scaler';
+import { FusedAlphaFrame, SignalDirection } from './fusion-engine';
 
 // Helper to create mock fused alpha frames
 const createMockFusedAlpha = (

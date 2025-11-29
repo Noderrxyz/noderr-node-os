@@ -14,19 +14,19 @@ import {
   OrderBookSnapshot,
   LiquidityMetrics,
   MarketAnomaly
-} from '../../src/adapters/interfaces/IDataFeed';
-import { HistoricalDataFeed } from '../../src/adapters/feeds/HistoricalDataFeed';
-import { SimulatedDataFeed } from '../../src/adapters/feeds/SimulatedDataFeed';
-import { DataFeedFactory } from '../../src/adapters/factories/DataFeedFactory';
-import { MarketSimulationEngine } from '../../src/adapters/simulation/MarketSimulationEngine';
-import { MEVSimulationEngine } from '../../src/adapters/simulation/MEVSimulationEngine';
-import { MockExchangeConnector } from '../../src/adapters/mock/MockExchangeConnector';
+} from '@noderr/src/adapters/interfaces/IDataFeed';
+import { HistoricalDataFeed } from '@noderr/src/adapters/feeds/HistoricalDataFeed';
+import { SimulatedDataFeed } from '@noderr/src/adapters/feeds/SimulatedDataFeed';
+import { DataFeedFactory } from '@noderr/src/adapters/factories/DataFeedFactory';
+import { MarketSimulationEngine } from '@noderr/src/adapters/simulation/MarketSimulationEngine';
+import { MEVSimulationEngine } from '@noderr/src/adapters/simulation/MEVSimulationEngine';
+import { MockExchangeConnector } from '@noderr/src/adapters/mock/MockExchangeConnector';
 import { 
   createDataFeed,
   createSimulatedDataFeed,
   createHighFrequencySimulationFeed,
   cleanupAllDataFeeds
-} from '../../src/adapters/factories/DataFeedFactory';
+} from '@noderr/src/adapters/factories/DataFeedFactory';
 
 describe('Paper Mode Phase 3: Data Injection System', () => {
   let dataFeed: IDataFeed;

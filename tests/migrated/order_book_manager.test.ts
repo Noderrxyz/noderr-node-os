@@ -1,4 +1,4 @@
-import { OrderBookManager, OrderSide, UpdateType, PriceLevel } from '../../execution/OrderBookManager';
+import { OrderBookManager, OrderSide, UpdateType, PriceLevel } from '@noderr/execution/src/OrderBookManager';
 
 // Mock the nativeManager
 jest.mock('../../../noderr_core', () => {

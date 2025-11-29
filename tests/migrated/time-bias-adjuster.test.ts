@@ -2,12 +2,12 @@
  * Tests for Time-of-Day Bias Adjuster
  */
 
-import { TimeOfDayBiasAdjuster } from './time-bias-adjuster.js';
-import { FusedAlphaFrame } from './fusion-engine.js';
-import { SignalDirection } from './fusion-engine.js';
+import { TimeOfDayBiasAdjuster } from './time-bias-adjuster';
+import { FusedAlphaFrame } from './fusion-engine';
+import { SignalDirection } from './fusion-engine';
 
 // Mock logger to prevent actual logging during tests
-jest.mock('../common/logger.js', () => ({
+jest.mock('../common/logger', () => ({
   createLogger: () => ({
     info: jest.fn(),
     debug: jest.fn(),

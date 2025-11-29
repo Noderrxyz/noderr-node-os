@@ -11,13 +11,13 @@ declare const it: (name: string, fn: () => void | Promise<void>) => void;
 declare const expect: any;
 
 import { v4 as uuidv4 } from 'uuid';
-import { createMockRedisClient } from '../../../common/redis.js';
-import { PostgresService } from '../../infrastructure/PostgresService.js';
-import { EvolutionGraphEngine, recordMutation, getLineage } from '../EvolutionGraphEngine.js';
-import { MutationType, PerformanceMetrics } from '../types.js';
+import { createMockRedisClient } from '@noderr/common/redis';
+import { PostgresService } from '@noderr/infrastructure/PostgresService';
+import { EvolutionGraphEngine, recordMutation, getLineage } from '../EvolutionGraphEngine';
+import { MutationType, PerformanceMetrics } from '../types';
 
 // Mock PostgresService
-jest.mock('../../infrastructure/PostgresService.js', () => {
+jest.mock('../../infrastructure/PostgresService', () => {
   return {
     PostgresService: jest.fn().mockImplementation(() => {
       return {

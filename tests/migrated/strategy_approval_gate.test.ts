@@ -1,7 +1,7 @@
-import { StrategyApprovalGate, StrategyApprovalStatus } from '../../governance/StrategyApprovalGate';
-import { StrategyGenome } from '../../evolution/StrategyGenome';
-import { ConductEngine } from '../../governance/ConductEngine';
-import { TelemetryBus } from '../../telemetry/TelemetryBus';
+import { StrategyApprovalGate, StrategyApprovalStatus } from '@noderr/governance/src/StrategyApprovalGate';
+import { StrategyGenome } from '@noderr/evolution/StrategyGenome';
+import { ConductEngine } from '@noderr/governance/src/ConductEngine';
+import { TelemetryBus } from '@noderr/telemetry/TelemetryBus';
 
 // Mock dependencies
 jest.mock('../../evolution/StrategyGenome');

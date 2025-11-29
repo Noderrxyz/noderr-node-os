@@ -1,7 +1,7 @@
-import { FeedGraphEngine } from '../../telemetry/feed_graph/FeedGraphEngine.js';
-import { ValidatorNode } from '../../feeds/validator/ValidatorNode.js';
-import { FeedSource } from '../../types/FeedSource.js';
-import { MarketSnapshot } from '../../types/MarketSnapshot.types.js';
+import { FeedGraphEngine } from '@noderr/telemetry/feed_graph/FeedGraphEngine';
+import { ValidatorNode } from '@noderr/feeds/validator/ValidatorNode';
+import { FeedSource } from '@noderr/types/FeedSource';
+import { MarketSnapshot } from '@noderr/types/MarketSnapshot.types';
 
 describe('FeedGraphEngine', () => {
   let engine: FeedGraphEngine;

@@ -1,5 +1,5 @@
-import { OrderRetryEngine, RetryContext } from '../../execution/OrderRetryEngine.js';
-import { TrustManager } from '../../governance/TrustManager.js';
+import { OrderRetryEngine, RetryContext } from '@noderr/execution/src/OrderRetryEngine';
+import { TrustManager } from '@noderr/governance/src/TrustManager';
 import fs from 'fs';
 import path from 'path';
 

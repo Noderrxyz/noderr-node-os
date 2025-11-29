@@ -1,6 +1,6 @@
-import { ExecutionStrategyRouterRust, ExecutionAlgorithm } from '../../execution/ExecutionStrategyRouterRust';
-import { Order, OrderSide } from '../../execution/order';
-import { ExecutionResult } from '../../execution/types';
+import { ExecutionStrategyRouterRust, ExecutionAlgorithm } from '@noderr/execution/src/ExecutionStrategyRouterRust';
+import { Order, OrderSide } from '@noderr/execution/src/order';
+import { ExecutionResult } from '@noderr/execution/src/types';
 
 // Mock the NapiExecutionStrategyRouter
 jest.mock('@noderr/core', () => {

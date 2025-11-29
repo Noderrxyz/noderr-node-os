@@ -1,7 +1,7 @@
-import { CrossChainExecutionRouter } from '../../src/execution/CrossChainExecutionRouter';
-import { ExecutionSecurityLayer } from '../../src/execution/ExecutionSecurityLayer';
+import { CrossChainExecutionRouter } from '@noderr/src/execution/CrossChainExecutionRouter';
+import { ExecutionSecurityLayer } from '@noderr/src/execution/ExecutionSecurityLayer';
 import { ChainAdapterMock } from '../e2e/mocks/ChainAdapterMock';
-import { StrategyGenome } from '../../src/evolution/StrategyGenome';
+import { StrategyGenome } from '@noderr/src/evolution/StrategyGenome';
 
 jest.mock('../../src/execution/ExecutionSecurityLayer');
 

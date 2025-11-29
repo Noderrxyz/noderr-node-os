@@ -5,12 +5,12 @@
  * a day of trading with different performance across different hours.
  */
 
-import { TimeOfDayBiasAdjuster } from './time-bias-adjuster.js';
-import { FusedAlphaFrame } from './fusion-engine.js';
-import { SignalDirection } from './fusion-engine.js';
+import { TimeOfDayBiasAdjuster } from './time-bias-adjuster';
+import { FusedAlphaFrame } from './fusion-engine';
+import { SignalDirection } from './fusion-engine';
 
 // Mock for logger
-jest.mock('../common/logger.js', () => ({
+jest.mock('../common/logger', () => ({
   createLogger: () => ({
     info: console.log,
     debug: console.log,

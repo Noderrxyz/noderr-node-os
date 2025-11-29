@@ -1,5 +1,5 @@
-import { PolkadotAdapter } from '../../execution/adapters/PolkadotAdapter';
-import { StrategyGenome } from '../../evolution/StrategyGenome';
+import { PolkadotAdapter } from '@noderr/execution/src/adapters/PolkadotAdapter';
+import { StrategyGenome } from '@noderr/evolution/StrategyGenome';
 
 // Mock dependencies
 jest.mock('../../utils/logger', () => ({

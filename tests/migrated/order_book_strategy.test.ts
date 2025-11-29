@@ -1,7 +1,7 @@
-import { OrderBookStrategy } from '../../strategy/OrderBookStrategy';
-import { MarketRegime, MarketFeatures } from '../../regime/RegimeClassifier';
-import { OrderBookManager, OrderSide } from '../../execution/OrderBookManager';
-import { StrategyContext } from '../../strategy/AdaptiveStrategy';
+import { OrderBookStrategy } from '@noderr/strategy/OrderBookStrategy';
+import { MarketRegime, MarketFeatures } from '@noderr/regime/RegimeClassifier';
+import { OrderBookManager, OrderSide } from '@noderr/execution/src/OrderBookManager';
+import { StrategyContext } from '@noderr/strategy/AdaptiveStrategy';
 
 // Mock dependencies
 jest.mock('../../execution/OrderBookManager');

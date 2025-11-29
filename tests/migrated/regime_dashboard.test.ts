@@ -1,8 +1,8 @@
-import { RegimeDashboard } from '../../telemetry/dashboards/RegimeDashboard';
-import { TelemetryBus } from '../../telemetry/TelemetryBus';
-import { MarketRegimeClassifier } from '../../regime/MarketRegimeClassifier';
-import { RegimeTransitionEngine } from '../../regime/RegimeTransitionEngine';
-import { MarketRegime, RegimeTransitionState } from '../../regime/MarketRegimeTypes';
+import { RegimeDashboard } from '@noderr/telemetry/dashboards/RegimeDashboard';
+import { TelemetryBus } from '@noderr/telemetry/TelemetryBus';
+import { MarketRegimeClassifier } from '@noderr/regime/MarketRegimeClassifier';
+import { RegimeTransitionEngine } from '@noderr/regime/RegimeTransitionEngine';
+import { MarketRegime, RegimeTransitionState } from '@noderr/regime/MarketRegimeTypes';
 
 // Mock dependencies
 jest.mock('../../telemetry/TelemetryBus');

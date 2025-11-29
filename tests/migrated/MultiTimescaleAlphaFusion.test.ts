@@ -1,6 +1,6 @@
-import { MultiTimescaleAlphaFusion } from './MultiTimescaleAlphaFusion.js';
-import { Timescale } from './types/multi_timescale.types.js';
-import { AlphaFrame } from '../alphasources/types.js';
+import { MultiTimescaleAlphaFusion } from './MultiTimescaleAlphaFusion';
+import { Timescale } from './types/multi_timescale.types';
+import { AlphaFrame } from '../alphasources/types';
 
 describe('MultiTimescaleAlphaFusion', () => {
   let fusion: MultiTimescaleAlphaFusion;

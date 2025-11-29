@@ -5,10 +5,10 @@
  * based on agent trust scores.
  */
 
-import { TrendSignal } from '../../../types/global.types.js';
-import { TrendSignalAggregator } from '../TrendSignalAggregator.js';
-import { TrustWeightedConsensusEngine, TrustScoreProvider } from '../TrustWeightedConsensusEngine.js';
-import { TrendDirection, ConsensusResult } from '../TrendConsensusEngine.js';
+import { TrendSignal } from '@noderr/types/global.types';
+import { TrendSignalAggregator } from '../TrendSignalAggregator';
+import { TrustWeightedConsensusEngine, TrustScoreProvider } from '../TrustWeightedConsensusEngine';
+import { TrendDirection, ConsensusResult } from '../TrendConsensusEngine';
 
 // Mock Redis implementation for testing
 class MockRedis {

@@ -1,11 +1,11 @@
 import { PathFinder } from '../PathFinder';
-import { BridgeRegistry } from '../../bridge/BridgeRegistry';
-import { Asset } from '../../types/Asset';
-import { ChainId } from '../../types/ChainId';
-import { Bridge } from '../../types/Bridge';
-import { BridgeMetricsCollector } from '../../bridge/BridgeMetricsCollector';
-import { BridgeSelector } from '../../bridge/BridgeSelector';
-import { DefaultBridgeScoringStrategy } from '../../bridge/DefaultBridgeScoringStrategy';
+import { BridgeRegistry } from '@noderr/bridge/BridgeRegistry';
+import { Asset } from '@noderr/types/Asset';
+import { ChainId } from '@noderr/types/ChainId';
+import { Bridge } from '@noderr/types/Bridge';
+import { BridgeMetricsCollector } from '@noderr/bridge/BridgeMetricsCollector';
+import { BridgeSelector } from '@noderr/bridge/BridgeSelector';
+import { DefaultBridgeScoringStrategy } from '@noderr/bridge/DefaultBridgeScoringStrategy';
 
 describe('PathFinder Integration', () => {
   let pathFinder: PathFinder;

@@ -1,9 +1,9 @@
 import { PathFinder } from '../PathFinder';
-import { BridgeRegistry } from '../../bridge/BridgeRegistry';
-import { Asset } from '../../types/Asset';
-import { ChainId } from '../../types/ChainId';
-import { Bridge } from '../../types/Bridge';
-import { BridgeMetricsCollector } from '../../bridge/BridgeMetricsCollector';
+import { BridgeRegistry } from '@noderr/bridge/BridgeRegistry';
+import { Asset } from '@noderr/types/Asset';
+import { ChainId } from '@noderr/types/ChainId';
+import { Bridge } from '@noderr/types/Bridge';
+import { BridgeMetricsCollector } from '@noderr/bridge/BridgeMetricsCollector';
 
 // Test assets
 const ETH: Asset = {

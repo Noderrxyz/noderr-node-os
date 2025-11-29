@@ -1,4 +1,4 @@
-import { SharedMemoryManagerRust, BufferType, BatchProcessorRust } from '../../memory/SharedMemoryManagerRust';
+import { SharedMemoryManagerRust, BufferType, BatchProcessorRust } from '@noderr/memory/SharedMemoryManagerRust';
 
 // Mock the NapiSharedMemoryManager
 jest.mock('@noderr/core', () => {

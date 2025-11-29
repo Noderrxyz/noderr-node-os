@@ -1,5 +1,5 @@
-import { ReinforcementLog, ReinforcementEvent } from '../ReinforcementLog.js';
-import { InfluenceGraph } from '../InfluenceGraph.js';
+import { ReinforcementLog, ReinforcementEvent } from '../ReinforcementLog';
+import { InfluenceGraph } from '../InfluenceGraph';
 
 describe('ReinforcementLog', () => {
   let log: ReinforcementLog;

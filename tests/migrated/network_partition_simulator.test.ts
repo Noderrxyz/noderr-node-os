@@ -1,7 +1,7 @@
-import { NetworkPartitionSimulator } from '../../chaos/NetworkPartitionSimulator';
-import { ChaosGenerator } from '../../chaos/ChaosGenerator';
-import { ChaosSimulationBus } from '../../chaos/ChaosSimulationBus';
-import { TelemetryBus } from '../../telemetry/TelemetryBus';
+import { NetworkPartitionSimulator } from '@noderr/chaos/NetworkPartitionSimulator';
+import { ChaosGenerator } from '@noderr/chaos/ChaosGenerator';
+import { ChaosSimulationBus } from '@noderr/chaos/ChaosSimulationBus';
+import { TelemetryBus } from '@noderr/telemetry/TelemetryBus';
 
 // Mock dependencies
 jest.mock('../../chaos/ChaosGenerator');

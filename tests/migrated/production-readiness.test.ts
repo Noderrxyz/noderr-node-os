@@ -1,9 +1,9 @@
-import { CrossChainExecutionRouter } from '../../src/execution/CrossChainExecutionRouter';
-import { LiquidityAggregator } from '../../packages/execution/src/LiquidityAggregator';
-import { MEVProtectionManager } from '../../src/execution/MEVProtectionManager';
-import { ExecutionTracer, TraceEventType } from '../../src/execution/ExecutionTracer';
-import { StrategyGenome } from '../../src/evolution/StrategyGenome';
-import { logger } from '../../src/utils/logger';
+import { CrossChainExecutionRouter } from '@noderr/src/execution/CrossChainExecutionRouter';
+import { LiquidityAggregator } from '@noderr/packages/execution/src/LiquidityAggregator';
+import { MEVProtectionManager } from '@noderr/src/execution/MEVProtectionManager';
+import { ExecutionTracer, TraceEventType } from '@noderr/src/execution/ExecutionTracer';
+import { StrategyGenome } from '@noderr/src/evolution/StrategyGenome';
+import { logger } from '@noderr/src/utils/logger';
 
 /**
  * Production Readiness Integration Test Suite

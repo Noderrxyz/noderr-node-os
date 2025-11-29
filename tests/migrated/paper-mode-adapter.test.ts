@@ -14,8 +14,8 @@ import {
   getRPCProvider,
   cleanupAllAdapters,
   getAdapterStatistics
-} from '../../src/adapters/exports';
-import { isPaperMode, paperModeConfig } from '../../src/config/PaperModeConfig';
+} from '@noderr/src/adapters/exports';
+import { isPaperMode, paperModeConfig } from '@noderr/src/config/PaperModeConfig';
 
 // Mock test setup
 describe('Paper Mode Adapter Integration Tests', () => {

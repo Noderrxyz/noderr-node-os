@@ -1,6 +1,6 @@
 import { MockTradingEngine } from './mock-trading-engine';
-import { PolygonAdapter } from '../../PolygonAdapter';
-import { Asset, TradeOrder } from '../../IChainAdapter';
+import { PolygonAdapter } from '@noderr/PolygonAdapter';
+import { Asset, TradeOrder } from '@noderr/IChainAdapter';
 
 /**
  * Integration test for Polygon adapter with trading engine

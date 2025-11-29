@@ -2,8 +2,8 @@
  * Unit tests for MemoryGraph service
  */
 
-import { MemoryGraph } from '../MemoryGraph.js';
-import { FusionFeedbackEvent } from '../../../types/memory.types.js';
+import { MemoryGraph } from '../MemoryGraph';
+import { FusionFeedbackEvent } from '@noderr/types/memory.types';
 import { v4 as uuidv4 } from 'uuid';
 
 // Mock RedisService

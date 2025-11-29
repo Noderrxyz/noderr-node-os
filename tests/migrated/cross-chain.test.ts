@@ -1,8 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { describe, it, expect } from '@jest/globals';
-import { AdapterRegistry } from '../../src/adapters/registry/AdapterRegistry';
-import { ChainId } from '../../src/adapters/IChainAdapter';
-import { getMetricsRegistry } from '../../src/telemetry/metrics';
+import { AdapterRegistry } from '@noderr/src/adapters/registry/AdapterRegistry';
+import { ChainId } from '@noderr/src/adapters/IChainAdapter';
+import { getMetricsRegistry } from '@noderr/src/telemetry/metrics';
 
 // Example addresses and amounts for testing
 const testAccounts = {

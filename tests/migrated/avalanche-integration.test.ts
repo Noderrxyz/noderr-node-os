@@ -1,6 +1,6 @@
 import { MockTradingEngine } from './mock-trading-engine';
-import { AvalancheAdapter } from '../../AvalancheAdapter';
-import { Asset, TradeOrder } from '../../IChainAdapter';
+import { AvalancheAdapter } from '@noderr/AvalancheAdapter';
+import { Asset, TradeOrder } from '@noderr/IChainAdapter';
 
 /**
  * Integration test for Avalanche adapter with trading engine

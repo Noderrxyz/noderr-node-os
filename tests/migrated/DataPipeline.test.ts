@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
-import { PostgresService } from '../PostgresService.js';
-import { DataPipelineService, DataPoint } from '../DataPipelineService.js';
-import { DataPipelineManager } from '../DataPipelineManager.js';
+import { PostgresService } from '../PostgresService';
+import { DataPipelineService, DataPoint } from '../DataPipelineService';
+import { DataPipelineManager } from '../DataPipelineManager';
 import { PoolClient, QueryResult } from 'pg';
 
 // Mock types
@@ -19,7 +19,7 @@ type MockPoolClient = {
 };
 
 // Mock PostgresService
-jest.mock('../PostgresService.js');
+jest.mock('../PostgresService');
 
 describe('DataPipelineService', () => {
   let postgresService: PostgresService;

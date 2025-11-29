@@ -1,6 +1,6 @@
 import { BridgeRegistry } from '../BridgeRegistry';
-import { Bridge } from '../../types/Bridge';
-import { ChainId } from '../../types/ChainId';
+import { Bridge } from '@noderr/types/Bridge';
+import { ChainId } from '@noderr/types/ChainId';
 
 describe('BridgeRegistry', () => {
   let bridgeRegistry: BridgeRegistry;

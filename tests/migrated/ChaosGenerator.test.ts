@@ -5,8 +5,8 @@
  * for agent testing.
  */
 
-import { ChaosGenerator } from '../ChaosGenerator.js';
-import { ChaosParams, AgentStimuli, MarketShock } from '../../types/chaos.types.js';
+import { ChaosGenerator } from '../ChaosGenerator';
+import { ChaosParams, AgentStimuli, MarketShock } from '@noderr/types/chaos.types';
 
 // Skip global test declarations since they should be defined elsewhere
 

@@ -1,8 +1,8 @@
-import { ValidatorNode } from '../../feeds/validator/ValidatorNode.js';
-import { MarketSnapshot } from '../../types/MarketSnapshot.types.js';
-import { QuarantineManager } from '../../feeds/quarantine/QuarantineManager.js';
-import { FeedBus } from '../../feeds/publishers/FeedBus.js';
-import { FeedSource } from '../../types/FeedSource.js';
+import { ValidatorNode } from '@noderr/feeds/validator/ValidatorNode';
+import { MarketSnapshot } from '@noderr/types/MarketSnapshot.types';
+import { QuarantineManager } from '@noderr/feeds/quarantine/QuarantineManager';
+import { FeedBus } from '@noderr/feeds/publishers/FeedBus';
+import { FeedSource } from '@noderr/types/FeedSource';
 
 describe('ValidatorNode', () => {
   let validator: ValidatorNode;

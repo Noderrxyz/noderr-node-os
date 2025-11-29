@@ -1,7 +1,7 @@
 import { IntegratedTradingSystem } from '../IntegratedTradingSystem';
 import { OnlineRLTrader } from '../OnlineRLTrader';
 import { TradingSystemFaultTolerance } from '../FaultTolerance';
-import { MonitoringSystem } from '../../../telemetry-enhanced/src/MonitoringSystem';
+import { MonitoringSystem } from '@noderr/telemetry-enhanced/src/MonitoringSystem';
 import * as winston from 'winston';
 
 describe('Elite System Validation Report', () => {

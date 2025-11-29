@@ -1,8 +1,8 @@
-import { DrawdownManager } from '../../risk/DrawdownManager.js';
-import { DynamicTradeSizer } from '../../risk/DynamicTradeSizer.js';
-import { AnomalyScanner } from '../../risk/AnomalyScanner.js';
-import { TrustManager } from '../../evolution/TrustManager.js';
-import { AgentKillSwitch } from '../../agents/AgentKillSwitch.js';
+import { DrawdownManager } from '@noderr/risk/DrawdownManager';
+import { DynamicTradeSizer } from '@noderr/risk/DynamicTradeSizer';
+import { AnomalyScanner } from '@noderr/risk/AnomalyScanner';
+import { TrustManager } from '@noderr/evolution/TrustManager';
+import { AgentKillSwitch } from '@noderr/agents/AgentKillSwitch';
 
 describe('Risk Guardrails', () => {
   let drawdownManager: DrawdownManager;

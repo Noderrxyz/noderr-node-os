@@ -1,6 +1,6 @@
 import { DefaultBridgeScoringStrategy } from '../DefaultBridgeScoringStrategy';
-import { Bridge } from '../../types/Bridge';
-import { ChainId } from '../../types/ChainId';
+import { Bridge } from '@noderr/types/Bridge';
+import { ChainId } from '@noderr/types/ChainId';
 import { BridgeMetrics } from '../BridgeSelector';
 
 describe('DefaultBridgeScoringStrategy', () => {

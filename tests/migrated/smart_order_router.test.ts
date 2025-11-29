@@ -1,6 +1,6 @@
-import { SmartOrderRouter } from '../../execution/SmartOrderRouter.js';
-import { TrustManager } from '../../governance/TrustManager.js';
-import { OrderRetryEngine } from '../../execution/OrderRetryEngine.js';
+import { SmartOrderRouter } from '@noderr/execution/src/SmartOrderRouter';
+import { TrustManager } from '@noderr/governance/src/TrustManager';
+import { OrderRetryEngine } from '@noderr/execution/src/OrderRetryEngine';
 
 describe('SmartOrderRouter', () => {
   let router: SmartOrderRouter;

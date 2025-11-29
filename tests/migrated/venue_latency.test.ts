@@ -1,4 +1,4 @@
-import { VenueLatencyTrackerRust } from '../../execution/VenueLatencyTrackerRust';
+import { VenueLatencyTrackerRust } from '@noderr/execution/src/VenueLatencyTrackerRust';
 
 // Mock the NapiVenueLatencyTracker
 jest.mock('@noderr/core', () => {

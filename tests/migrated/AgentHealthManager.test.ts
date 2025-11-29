@@ -4,9 +4,9 @@
  * Tests for the agent self-healing system
  */
 
-import { TrustScoreService } from '../TrustScoreService.js';
-import { AgentHealthManager } from '../AgentHealthManager.js';
-import { AgentHealthMode } from '../../../types/agent.types.js';
+import { TrustScoreService } from '../TrustScoreService';
+import { AgentHealthManager } from '../AgentHealthManager';
+import { AgentHealthMode } from '@noderr/types/agent.types';
 
 // Mock Redis implementation for testing
 class MockRedis {

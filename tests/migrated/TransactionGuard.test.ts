@@ -4,15 +4,15 @@
  * Tests for the Transaction Risk Mitigation Layer.
  */
 
-import { TransactionGuard, TransactionGuardConfig } from './TransactionGuard.js';
-import { ProtectiveWrapper, ProtectiveStrategy } from './ProtectiveWrapper.js';
-import { OrderIntent, ExecutedOrder } from '../../types/execution.types.js';
-import { SmartOrderRouter } from '../../infra/router/SmartOrderRouter.js';
-import { TrustEngine } from '../../infra/risk/TrustEngine.js';
+import { TransactionGuard, TransactionGuardConfig } from './TransactionGuard';
+import { ProtectiveWrapper, ProtectiveStrategy } from './ProtectiveWrapper';
+import { OrderIntent, ExecutedOrder } from '@noderr/types/execution.types';
+import { SmartOrderRouter } from '@noderr/infra/router/SmartOrderRouter';
+import { TrustEngine } from '@noderr/infra/risk/TrustEngine';
 
 // Mock dependencies
-jest.mock('../../infra/router/SmartOrderRouter.js');
-jest.mock('../../infra/risk/TrustEngine.js');
+jest.mock('../../infra/router/SmartOrderRouter');
+jest.mock('../../infra/risk/TrustEngine');
 
 describe('TransactionGuard', () => {
   // Test configuration

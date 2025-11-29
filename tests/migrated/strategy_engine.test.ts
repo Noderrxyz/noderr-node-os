@@ -1,7 +1,7 @@
-import { StrategyEngineRust, StrategyEngineConfig, RiskGrade, ExecutionHorizon, SignalStatus } from '../../execution/StrategyEngineRust';
-import { StrategyEngineJs } from '../../execution/StrategyEngineJs';
-import { Signal } from '../../types/strategy';
-import { ExecutionStatus } from '../../types/execution';
+import { StrategyEngineRust, StrategyEngineConfig, RiskGrade, ExecutionHorizon, SignalStatus } from '@noderr/execution/src/StrategyEngineRust';
+import { StrategyEngineJs } from '@noderr/execution/src/StrategyEngineJs';
+import { Signal } from '@noderr/types/strategy';
+import { ExecutionStatus } from '@noderr/types/execution';
 
 // Mock the dependencies
 jest.mock('../../execution/SmartOrderRouterRust', () => ({

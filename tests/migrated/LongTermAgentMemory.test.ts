@@ -3,10 +3,10 @@
  */
 
 import { LongTermAgentMemory, EvolvedAgentSnapshot } from '../LongTermAgentMemory';
-import { RedisService } from '../../redis/RedisService.js';
-import { EvaluationResult } from '../../evolution/evaluation/EvaluationResult.js';
-import { TradingStrategy, createDefaultStrategy } from '../../evolution/mutation/strategy-model.js';
-import { MEMORY_INJECTION_CONFIG } from '../../../config/agent_meta_rewards.config.js';
+import { RedisService } from '@noderr/redis/RedisService';
+import { EvaluationResult } from '@noderr/evolution/evaluation/EvaluationResult';
+import { TradingStrategy, createDefaultStrategy } from '@noderr/evolution/mutation/strategy-model';
+import { MEMORY_INJECTION_CONFIG } from '@noderr/config/agent_meta_rewards.config';
 import { v4 as uuidv4 } from 'uuid';
 
 // Mock Redis service

@@ -2,8 +2,8 @@
  * Tests for Alpha Weighting Engine
  */
 
-import { AlphaWeightingEngine } from './weighting-engine.js';
-import { AlphaFrame } from './types.js';
+import { AlphaWeightingEngine } from './weighting-engine';
+import { AlphaFrame } from './types';
 
 // Mock AlphaFrame for testing
 const createMockAlphaFrame = (source: string, symbol: string, score: number): AlphaFrame => ({

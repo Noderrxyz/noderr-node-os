@@ -1,6 +1,6 @@
 import express from 'express';
 import request from 'supertest';
-import strategiesRouter from '../../strategies';
+import strategiesRouter from '@noderr/strategies';
 
 // Minimal auth mocks
 jest.mock('../../../auth/authMiddleware', () => ({

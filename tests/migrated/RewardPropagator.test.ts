@@ -2,9 +2,9 @@
  * Tests for the RewardPropagator class
  */
 
-import { RewardPropagator } from '../RewardPropagator.js';
-import { ReinforcementLog, type ReinforcementEvent } from '../../ReinforcementLog.js';
-import { InfluenceGraph } from '../../InfluenceGraph.js';
+import { RewardPropagator } from '../RewardPropagator';
+import { ReinforcementLog, type ReinforcementEvent } from '@noderr/ReinforcementLog';
+import { InfluenceGraph } from '@noderr/InfluenceGraph';
 
 // Create a mock logger
 const mockLogger = {
@@ -15,7 +15,7 @@ const mockLogger = {
 };
 
 // Mock Logger module
-jest.mock('../../../../utils/logger.js', () => ({
+jest.mock('../../../../utils/logger', () => ({
   __esModule: true,
   default: {
     getInstance: () => mockLogger
@@ -35,7 +35,7 @@ const mockGraph = {
 };
 
 // Mock ReinforcementLog
-jest.mock('../../ReinforcementLog.js', () => ({
+jest.mock('../../ReinforcementLog', () => ({
   ReinforcementLog: jest.fn().mockImplementation(() => ({
     record: jest.fn().mockImplementation((event) => ({
       id: 'mocked-event-id',
@@ -53,7 +53,7 @@ jest.mock('../../ReinforcementLog.js', () => ({
 }));
 
 // Mock InfluenceGraph
-jest.mock('../../InfluenceGraph.js', () => ({
+jest.mock('../../InfluenceGraph', () => ({
   InfluenceGraph: jest.fn().mockImplementation(() => mockGraph)
 }));
 

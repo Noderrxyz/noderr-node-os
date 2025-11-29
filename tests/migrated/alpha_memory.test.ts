@@ -1,5 +1,5 @@
-import { AlphaMemory, AlphaMemoryRecord } from '../../memory/AlphaMemory';
-import { MarketRegime } from '../../regime/RegimeClassifier';
+import { AlphaMemory, AlphaMemoryRecord } from '@noderr/memory/AlphaMemory';
+import { MarketRegime } from '@noderr/regime/RegimeClassifier';
 import * as fs from 'fs';
 import * as path from 'path';
 

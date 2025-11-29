@@ -1,4 +1,4 @@
-import { ExecutionLayer } from '../../src/execution/ExecutionLayer';
+import { ExecutionLayer } from '@noderr/src/execution/ExecutionLayer';
 import { ChainAdapterMock } from '../e2e/mocks/ChainAdapterMock';
 
 const mockAdapters = {

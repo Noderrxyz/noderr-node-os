@@ -2,8 +2,8 @@
  * Tests for Alpha Fusion Engine
  */
 
-import { AlphaFusionEngine, SignalDirection } from './fusion-engine.js';
-import { AlphaFrame } from './types.js';
+import { AlphaFusionEngine, SignalDirection } from './fusion-engine';
+import { AlphaFrame } from './types';
 
 // Mock alpha frame with weight
 interface WeightedAlphaFrame extends AlphaFrame {

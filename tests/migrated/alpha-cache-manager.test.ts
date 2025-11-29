@@ -9,9 +9,9 @@
  */
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { AlphaCacheManager } from './alpha-cache-manager.js';
-import { AlphaCacheConfig } from './alpha-cache-config.js';
-import { FusedAlphaFrame, SignalDirection } from '../fusion-engine.js';
+import { AlphaCacheManager } from './alpha-cache-manager';
+import { AlphaCacheConfig } from './alpha-cache-config';
+import { FusedAlphaFrame, SignalDirection } from '../fusion-engine';
 
 // Mock date functions
 const originalNow = Date.now;

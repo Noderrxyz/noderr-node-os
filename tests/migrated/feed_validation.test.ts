@@ -1,7 +1,7 @@
-import { MarketSnapshot, FeedSource } from '../../types/MarketSnapshot.types.js';
-import { FeedBus } from '../../feeds/publishers/FeedBus.js';
-import { UniswapV3Feed } from '../../feeds/uniswap/uniswap_feed.js';
-import { BinanceFeed } from '../../feeds/binance/binance_feed.js';
+import { MarketSnapshot, FeedSource } from '@noderr/types/MarketSnapshot.types';
+import { FeedBus } from '@noderr/feeds/publishers/FeedBus';
+import { UniswapV3Feed } from '@noderr/feeds/uniswap/uniswap_feed';
+import { BinanceFeed } from '@noderr/feeds/binance/binance_feed';
 
 describe('Feed Validation', () => {
   let feedBus: FeedBus;

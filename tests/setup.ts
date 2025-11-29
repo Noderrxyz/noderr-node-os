@@ -1,5 +1,4 @@
 // Test setup for migrated tests
-import { jest } from '@jest/globals';
 
 // Extend timeout for integration tests
 jest.setTimeout(30000);

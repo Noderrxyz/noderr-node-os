@@ -1,9 +1,9 @@
 import { PathFinder } from '../PathFinder';
-import { Asset } from '../../types/Asset';
-import { ChainId } from '../../types/ChainId';
-import { Bridge } from '../../types/Bridge';
-import { Path } from '../../types/Path';
-import { PathScore } from '../../types/PathScore';
+import { Asset } from '@noderr/types/Asset';
+import { ChainId } from '@noderr/types/ChainId';
+import { Bridge } from '@noderr/types/Bridge';
+import { Path } from '@noderr/types/Path';
+import { PathScore } from '@noderr/types/PathScore';
 
 describe('PathFinder', () => {
   let pathFinder: PathFinder;

@@ -1,6 +1,6 @@
 import { BatchProcessorJs } from '../BatchProcessorJs';
 import { SharedMemoryManagerJs, BufferType } from '../SharedMemoryManagerJs';
-import { telemetry } from '../../telemetry';
+import { telemetry } from '@noderr/telemetry';
 
 // Mock telemetry to avoid actual recording during tests
 jest.mock('../../telemetry', () => ({

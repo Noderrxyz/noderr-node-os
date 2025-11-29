@@ -4,8 +4,8 @@
  * @jest-environment node
  */
 
-import { MicrostructureAnalyzer } from '../../../src/infra/marketdata/MicrostructureAnalyzer.js';
-import { RedisClient } from '../../../src/infra/core/RedisClient.js';
+import { MicrostructureAnalyzer } from '@noderr/src/infra/marketdata/MicrostructureAnalyzer';
+import { RedisClient } from '@noderr/src/infra/core/RedisClient';
 
 // Add TypeScript declarations for Jest globals
 declare const describe: (name: string, fn: () => void) => void;

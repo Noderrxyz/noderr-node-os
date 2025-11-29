@@ -5,7 +5,7 @@ import {
   TradeOrder, 
   TradeResult,
   ChainAdapterStatus 
-} from '../../IChainAdapter';
+} from '@noderr/IChainAdapter';
 
 // Mock implementation of IChainAdapter for testing
 class MockAdapter implements IChainAdapter {

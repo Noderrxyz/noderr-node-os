@@ -4,9 +4,9 @@
  * Tests for the trend signal aggregator and consensus engine
  */
 
-import { TrendSignal } from '../../../types/global.types.js';
-import { TrendSignalAggregator } from '../TrendSignalAggregator.js';
-import { TrendConsensusEngine, TrendDirection } from '../TrendConsensusEngine.js';
+import { TrendSignal } from '@noderr/types/global.types';
+import { TrendSignalAggregator } from '../TrendSignalAggregator';
+import { TrendConsensusEngine, TrendDirection } from '../TrendConsensusEngine';
 
 // For TypeScript type safety in tests
 declare global {

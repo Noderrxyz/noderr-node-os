@@ -2,7 +2,7 @@
  * Tests for Volatility Calculator
  */
 
-import { VolatilityCalculator } from './volatility-calculator.js';
+import { VolatilityCalculator } from './volatility-calculator';
 
 describe('VolatilityCalculator', () => {
   // Test basic initialization

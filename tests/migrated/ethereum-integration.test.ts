@@ -1,6 +1,6 @@
 import { MockTradingEngine } from './mock-trading-engine';
-import { EthereumAdapter } from '../../EthereumAdapter';
-import { Asset, TradeOrder } from '../../IChainAdapter';
+import { EthereumAdapter } from '@noderr/EthereumAdapter';
+import { Asset, TradeOrder } from '@noderr/IChainAdapter';
 
 /**
  * Integration test for Ethereum adapter with trading engine

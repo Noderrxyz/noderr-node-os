@@ -1,6 +1,6 @@
 import { BridgeMetricsCollector } from '../BridgeMetricsCollector';
-import { Bridge } from '../../types/Bridge';
-import { ChainId } from '../../types/ChainId';
+import { Bridge } from '@noderr/types/Bridge';
+import { ChainId } from '@noderr/types/ChainId';
 
 describe('BridgeMetricsCollector', () => {
   let collector: BridgeMetricsCollector;

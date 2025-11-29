@@ -1,5 +1,5 @@
-import { TelemetryBus } from '../../telemetry/TelemetryBus';
-import { InMemorySink } from '../../telemetry/MetricsSink';
+import { TelemetryBus } from '@noderr/telemetry/TelemetryBus';
+import { InMemorySink } from '@noderr/telemetry/MetricsSink';
 
 describe('TelemetryBus backpressure (paper-mode)', () => {
   test('drops and warns when queue exceeds threshold; sink receives batches', async () => {

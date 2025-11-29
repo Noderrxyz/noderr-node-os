@@ -1,7 +1,7 @@
-import { TemporalSignalEvolutionEngine } from './TemporalSignalEvolutionEngine.js';
-import { AlphaFrame } from '../alphasources/types.js';
-import { SignalPhase, TemporalEvolutionConfig } from './types/temporal.types.js';
-import { RedisClient } from '../infra/core/RedisClient.js';
+import { TemporalSignalEvolutionEngine } from './TemporalSignalEvolutionEngine';
+import { AlphaFrame } from '../alphasources/types';
+import { SignalPhase, TemporalEvolutionConfig } from './types/temporal.types';
+import { RedisClient } from '../infra/core/RedisClient';
 
 // Mock Redis client
 class MockRedisClient implements Partial<RedisClient> {

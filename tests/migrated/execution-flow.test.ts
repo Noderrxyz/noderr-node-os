@@ -1,9 +1,9 @@
-import { CrossChainExecutionRouter } from '../../src/execution/CrossChainExecutionRouter';
-import { SmartOrderRouter } from '../../src/execution/SmartOrderRouter';
-import { LiquidityAggregator } from '../../packages/execution/src/LiquidityAggregator';
-import { MockChainAdapter } from '../../src/execution/adapters/MockChainAdapter';
-import { StrategyGenome } from '../../src/evolution/StrategyGenome';
-import { Exchange } from '../../packages/execution/src/types';
+import { CrossChainExecutionRouter } from '@noderr/src/execution/CrossChainExecutionRouter';
+import { SmartOrderRouter } from '@noderr/src/execution/SmartOrderRouter';
+import { LiquidityAggregator } from '@noderr/packages/execution/src/LiquidityAggregator';
+import { MockChainAdapter } from '@noderr/src/execution/adapters/MockChainAdapter';
+import { StrategyGenome } from '@noderr/src/evolution/StrategyGenome';
+import { Exchange } from '@noderr/packages/execution/src/types';
 import { Logger } from 'winston';
 
 /**

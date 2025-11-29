@@ -3,7 +3,7 @@ import {
   BinanceAdapter, 
   Asset, 
   TradeOrder 
-} from '../../index';
+} from '@noderr/index';
 import { MockTradingEngine } from './mock-trading-engine';
 
 // Mock console.log and error to keep test output clean

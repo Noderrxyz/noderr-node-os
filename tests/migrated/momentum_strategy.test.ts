@@ -1,6 +1,6 @@
-import { MomentumStrategy, DEFAULT_MOMENTUM_PARAMETERS } from '../../strategy/MomentumStrategy';
-import { MarketRegime, MarketFeatures } from '../../regime/RegimeClassifier';
-import { Signal } from '../../strategy/AdaptiveStrategy';
+import { MomentumStrategy, DEFAULT_MOMENTUM_PARAMETERS } from '@noderr/strategy/MomentumStrategy';
+import { MarketRegime, MarketFeatures } from '@noderr/regime/RegimeClassifier';
+import { Signal } from '@noderr/strategy/AdaptiveStrategy';
 
 describe('MomentumStrategy', () => {
   let strategy: MomentumStrategy;

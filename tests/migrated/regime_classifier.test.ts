@@ -1,4 +1,4 @@
-import { RegimeClassifier, MarketRegime, MarketFeatures } from '../../regime/RegimeClassifier';
+import { RegimeClassifier, MarketRegime, MarketFeatures } from '@noderr/regime/RegimeClassifier';
 
 describe('RegimeClassifier', () => {
   let classifier: RegimeClassifier;

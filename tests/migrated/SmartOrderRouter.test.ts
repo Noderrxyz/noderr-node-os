@@ -5,13 +5,13 @@
  * In a real implementation, this would be part of a comprehensive test suite.
  */
 
-import { SmartOrderRouter, SmartOrderRouterConfig } from './SmartOrderRouter.js';
-import { UniswapVenue, UniswapVenueConfig } from '../venues/dex/UniswapVenue.js';
-import { SushiswapVenue, SushiswapVenueConfig } from '../venues/dex/SushiswapVenue.js';
-import { ExecutionVenue } from '../venues/VenueRegistry.js';
-import { TrustEngine, TrustRecord } from '../risk/TrustEngine.js';
-import { OrderIntent, ExecutionStyle } from '../../types/execution.types.js';
-import { createLogger } from '../../common/logger.js';
+import { SmartOrderRouter, SmartOrderRouterConfig } from './SmartOrderRouter';
+import { UniswapVenue, UniswapVenueConfig } from '../venues/dex/UniswapVenue';
+import { SushiswapVenue, SushiswapVenueConfig } from '../venues/dex/SushiswapVenue';
+import { ExecutionVenue } from '../venues/VenueRegistry';
+import { TrustEngine, TrustRecord } from '../risk/TrustEngine';
+import { OrderIntent, ExecutionStyle } from '@noderr/types/execution.types';
+import { createLogger } from '@noderr/common/logger';
 
 const logger = createLogger('SmartOrderRouterTest');
 
