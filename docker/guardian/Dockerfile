@@ -15,7 +15,7 @@ WORKDIR /build
 # Copy workspace configuration
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY .npmrc* ./
-COPY tsconfig.json ./
+COPY tsconfig.base.json ./
 
 # Install pnpm
 RUN npm install -g pnpm@8
@@ -38,6 +38,9 @@ RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/market-intel" build && \
     pnpm --filter "@noderr/strategy" build && \
     pnpm --filter "@noderr/capital-ai" build && \
+    pnpm --filter "@noderr/backtesting" build && \
+    pnpm --filter "@noderr/compliance" build && \
+    pnpm --filter "@noderr/testing" build && \
     pnpm --filter "@noderr/risk-engine" build && \
     pnpm --filter "@noderr/floor-engine" build && \
     pnpm --filter "@noderr/execution" build && \

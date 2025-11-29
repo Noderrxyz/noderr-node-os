@@ -31,7 +31,7 @@ RUN pnpm install --frozen-lockfile --prod=false
 
 # Copy source code
 COPY packages ./packages
-COPY tsconfig.json ./
+COPY tsconfig.base.json ./
 
 # Build all packages
 RUN pnpm build

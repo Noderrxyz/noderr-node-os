@@ -15,7 +15,7 @@ WORKDIR /build
 # Copy workspace configuration
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY .npmrc* ./
-COPY tsconfig.json ./
+COPY tsconfig.base.json ./
 
 # Install pnpm
 RUN npm install -g pnpm@8
@@ -34,6 +34,9 @@ COPY packages/quant-research ./packages/quant-research
 COPY packages/market-intel ./packages/market-intel
 COPY packages/strategy ./packages/strategy
 COPY packages/capital-ai ./packages/capital-ai
+COPY packages/backtesting ./packages/backtesting
+COPY packages/compliance ./packages/compliance
+COPY packages/testing ./packages/testing
 
 # Install dependencies for all packages
 RUN pnpm install --frozen-lockfile \
@@ -47,7 +50,10 @@ RUN pnpm install --frozen-lockfile \
     --filter "@noderr/quant-research" \
     --filter "@noderr/market-intel" \
     --filter "@noderr/strategy" \
-    --filter "@noderr/capital-ai"
+    --filter "@noderr/capital-ai" \
+    --filter "@noderr/backtesting" \
+    --filter "@noderr/compliance" \
+    --filter "@noderr/testing"
 
 # Build packages in dependency order
 RUN pnpm --filter "@noderr/types" build && \
@@ -60,7 +66,10 @@ RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/quant-research" build && \
     pnpm --filter "@noderr/market-intel" build && \
     pnpm --filter "@noderr/strategy" build && \
-    pnpm --filter "@noderr/capital-ai" build
+    pnpm --filter "@noderr/capital-ai" build && \
+    pnpm --filter "@noderr/backtesting" build && \
+    pnpm --filter "@noderr/compliance" build && \
+    pnpm --filter "@noderr/testing" build
 
 # Remove dev dependencies
 RUN pnpm install --frozen-lockfile --prod \
@@ -74,7 +83,10 @@ RUN pnpm install --frozen-lockfile --prod \
     --filter "@noderr/quant-research" \
     --filter "@noderr/market-intel" \
     --filter "@noderr/strategy" \
-    --filter "@noderr/capital-ai"
+    --filter "@noderr/capital-ai" \
+    --filter "@noderr/backtesting" \
+    --filter "@noderr/compliance" \
+    --filter "@noderr/testing"
 
 # ============================================================================
 # Production Stage
@@ -113,6 +125,9 @@ COPY --from=builder --chown=noderr:noderr /build/packages/quant-research ./packa
 COPY --from=builder --chown=noderr:noderr /build/packages/market-intel ./packages/market-intel
 COPY --from=builder --chown=noderr:noderr /build/packages/strategy ./packages/strategy
 COPY --from=builder --chown=noderr:noderr /build/packages/capital-ai ./packages/capital-ai
+COPY --from=builder --chown=noderr:noderr /build/packages/backtesting ./packages/backtesting
+COPY --from=builder --chown=noderr:noderr /build/packages/compliance ./packages/compliance
+COPY --from=builder --chown=noderr:noderr /build/packages/testing ./packages/testing
 
 # Create startup script
 COPY --chown=noderr:noderr docker/oracle/start.sh /app/start.sh
