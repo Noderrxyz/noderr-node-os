@@ -36,13 +36,14 @@ export class RateLimiter {
   getStatus(): RateLimiterStatus {
     this.cleanupOldRequests();
     const oldestRequest = this.requestTimestamps[0];
-    const resetTime = oldestRequest ? oldestRequest + this.windowMs : Date.now();
+    const windowStart = oldestRequest || Date.now();
 
     return {
-      requestsInLastHour: this.requestTimestamps.length,
+      requestCount: this.requestTimestamps.length,
+      windowStart,
       limit: this.limit,
+      requestsInLastHour: this.requestTimestamps.length,
       canMakeRequest: this.canMakeRequest(),
-      resetTime,
     };
   }
 

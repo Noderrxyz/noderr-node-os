@@ -413,7 +413,7 @@ export class InferenceService {
     modelsLoaded: number;
     telemetryBufferSize: number;
     resultBufferSize: number;
-    stats: ReturnType<typeof this.getTelemetryStats>;
+    stats: any;
   }> {
     const stats = this.getTelemetryStats();
     const modelsLoaded = Array.from(this.modelLoader['loadedModels'].values()).length;

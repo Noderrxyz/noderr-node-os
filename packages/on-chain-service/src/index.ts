@@ -5,7 +5,7 @@ import { CircuitBreaker } from './utils/circuitBreaker';
 import { CapitalManager } from './services/CapitalManager';
 import { RewardDistributor } from './services/RewardDistributor';
 import { TrustUpdater } from './services/TrustUpdater';
-import { OnChainServiceConfig, HealthStatus } from './types';
+import { OnChainServiceConfig, HealthStatus } from '@noderr/types';
 import { Logger } from 'winston';
 
 /**
@@ -87,22 +87,27 @@ export class OnChainService {
         trustCode !== '0x';
 
       return {
-        isHealthy: rpcConnected && walletConnected && contractsDeployed && !this.circuitBreaker.isOpen(),
-        rpcConnected,
-        walletConnected,
-        contractsDeployed,
-        circuitBreaker: this.circuitBreaker.getStatus(),
-        rateLimiter: this.rateLimiter.getStatus(),
+        healthy: rpcConnected && walletConnected && contractsDeployed && !this.circuitBreaker.isOpen(),
+        timestamp: Date.now(),
+        services: {
+          rpc: rpcConnected,
+          wallet: walletConnected,
+          contracts: contractsDeployed,
+          circuitBreaker: !this.circuitBreaker.isOpen(),
+        },
       };
     } catch (error: any) {
       this.logger.error('Health check failed', { error: error.message });
       return {
-        isHealthy: false,
-        rpcConnected: false,
-        walletConnected: false,
-        contractsDeployed: false,
-        circuitBreaker: this.circuitBreaker.getStatus(),
-        rateLimiter: this.rateLimiter.getStatus(),
+        healthy: false,
+        timestamp: Date.now(),
+        services: {
+          rpc: false,
+          wallet: false,
+          contracts: false,
+          circuitBreaker: false,
+        },
+        errors: [error.message],
       };
     }
   }
@@ -147,7 +152,7 @@ export class OnChainService {
 }
 
 // Export all types and utilities
-export * from './types';
+export * from '@noderr/types';
 export * from './config';
 export * from './utils/logger';
 export * from './utils/rateLimiter';

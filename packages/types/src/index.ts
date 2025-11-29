@@ -71,6 +71,10 @@ export interface Position {
   unrealizedPnl: number;
   realizedPnl: number;
   lastUpdate: number;
+  adapterId?: string;
+  value?: number;
+  protocol?: string;
+  apy?: number;
 }
 
 // Execution Types
@@ -232,6 +236,8 @@ export interface RiskMetrics {
   maxDrawdown: number;
   currentExposure: number;
   leverage: number;
+  sharpeRatio?: number;
+  totalExposure?: number;
 }
 
 export interface RiskLimits {
@@ -329,18 +335,28 @@ export interface OnChainServiceConfig {
   merkleRewardDistributorAddress: string;
   trustFingerprintAddress: string;
   chainId: number;
+  networkName: string;
+  nodeRegistryAddress?: string;
+  governanceManagerAddress?: string;
+  maxCapitalRequest: bigint;
+  dailyCapitalLimit: bigint;
+  rateLimitRequestsPerHour: number;
+  logLevel: string;
+  logFile?: string;
 }
 
 export interface CapitalRequest {
   amount: bigint;
   strategyId: string;
   token: string;
+  reason?: string;
 }
 
 export interface PerformanceMetrics {
   pnl: bigint;
   sharpeRatio: number;
   strategyId: string;
+  totalValue?: number;
 }
 
 export interface TransactionResult {
@@ -376,12 +392,23 @@ export interface CircuitBreakerStatus {
   failures: number;
   lastFailure?: number;
   reason?: string;
+  isTripped: boolean;
+  timestamp?: number;
 }
 
 export interface RateLimiterStatus {
   requestCount: number;
   windowStart: number;
   limit: number;
+  requestsInLastHour: number;
+  canMakeRequest: boolean;
+}
+
+export interface HealthStatus {
+  healthy: boolean;
+  timestamp: number;
+  services: Record<string, boolean>;
+  errors?: string[];
 }
 
 export enum MarketCondition {
@@ -421,3 +448,102 @@ export type TradeId = string;
 export type Symbol = string;
 export type Venue = string;
 export type Timestamp = number; 
+
+// Floor Engine Types
+export interface FloorEngineConfig {
+  riskParameters: RiskParameters;
+  rebalanceThreshold: number;
+  minRebalanceInterval: number;
+  maxSlippage: number;
+}
+
+export interface RiskParameters {
+  maxPositionSize: number;
+  maxLeverage: number;
+  maxDrawdown: number;
+  maxDrawdownBps?: number;
+  concentrationLimit: number;
+  correlationThreshold: number;
+  emergencyPauseEnabled?: boolean;
+  allowedTokens?: string[];
+  allowedProtocols?: string[];
+}
+
+export enum AdapterCategory {
+  LENDING = 'lending',
+  STAKING = 'staking',
+  YIELD = 'yield',
+  LIQUIDITY = 'liquidity',
+}
+
+export interface AdapterMetadata {
+  id: string;
+  name: string;
+  category: AdapterCategory;
+  protocol: string;
+  chainId: number;
+  chain?: string;
+  riskScore: number;
+  apy: number;
+  tvl: number;
+  lastUpdate: number;
+}
+
+export interface IYieldAdapter {
+  deposit(amount: bigint, token: string): Promise<string>;
+  withdraw(amount: bigint, token: string): Promise<string>;
+  getBalance(token: string): Promise<bigint>;
+  getApy(token: string): Promise<number>;
+  getMetadata(): AdapterMetadata;
+}
+
+export interface ILendingAdapter extends IYieldAdapter {
+  borrow(amount: bigint, token: string): Promise<string>;
+  repay(amount: bigint, token: string): Promise<string>;
+  getCollateralRatio(): Promise<number>;
+}
+
+export interface IStakingAdapter extends IYieldAdapter {
+  stake(amount: bigint, token: string): Promise<string>;
+  unstake(amount: bigint, token: string): Promise<string>;
+  getRewards(token: string): Promise<bigint>;
+  claimRewards(token: string): Promise<string>;
+}
+
+export interface AllocationStrategy {
+  type: 'equal' | 'risk-weighted' | 'apy-weighted' | 'custom';
+  weights?: Record<string, number>;
+  constraints?: {
+    minAllocation?: number;
+    maxAllocation?: number;
+    minApy?: number;
+    maxRisk?: number;
+  };
+}
+
+export interface RebalanceAction {
+  type: 'deposit' | 'withdraw' | 'transfer';
+  adapterId: string;
+  token: string;
+  amount: bigint;
+  from?: string;
+  to?: string;
+}
+
+export interface RebalanceResult {
+  success: boolean;
+  actions: RebalanceAction[];
+  gasUsed: bigint;
+  timestamp: number;
+  error?: string;
+}
+
+export interface PerformanceSnapshot {
+  timestamp: number;
+  totalValue: bigint;
+  pnl: bigint;
+  apy: number;
+  sharpeRatio: number;
+  positions: Position[];
+  riskMetrics: RiskMetrics;
+}

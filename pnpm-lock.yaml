@@ -962,6 +962,9 @@ importers:
 
   packages/on-chain-service:
     dependencies:
+      '@noderr/types':
+        specifier: workspace:*
+        version: link:../types
       dotenv:
         specifier: ^16.3.1
         version: 16.6.1

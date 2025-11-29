@@ -66,8 +66,11 @@ export class CircuitBreaker {
    */
   getStatus(): CircuitBreakerStatus {
     return {
-      isTripped: this.isTripped,
+      isOpen: this.isTripped,
+      failures: this.failureCount,
+      lastFailure: this.tripTimestamp,
       reason: this.tripReason,
+      isTripped: this.isTripped,
       timestamp: this.tripTimestamp,
     };
   }
