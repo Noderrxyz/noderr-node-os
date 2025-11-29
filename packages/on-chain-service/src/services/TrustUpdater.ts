@@ -5,8 +5,8 @@ import {
   TrustScoreUpdate,
   TransactionResult,
 } from '@noderr/types';
-import { RateLimiter } from '@noderr/utils/rateLimiter';
-import { CircuitBreaker } from '@noderr/utils/circuitBreaker';
+import { RateLimiter } from '../utils/rateLimiter';
+import { CircuitBreaker } from '../utils/circuitBreaker';
 
 // TrustFingerprint ABI (minimal interface)
 const TRUST_FINGERPRINT_ABI = [

@@ -41,5 +41,11 @@
     "rimraf": "^5.0.0",
     "ts-jest": "^29.1.0",
     "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "@types/node-cache": "^4.2.5",
+    "@types/ws": "^8.18.1",
+    "node-cache": "^5.1.2",
+    "ws": "^8.18.3"
   }
 }

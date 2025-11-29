@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import * as winston from 'winston';
-import { RLOrderRouter, MarketState, RoutingAction, ExecutionResult as RLExecutionResult } from './RLOrderRouter';
+// RLOrderRouter temporarily disabled due to @tensorflow/tfjs-node-gpu dependency
+// import { RLOrderRouter, MarketState, RoutingAction, ExecutionResult as RLExecutionResult } from './RLOrderRouter';
 
 /**
  * Execution configuration
@@ -98,7 +99,8 @@ export interface SliceResult {
 export class SmartExecutionEngine extends EventEmitter {
   private config: ExecutionConfig;
   private logger: winston.Logger;
-  private rlRouter: RLOrderRouter | null = null;
+  // RLOrderRouter temporarily disabled
+  private rlRouter: any | null = null;
   private activeOrders: Map<string, OrderRequest> = new Map();
   private executionPlans: Map<string, ExecutionPlan> = new Map();
   private venueConnections: Map<string, VenueConnection> = new Map();
@@ -113,7 +115,7 @@ export class SmartExecutionEngine extends EventEmitter {
   /**
    * Initialize the execution engine
    */
-  async initialize(rlRouter?: RLOrderRouter): Promise<void> {
+  async initialize(rlRouter?: any): Promise<void> {
     this.rlRouter = rlRouter || null;
     
     // Initialize venue connections
@@ -361,7 +363,7 @@ export class SmartExecutionEngine extends EventEmitter {
       
       // Update RL router if available
       if (this.rlRouter && this.config.enableSmartRouting) {
-        const rlResult: RLExecutionResult = {
+        const rlResult: any = {
           executedPrice: result.executionPrice,
           executedQuantity: result.executedQuantity,
           fees: result.fees,
@@ -406,7 +408,7 @@ export class SmartExecutionEngine extends EventEmitter {
   /**
    * Get market state for RL
    */
-  private async getMarketState(symbol: string): Promise<MarketState> {
+  private async getMarketState(symbol: string): Promise<any> {
     // Aggregate market data from all venues
     const venues = Array.from(this.venueConnections.values());
     

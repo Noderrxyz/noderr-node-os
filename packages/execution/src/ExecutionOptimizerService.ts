@@ -24,15 +24,15 @@ import { SmartOrderRouter } from './SmartOrderRouter';
 import { LiquidityAggregator } from './LiquidityAggregator';
 import { CostOptimizer } from './CostOptimizer';
 import { LatencyManager } from './LatencyManager';
-import { TWAPAlgorithm } from './algorithms/TWAPAlgorithm';
-import { VWAPAlgorithm } from './algorithms/VWAPAlgorithm';
-import { POVAlgorithm } from './algorithms/POVAlgorithm';
-import { IcebergAlgorithm } from './algorithms/IcebergAlgorithm';
+import { TWAPAlgorithm } from './TWAPAlgorithm';
+import { VWAPAlgorithm } from './VWAPAlgorithm';
+import { POVAlgorithm } from './POVAlgorithm';
+import { IcebergAlgorithm } from './IcebergAlgorithm';
 import { MEVProtectionManager } from './MEVProtectionManager';
-import { PredictiveExecutionEngine } from '@noderr/ml/PredictiveExecutionEngine';
+import { PredictiveExecutionEngine } from './PredictiveExecutionEngine';
 import { ethers } from 'ethers';
-import { SafetyControllerWrapper } from '../safety/SafetyControllerWrapper';
-import { ExecutionTelemetryIntegration } from '@noderr/telemetry/ExecutionTelemetryIntegration';
+import { SafetyControllerWrapper } from './SafetyControllerWrapper';
+import { ExecutionTelemetryIntegration } from './ExecutionTelemetryIntegration';
 
 interface ServiceState {
   isRunning: boolean;
@@ -73,7 +73,7 @@ export class ExecutionOptimizerService extends EventEmitter {
   constructor(
     config: ExecutionOptimizerConfig,
     logger: Logger,
-    provider?: ethers.providers.Provider
+    provider?: ethers.Provider
   ) {
     super();
     this.config = config;
@@ -655,10 +655,10 @@ export class ExecutionOptimizerService extends EventEmitter {
     return {
       to: '0x0000000000000000000000000000000000000000',
       data: '0x',
-      value: ethers.BigNumber.from(0),
-      gasLimit: ethers.BigNumber.from(300000),
+      value: 0n,
+      gasLimit: 300000n,
       nonce: 0,
-      chainId: 1,
+      chainId: 1n,
       from: '0x0000000000000000000000000000000000000000'
     };
   }

@@ -18,6 +18,7 @@ import EventEmitter from 'events';
 
 interface IcebergState {
   orderId: string;
+  symbol: string;
   totalQuantity: number;
   executedQuantity: number;
   remainingQuantity: number;
@@ -192,22 +193,22 @@ export class IcebergAlgorithm extends EventEmitter {
   private validateParameters(params: AlgorithmParameters, order: Order): void {
     if (!params.visibleQuantity || params.visibleQuantity <= 0) {
       throw new ExecutionError(
-        ExecutionErrorCode.INVALID_ORDER,
-        'Invalid visible quantity'
+        'Invalid visible quantity',
+        ExecutionErrorCode.INVALID_ORDER
       );
     }
     
-    if (params.visibleQuantity >= order.quantity) {
+    if (params.visibleQuantity >= (order.quantity ?? order.amount)) {
       throw new ExecutionError(
-        ExecutionErrorCode.INVALID_ORDER,
-        'Visible quantity must be less than total quantity'
+        'Visible quantity must be less than total quantity',
+        ExecutionErrorCode.INVALID_ORDER
       );
     }
     
     if (params.variance && (params.variance < 0 || params.variance > 1)) {
       throw new ExecutionError(
-        ExecutionErrorCode.INVALID_ORDER,
-        'Variance must be between 0 and 1'
+        'Variance must be between 0 and 1',
+        ExecutionErrorCode.INVALID_ORDER
       );
     }
   }
@@ -251,9 +252,10 @@ export class IcebergAlgorithm extends EventEmitter {
     
     return {
       orderId: order.id,
-      totalQuantity: order.quantity,
+      symbol: order.symbol,
+      totalQuantity: order.quantity ?? order.amount,
       executedQuantity: 0,
-      remainingQuantity: order.quantity,
+      remainingQuantity: order.quantity ?? order.amount,
       visibleQuantity,
       variance,
       currentClip: null,
@@ -262,7 +264,7 @@ export class IcebergAlgorithm extends EventEmitter {
       status: ExecutionStatus.PARTIAL,
       startTime: Date.now(),
       priceLevel: order.price || 0,
-      side: order.side,
+      side: order.side as OrderSide,
       marketMicrostructure: microstructure,
       detectionRisk: 0
     };
@@ -401,11 +403,13 @@ export class IcebergAlgorithm extends EventEmitter {
     const clipOrder: Order = {
       id: clip.id,
       clientOrderId: `iceberg-${clip.id}`,
-      symbol: 'BTC/USDT', // Would come from parent
+      symbol: state.symbol,
       side: state.side,
       type: OrderType.LIMIT,
+      amount: clip.visibleQuantity,
       quantity: clip.visibleQuantity,
       price: clip.price,
+      timestamp: Date.now(),
       timeInForce: TimeInForce.GTC,
       status: OrderStatus.NEW,
       exchange: 'best',
@@ -448,6 +452,7 @@ export class IcebergAlgorithm extends EventEmitter {
       const fill: Fill = {
         id: `fill-${Date.now()}-${Math.random()}`,
         orderId: clip.orderId || clip.id,
+        symbol: state.symbol,
         exchange: 'binance',
         price: clip.price,
         quantity: fillSize,
@@ -739,9 +744,16 @@ export class IcebergAlgorithm extends EventEmitter {
     const totalFees = state.fills.reduce((sum, f) => sum + f.fee, 0);
     const averagePrice = totalQuantity > 0 ? totalValue / totalQuantity : 0;
     
+    // Map ExecutionStatus to OrderStatus
+    const orderStatus = state.status === ExecutionStatus.COMPLETED ? OrderStatus.FILLED :
+                        state.status === ExecutionStatus.PARTIAL ? OrderStatus.PARTIALLY_FILLED :
+                        state.status === ExecutionStatus.FAILED ? OrderStatus.REJECTED :
+                        state.status === ExecutionStatus.CANCELLED ? OrderStatus.CANCELLED :
+                        OrderStatus.OPEN;
+    
     return {
       orderId: state.orderId,
-      status: state.status,
+      status: orderStatus,
       fills: state.fills,
       averagePrice,
       totalQuantity,
@@ -766,23 +778,27 @@ export class IcebergAlgorithm extends EventEmitter {
     const routeMap = new Map<string, ExecutedRoute>();
     
     for (const fill of state.fills) {
-      const existing = routeMap.get(fill.exchange);
+      const exchange = fill.exchange ?? fill.venue ?? 'unknown';
+      const existing = routeMap.get(exchange);
       
       if (existing) {
         existing.quantity += fill.quantity;
-        existing.fills++;
-        existing.fees += fill.fee;
+        existing.fills.push(fill);
+        if (existing.fees !== undefined) {
+          existing.fees += fill.fee;
+        }
+        existing.totalFee += fill.fee;
       } else {
-        routeMap.set(fill.exchange, {
-          exchange: fill.exchange,
-          orderId: fill.orderId,
+        routeMap.set(exchange, {
+          venue: exchange,
           quantity: fill.quantity,
-          fills: 1,
+          priority: 1,
+          fills: [fill],
+          avgPrice: fill.price,
           averagePrice: fill.price,
-          fees: fill.fee,
-          latency: 50,
-          success: true
-        });
+          totalFee: fill.fee,
+          fees: fill.fee
+        } as ExecutedRoute);
       }
     }
     

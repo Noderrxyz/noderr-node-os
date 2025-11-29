@@ -105,25 +105,25 @@ export class CostOptimizer {
     
     for (const route of routes) {
       // Trading fees
-      fees += route.fees;
+      fees += route.fees ?? 0;
       
       // Slippage cost
-      const slippageCost = route.slippage * route.quantity * route.price;
+      const slippageCost = (route.slippage ?? 0) * route.quantity * (route.price ?? 0);
       slippage += slippageCost;
       
       // Market impact
       const impact = this.calculateMarketImpact(
-        route.exchange,
+        route.exchange ?? route.venue,
         route.quantity,
         totalQuantity,
-        order.side
+        order.side as OrderSide
       );
-      marketImpact += impact * route.quantity * route.price;
+      marketImpact += impact * route.quantity * (route.price ?? 0);
       
       // Opportunity cost (delayed execution)
-      const delay = route.latency / 1000; // Convert to seconds
-      const drift = this.estimatePriceDrift(route.exchange, delay);
-      opportunityCost += Math.abs(drift) * route.quantity * route.price;
+      const delay = (route.latency ?? 0) / 1000; // Convert to seconds
+      const drift = this.estimatePriceDrift(route.exchange ?? route.venue, delay);
+      opportunityCost += Math.abs(drift) * route.quantity * (route.price ?? 0);
     }
     
     const totalCost = fees + slippage + marketImpact + opportunityCost;
@@ -145,15 +145,13 @@ export class CostOptimizer {
     order: Order
   ): CostAnalysis {
     const costModel = this.calculateTotalCost(routes, order);
-    const totalValue = routes.reduce((sum, r) => sum + r.quantity * r.price, 0);
+    const totalValue = routes.reduce((sum, r) => sum + r.quantity * (r.price ?? 0), 0);
     
     return {
-      totalFees: costModel.fees,
-      totalSlippage: costModel.slippage,
-      totalMarketImpact: costModel.marketImpact,
-      totalOpportunityCost: costModel.opportunityCost,
-      averageCostBps: (costModel.totalCost / totalValue) * 10000,
-      savedFromOptimization: 0 // Will be set by optimizer
+      totalCost: costModel.totalCost,
+      fees: costModel.fees,
+      slippage: costModel.slippage,
+      priceImpact: costModel.marketImpact
     };
   }
 
@@ -174,8 +172,8 @@ export class CostOptimizer {
         optimized.push({
           ...route,
           orderType: 'limit' as any,
-          fees: -fees.rebate * route.quantity * route.price, // Negative fee = rebate
-          price: route.price * 0.9999 // Slightly better price to ensure maker
+          fees: -fees.rebate * route.quantity * (route.price ?? 0), // Negative fee = rebate
+          price: (route.price ?? 0) * 0.9999 // Slightly better price to ensure maker
         });
       } else {
         optimized.push(route);
@@ -191,11 +189,11 @@ export class CostOptimizer {
     constraints: ExecutionConstraints
   ): ExecutionRoute[] {
     // Sort routes by expected slippage
-    const sorted = [...routes].sort((a, b) => a.slippage - b.slippage);
+    const sorted = [...routes].sort((a, b) => (a.slippage ?? 0) - (b.slippage ?? 0));
     
     // Redistribute quantity to minimize slippage
     const optimized: ExecutionRoute[] = [];
-    let remainingQuantity = order.quantity;
+    let remainingQuantity = order.quantity ?? order.amount;
     
     for (const route of sorted) {
       if (remainingQuantity <= 0) break;
@@ -203,7 +201,7 @@ export class CostOptimizer {
       // Calculate optimal size for this route
       const maxSize = this.calculateMaxSizeForSlippage(
         route,
-        constraints.maxSlippage
+        constraints.maxSlippage ?? 0.01
       );
       
       const allocatedSize = Math.min(remainingQuantity, maxSize, route.quantity);
@@ -211,8 +209,7 @@ export class CostOptimizer {
       if (allocatedSize > 0) {
         optimized.push({
           ...route,
-          quantity: allocatedSize,
-          percentage: allocatedSize / order.quantity
+          quantity: allocatedSize
         });
         remainingQuantity -= allocatedSize;
       }
@@ -246,8 +243,7 @@ export class CostOptimizer {
             optimized.push({
               ...route,
               quantity: chunkSize,
-              percentage: chunkSize / order.quantity,
-              latency: route.latency + (i * strategy.interval),
+              latency: (route.latency ?? 0) + (i * strategy.interval),
               priority: route.priority - i
             });
           }
@@ -343,8 +339,7 @@ export class CostOptimizer {
     const fees: TradingFees = {
       maker: 0.0002,
       taker: 0.0004,
-      withdrawal: { BTC: 0.0005, ETH: 0.005 },
-      deposit: { BTC: 0, ETH: 0 },
+      withdrawal: 0.0005,
       rebate: 0.0001 // Maker rebate
     };
     

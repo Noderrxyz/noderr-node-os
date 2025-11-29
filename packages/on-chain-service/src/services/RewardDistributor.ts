@@ -7,14 +7,14 @@ import {
   MerkleProof,
   TransactionResult,
 } from '@noderr/types';
-import { RateLimiter } from '@noderr/utils/rateLimiter';
-import { CircuitBreaker } from '@noderr/utils/circuitBreaker';
+import { RateLimiter } from '../utils/rateLimiter';
+import { CircuitBreaker } from '../utils/circuitBreaker';
 import {
   generateMerkleTree,
   generateMerkleProof,
   generateAllProofs,
   verifyMerkleProof,
-} from '@noderr/utils/merkle';
+} from '../utils/merkle';
 
 // MerkleRewardDistributor ABI (minimal interface)
 const MERKLE_REWARD_DISTRIBUTOR_ABI = [

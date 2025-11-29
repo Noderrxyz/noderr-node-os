@@ -6,8 +6,8 @@ import {
   PerformanceMetrics,
   TransactionResult,
 } from '@noderr/types';
-import { RateLimiter } from '@noderr/utils/rateLimiter';
-import { CircuitBreaker } from '@noderr/utils/circuitBreaker';
+import { RateLimiter } from '../utils/rateLimiter';
+import { CircuitBreaker } from '../utils/circuitBreaker';
 
 // TreasuryManager ABI (minimal interface for capital management)
 const TREASURY_MANAGER_ABI = [

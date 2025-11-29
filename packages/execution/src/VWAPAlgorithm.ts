@@ -187,15 +187,15 @@ export class VWAPAlgorithm extends EventEmitter {
   private validateParameters(params: AlgorithmParameters): void {
     if (!params.duration || params.duration <= 0) {
       throw new ExecutionError(
-        ExecutionErrorCode.INVALID_ORDER,
-        'Invalid VWAP duration'
+        'Invalid VWAP duration',
+        ExecutionErrorCode.INVALID_ORDER
       );
     }
     
     if (params.targetPercentage && (params.targetPercentage <= 0 || params.targetPercentage > 100)) {
       throw new ExecutionError(
-        ExecutionErrorCode.INVALID_ORDER,
-        'Invalid participation rate'
+        'Invalid participation rate',
+        ExecutionErrorCode.INVALID_ORDER
       );
     }
   }
@@ -282,11 +282,12 @@ export class VWAPAlgorithm extends EventEmitter {
       participationRate
     );
     
+    const quantity = order.quantity ?? order.amount;
     return {
       orderId: order.id,
-      totalQuantity: order.quantity,
+      totalQuantity: quantity,
       executedQuantity: 0,
-      remainingQuantity: order.quantity,
+      remainingQuantity: quantity,
       slices,
       volumeProfile,
       targetVWAP,
@@ -342,7 +343,7 @@ export class VWAPAlgorithm extends EventEmitter {
         startTime: sliceStart,
         endTime: sliceEnd,
         targetVolume: expectedVolume,
-        targetQuantity: order.quantity * volumeRatio,
+        targetQuantity: (order.quantity ?? order.amount) * volumeRatio,
         executedQuantity: 0,
         expectedPrice: this.calculateTargetVWAP(order.symbol),
         status: 'pending',
@@ -522,8 +523,10 @@ export class VWAPAlgorithm extends EventEmitter {
       symbol: 'BTC/USDT', // Would come from parent
       side: OrderSide.BUY, // Would come from parent
       type: OrderType.LIMIT,
+      amount: quantity,
       quantity,
       price: slice.expectedPrice * 0.999, // Slightly passive
+      timestamp: Date.now(),
       timeInForce: TimeInForce.POST_ONLY, // Try to capture maker rebate
       status: OrderStatus.NEW,
       exchange: 'best',
@@ -545,10 +548,11 @@ export class VWAPAlgorithm extends EventEmitter {
     return {
       id: `fill-${Date.now()}`,
       orderId: order.id,
+      symbol: order.symbol,
       exchange: 'binance',
       price: order.price || 50000,
-      quantity: order.quantity,
-      fee: order.quantity * (order.price || 50000) * 0.0001, // Maker fee
+      quantity: order.quantity ?? order.amount,
+      fee: (order.quantity ?? order.amount) * (order.price || 50000) * 0.0001, // Maker fee
       timestamp: Date.now(),
       side: order.side,
       liquidity: 'maker',
@@ -725,9 +729,16 @@ export class VWAPAlgorithm extends EventEmitter {
     const totalQuantity = state.fills.reduce((sum, f) => sum + f.quantity, 0);
     const totalFees = state.fills.reduce((sum, f) => sum + f.fee, 0);
     
+    // Map ExecutionStatus to OrderStatus
+    const orderStatus = state.status === ExecutionStatus.COMPLETED ? OrderStatus.FILLED :
+                        state.status === ExecutionStatus.PARTIAL ? OrderStatus.PARTIALLY_FILLED :
+                        state.status === ExecutionStatus.FAILED ? OrderStatus.REJECTED :
+                        state.status === ExecutionStatus.CANCELLED ? OrderStatus.CANCELLED :
+                        OrderStatus.OPEN;
+    
     return {
       orderId: state.orderId,
-      status: state.status,
+      status: orderStatus,
       fills: state.fills,
       averagePrice: metrics.actualVWAP,
       totalQuantity,
@@ -753,31 +764,39 @@ export class VWAPAlgorithm extends EventEmitter {
     const routeMap = new Map<string, ExecutedRoute>();
     
     for (const fill of state.fills) {
-      const existing = routeMap.get(fill.exchange);
+      const exchange = fill.exchange ?? fill.venue ?? 'unknown';
+      const existing = routeMap.get(exchange);
       
       if (existing) {
         existing.quantity += fill.quantity;
-        existing.fills++;
-        existing.fees += fill.fee;
+        const fillCount = (existing.fills as any) || 0;
+        (existing as any).fills = fillCount + 1;
+        if (existing.fees !== undefined) {
+          existing.fees += fill.fee;
+        }
       } else {
-        routeMap.set(fill.exchange, {
-          exchange: fill.exchange,
-          orderId: fill.orderId,
+        routeMap.set(exchange, {
+          venue: exchange,
+          exchange,
           quantity: fill.quantity,
-          fills: 1,
+          priority: 1,
+          fills: [fill],
+          avgPrice: fill.price,
           averagePrice: fill.price,
-          fees: fill.fee,
-          latency: 30,
-          success: true
-        });
+          totalFee: fill.fee,
+          fees: fill.fee
+        } as ExecutedRoute);
       }
     }
     
     // Calculate average prices
     for (const route of routeMap.values()) {
-      const exchangeFills = state.fills.filter(f => f.exchange === route.exchange);
+      const exchangeFills = state.fills.filter(f => (f.exchange ?? f.venue) === route.exchange);
       const totalValue = exchangeFills.reduce((sum, f) => sum + f.quantity * f.price, 0);
-      route.averagePrice = totalValue / route.quantity;
+      if (route.averagePrice !== undefined) {
+        route.averagePrice = totalValue / route.quantity;
+      }
+      route.avgPrice = totalValue / route.quantity;
     }
     
     return Array.from(routeMap.values());

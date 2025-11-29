@@ -173,15 +173,15 @@ export class POVAlgorithm extends EventEmitter {
   private validateParameters(params: AlgorithmParameters): void {
     if (!params.targetPercentage || params.targetPercentage <= 0 || params.targetPercentage > 100) {
       throw new ExecutionError(
-        ExecutionErrorCode.INVALID_ORDER,
-        'Invalid target percentage (must be 0-100)'
+        'Invalid target percentage (must be 0-100)',
+        ExecutionErrorCode.INVALID_ORDER
       );
     }
     
     if (params.maxPercentage && params.maxPercentage < params.targetPercentage) {
       throw new ExecutionError(
-        ExecutionErrorCode.INVALID_ORDER,
-        'Max percentage must be >= target percentage'
+        'Max percentage must be >= target percentage',
+        ExecutionErrorCode.INVALID_ORDER
       );
     }
   }
@@ -476,7 +476,9 @@ export class POVAlgorithm extends EventEmitter {
       symbol: 'BTC/USDT',
       side: OrderSide.BUY,
       type: OrderType.MARKET,
+      amount: quantity,
       quantity,
+      timestamp: Date.now(),
       timeInForce: TimeInForce.IOC,
       status: OrderStatus.NEW,
       exchange: 'best',
@@ -497,10 +499,11 @@ export class POVAlgorithm extends EventEmitter {
     return {
       id: `fill-${Date.now()}`,
       orderId: order.id,
+      symbol: order.symbol,
       exchange: 'binance',
       price: 50000 + Math.random() * 100,
-      quantity: order.quantity,
-      fee: order.quantity * 50000 * 0.0001,
+      quantity: order.quantity ?? order.amount,
+      fee: (order.quantity ?? order.amount) * 50000 * 0.0001,
       timestamp: Date.now(),
       side: order.side,
       liquidity: 'taker',
@@ -608,9 +611,16 @@ export class POVAlgorithm extends EventEmitter {
     const totalFees = state.fills.reduce((sum, f) => sum + f.fee, 0);
     const averagePrice = totalQuantity > 0 ? totalValue / totalQuantity : 0;
     
+    // Map ExecutionStatus to OrderStatus
+    const orderStatus = state.status === ExecutionStatus.COMPLETED ? OrderStatus.FILLED :
+                        state.status === ExecutionStatus.PARTIAL ? OrderStatus.PARTIALLY_FILLED :
+                        state.status === ExecutionStatus.FAILED ? OrderStatus.REJECTED :
+                        state.status === ExecutionStatus.CANCELLED ? OrderStatus.CANCELLED :
+                        OrderStatus.OPEN;
+    
     return {
       orderId: state.orderId,
-      status: state.status,
+      status: orderStatus,
       fills: state.fills,
       averagePrice,
       totalQuantity,
@@ -639,19 +649,22 @@ export class POVAlgorithm extends EventEmitter {
       
       if (existing) {
         existing.quantity += fill.quantity;
-        existing.fills++;
-        existing.fees += fill.fee;
+        existing.fills.push(fill);
+        if (existing.fees !== undefined) {
+          existing.fees += fill.fee;
+        }
+        existing.totalFee += fill.fee;
       } else {
-        routeMap.set(fill.exchange, {
-          exchange: fill.exchange,
-          orderId: fill.orderId,
+        routeMap.set(fill.exchange ?? fill.venue ?? 'unknown', {
+          venue: fill.exchange ?? fill.venue ?? 'unknown',
           quantity: fill.quantity,
-          fills: 1,
+          priority: 1,
+          fills: [fill],
+          avgPrice: fill.price,
           averagePrice: fill.price,
-          fees: fill.fee,
-          latency: 50,
-          success: true
-        });
+          totalFee: fill.fee,
+          fees: fill.fee
+        } as ExecutedRoute);
       }
     }
     

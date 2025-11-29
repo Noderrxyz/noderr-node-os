@@ -1,5 +1,5 @@
 import * as winston from 'winston';
-import { Order, OrderStatus, OrderType } from './OrderLifecycleManager';
+import { Order, OrderStatus, OrderType, OrderSide, TimeInForce } from '@noderr/types';
 
 export interface OrderPoolConfig {
   poolSize: number;
@@ -137,8 +137,8 @@ export class OrderPool {
     // Clone from template for speed
     return {
       ...this.orderTemplate,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
       metadata: {}
     };
   }
@@ -152,18 +152,16 @@ export class OrderPool {
     order.id = '';
     order.clientOrderId = '';
     order.symbol = '';
-    order.side = 'BUY';
+    order.side = OrderSide.BUY;
     order.type = OrderType.LIMIT;
+    order.amount = 0;
     order.quantity = 0;
     order.price = undefined;
-    order.stopPrice = undefined;
-    order.timeInForce = 'GTC';
+    order.timeInForce = TimeInForce.GTC;
     order.status = OrderStatus.PENDING;
-    order.filledQuantity = 0;
-    order.avgFillPrice = 0;
-    order.createdAt = new Date();
-    order.updatedAt = new Date();
-    order.venue = '';
+    order.createdAt = Date.now();
+    order.updatedAt = Date.now();
+    order.timestamp = Date.now();
     
     // Clear metadata object
     if (order.metadata) {
@@ -181,18 +179,16 @@ export class OrderPool {
       id: '',
       clientOrderId: '',
       symbol: '',
-      side: 'BUY',
+      side: OrderSide.BUY,
       type: OrderType.LIMIT,
+      amount: 0,
       quantity: 0,
       price: undefined,
-      stopPrice: undefined,
-      timeInForce: 'GTC',
+      timestamp: Date.now(),
+      timeInForce: TimeInForce.GTC,
       status: OrderStatus.PENDING,
-      filledQuantity: 0,
-      avgFillPrice: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      venue: '',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
       metadata: {}
     };
   }
@@ -265,21 +261,20 @@ export class OrderPoolBenchmark {
         id: `ORD-${i}`,
         clientOrderId: `CLIENT-${i}`,
         symbol: 'BTC/USD',
-        side: 'BUY',
+        side: OrderSide.BUY,
         type: OrderType.LIMIT,
+        amount: 1,
         quantity: 1,
         price: 50000,
-        timeInForce: 'GTC',
+        timestamp: Date.now(),
+        timeInForce: TimeInForce.GTC,
         status: OrderStatus.PENDING,
-        filledQuantity: 0,
-        avgFillPrice: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        venue: 'primary',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
         metadata: {}
       };
       // Simulate usage
-      order.status = OrderStatus.SUBMITTED;
+      order.status = OrderStatus.OPEN;
       const iterTime = Number(process.hrtime.bigint() - iterStart) / 1_000_000;
       withoutPoolLatencies.push(iterTime);
     }
@@ -298,11 +293,12 @@ export class OrderPoolBenchmark {
       order.id = `ORD-${i}`;
       order.clientOrderId = `CLIENT-${i}`;
       order.symbol = 'BTC/USD';
-      order.side = 'BUY';
+      order.side = OrderSide.BUY;
+      order.amount = 1;
       order.quantity = 1;
       order.price = 50000;
       // Simulate usage
-      order.status = OrderStatus.SUBMITTED;
+      order.status = OrderStatus.OPEN;
       pool.release(order);
       const iterTime = Number(process.hrtime.bigint() - iterStart) / 1_000_000;
       withPoolLatencies.push(iterTime);

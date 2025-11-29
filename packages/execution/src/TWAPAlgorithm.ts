@@ -180,15 +180,15 @@ export class TWAPAlgorithm extends EventEmitter {
   private validateParameters(params: AlgorithmParameters): void {
     if (!params.duration || params.duration <= 0) {
       throw new ExecutionError(
-        ExecutionErrorCode.INVALID_ORDER,
-        'Invalid TWAP duration'
+        'Invalid TWAP duration',
+        ExecutionErrorCode.INVALID_ORDER
       );
     }
     
     if (!params.slices || params.slices <= 0) {
       throw new ExecutionError(
-        ExecutionErrorCode.INVALID_ORDER,
-        'Invalid number of slices'
+        'Invalid number of slices',
+        ExecutionErrorCode.INVALID_ORDER
       );
     }
   }
@@ -301,8 +301,10 @@ export class TWAPAlgorithm extends EventEmitter {
         symbol: 'BTC/USDT', // Would come from original order
         side: OrderSide.BUY, // Would come from original order
         type: OrderType.LIMIT,
+        amount: slice.quantity,
         quantity: slice.quantity,
         price: await this.calculateSlicePrice(),
+        timestamp: Date.now(),
         timeInForce: TimeInForce.IOC,
         status: OrderStatus.NEW,
         exchange: 'best', // Router will determine
@@ -368,10 +370,11 @@ export class TWAPAlgorithm extends EventEmitter {
     return {
       id: `fill-${Date.now()}`,
       orderId: order.id,
+      symbol: order.symbol,
       exchange: 'binance',
       price: order.price || 50000,
-      quantity: order.quantity,
-      fee: order.quantity * (order.price || 50000) * 0.0001,
+      quantity: order.quantity ?? order.amount,
+      fee: (order.quantity ?? order.amount) * (order.price || 50000) * 0.0001,
       timestamp: Date.now(),
       side: order.side,
       liquidity: 'taker',
@@ -457,9 +460,16 @@ export class TWAPAlgorithm extends EventEmitter {
     const averagePrice = totalQuantity > 0 ? totalValue / totalQuantity : 0;
     const metrics = this.calculateMetrics(state);
     
+    // Map ExecutionStatus to OrderStatus
+    const orderStatus = state.status === ExecutionStatus.COMPLETED ? OrderStatus.FILLED :
+                        state.status === ExecutionStatus.PARTIAL ? OrderStatus.PARTIALLY_FILLED :
+                        state.status === ExecutionStatus.FAILED ? OrderStatus.REJECTED :
+                        state.status === ExecutionStatus.CANCELLED ? OrderStatus.CANCELLED :
+                        OrderStatus.OPEN;
+    
     return {
       orderId: state.orderId,
-      status: state.status,
+      status: orderStatus,
       fills: state.fills,
       averagePrice,
       totalQuantity,
@@ -518,23 +528,27 @@ export class TWAPAlgorithm extends EventEmitter {
     const routeMap = new Map<string, ExecutedRoute>();
     
     for (const fill of state.fills) {
-      const existing = routeMap.get(fill.exchange);
+      const exchange = fill.exchange ?? fill.venue ?? 'unknown';
+      const existing = routeMap.get(exchange);
       
       if (existing) {
         existing.quantity += fill.quantity;
-        existing.fills++;
-        existing.fees += fill.fee;
+        existing.fills.push(fill);
+        if (existing.fees !== undefined) {
+          existing.fees += fill.fee;
+        }
+        existing.totalFee += fill.fee;
       } else {
-        routeMap.set(fill.exchange, {
-          exchange: fill.exchange,
-          orderId: fill.orderId,
+        routeMap.set(exchange, {
+          venue: exchange,
           quantity: fill.quantity,
-          fills: 1,
+          priority: 1,
+          fills: [fill],
+          avgPrice: fill.price,
           averagePrice: fill.price,
-          fees: fill.fee,
-          latency: 50, // Mock
-          success: true
-        });
+          totalFee: fill.fee,
+          fees: fill.fee
+        } as ExecutedRoute);
       }
     }
     

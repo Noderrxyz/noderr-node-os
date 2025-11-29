@@ -44,7 +44,7 @@ export class MEVProtectionManager extends EventEmitter {
   constructor(
     config: MEVProtectionConfig,
     logger: Logger,
-    provider?: ethers.providers.Provider
+    provider?: ethers.Provider
   ) {
     super();
     this.config = config;
@@ -204,7 +204,7 @@ export class MEVProtectionManager extends EventEmitter {
 
   // Private methods
 
-  private async initializeFlashbots(provider: ethers.providers.Provider): Promise<void> {
+  private async initializeFlashbots(provider: ethers.Provider): Promise<void> {
     try {
       const authSigner = ethers.Wallet.createRandom();
       

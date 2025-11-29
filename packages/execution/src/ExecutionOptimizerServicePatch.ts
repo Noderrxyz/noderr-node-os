@@ -3,7 +3,7 @@
  * This file contains the modifications needed to respect trading mode controls
  */
 
-import { SafetyController } from '../../../safety-control/src/SafetyController';
+import { SafetyController } from '@noderr/safety-control';
 import { Order, ExecutionError, ExecutionErrorCode } from '@noderr/types';
 
 /**
@@ -67,8 +67,8 @@ export async function safeExecuteOrder(
     // If mode is PAUSED, reject the order entirely
     if (mode === 'PAUSED' && !order.metadata?.allowInPausedMode) {
       throw new ExecutionError(
-        ExecutionErrorCode.CONFIGURATION_ERROR,
-        `Trading is paused. Cannot execute order ${order.id}`
+        `Trading is paused. Cannot execute order ${order.id}`,
+        ExecutionErrorCode.UNKNOWN
       );
     }
   }
@@ -149,7 +149,7 @@ export const helperMethods = {
  * Integration instructions:
  * 
  * 1. Import SafetyController at the top of ExecutionOptimizerService.ts:
- *    import { SafetyController } from '../../../safety-control/src/SafetyController';
+ *    import { SafetyController } from '@noderr/safety-control';
  * 
  * 2. Add safetyController property to the class
  * 
