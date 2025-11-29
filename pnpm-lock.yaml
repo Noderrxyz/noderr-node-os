@@ -1003,6 +1003,28 @@ importers:
         specifier: ^5.3.2
         version: 5.9.3
 
+  packages/on-chain-settlement:
+    dependencies:
+      '@noderr/oracle-consensus':
+        specifier: workspace:*
+        version: link:../oracle-consensus
+      '@noderr/telemetry':
+        specifier: workspace:*
+        version: link:../telemetry
+      '@noderr/types':
+        specifier: workspace:*
+        version: link:../types
+      '@noderr/utils':
+        specifier: workspace:*
+        version: link:../utils
+      ethers:
+        specifier: ^6.9.0
+        version: 6.15.0
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
   packages/oracle-consensus:
     dependencies:
       '@noderr/telemetry':
