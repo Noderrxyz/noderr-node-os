@@ -50,9 +50,10 @@ export class AdapterRegistry extends EventEmitter {
     super();
     
     // Initialize category maps
-    this.adaptersByCategory.set('lending', new Set());
-    this.adaptersByCategory.set('staking', new Set());
-    this.adaptersByCategory.set('yield', new Set());
+    this.adaptersByCategory.set(AdapterCategory.LENDING, new Set());
+    this.adaptersByCategory.set(AdapterCategory.STAKING, new Set());
+    this.adaptersByCategory.set(AdapterCategory.YIELD, new Set());
+    this.adaptersByCategory.set(AdapterCategory.LIQUIDITY, new Set());
   }
 
   /**

@@ -1,0 +1,88 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'noderr-testnet'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - "alerts/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Oracle nodes
+  - job_name: 'oracle-nodes'
+    static_configs:
+      - targets:
+          - 'oracle-1:9090'
+          - 'oracle-2:9090'
+          - 'oracle-3:9090'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - source_labels: [__address__]
+        regex: '(.*):.*'
+        target_label: node_id
+        replacement: '${1}'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'noderr_.*'
+        action: keep
+
+  # Guardian nodes
+  - job_name: 'guardian-nodes'
+    static_configs:
+      - targets:
+          - 'guardian-1:9091'
+          - 'guardian-2:9091'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - source_labels: [__address__]
+        regex: '(.*):.*'
+        target_label: node_id
+        replacement: '${1}'
+
+  # Validator nodes
+  - job_name: 'validator-nodes'
+    static_configs:
+      - targets:
+          - 'validator-1:9092'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+
+  # Node exporters (system metrics)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets:
+          - 'oracle-1:9100'
+          - 'oracle-2:9100'
+          - 'oracle-3:9100'
+          - 'guardian-1:9100'
+          - 'guardian-2:9100'
+          - 'validator-1:9100'
+
+  # cAdvisor (container metrics)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets:
+          - 'oracle-1:8080'
+          - 'oracle-2:8080'
+          - 'oracle-3:8080'
+          - 'guardian-1:8080'
+          - 'guardian-2:8080'
+          - 'validator-1:8080'

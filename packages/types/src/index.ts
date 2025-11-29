@@ -455,6 +455,7 @@ export interface FloorEngineConfig {
   rebalanceThreshold: number;
   minRebalanceInterval: number;
   maxSlippage: number;
+  rpcUrl?: string;
 }
 
 export interface RiskParameters {
@@ -484,9 +485,13 @@ export interface AdapterMetadata {
   chainId: number;
   chain?: string;
   riskScore: number;
+  riskLevel?: string;
   apy: number;
   tvl: number;
   lastUpdate: number;
+  enabled?: boolean;
+  version?: string;
+  maxAllocation?: number;
 }
 
 export interface IYieldAdapter {

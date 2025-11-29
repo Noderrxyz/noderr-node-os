@@ -1,0 +1,181 @@
+groups:
+  - name: noderr_node_alerts
+    interval: 30s
+    rules:
+      # Node Health Alerts
+      - alert: NodeDown
+        expr: up{job=~"oracle-nodes|guardian-nodes|validator-nodes"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Noderr node {{ $labels.instance }} is down"
+          description: "Node {{ $labels.instance }} has been down for more than 2 minutes."
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 90% on {{ $labels.instance }} (current: {{ $value | humanizePercentage }})."
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 80% on {{ $labels.instance }} (current: {{ $value }}%)."
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Disk space is below 10% on {{ $labels.instance }} (current: {{ $value | humanizePercentage }})."
+
+  - name: noderr_consensus_alerts
+    interval: 30s
+    rules:
+      # Consensus Alerts
+      - alert: ConsensusFailureRate
+        expr: rate(noderr_consensus_failures_total[5m]) > 0.1
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High consensus failure rate"
+          description: "Consensus failure rate is {{ $value | humanize }} failures/sec."
+
+      - alert: ConsensusLatencyHigh
+        expr: histogram_quantile(0.95, rate(noderr_consensus_duration_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High consensus latency"
+          description: "95th percentile consensus latency is {{ $value }}s (threshold: 0.5s)."
+
+      - alert: InsufficientOracleNodes
+        expr: count(up{job="oracle-nodes"} == 1) < 3
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Insufficient Oracle nodes online"
+          description: "Only {{ $value }} Oracle nodes are online (minimum: 3)."
+
+      - alert: InsufficientGuardianNodes
+        expr: count(up{job="guardian-nodes"} == 1) < 2
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Insufficient Guardian nodes online"
+          description: "Only {{ $value }} Guardian nodes are online (minimum: 2)."
+
+  - name: noderr_trading_alerts
+    interval: 30s
+    rules:
+      # Trading System Alerts
+      - alert: TradingSignalProcessingDelay
+        expr: histogram_quantile(0.95, rate(noderr_signal_processing_duration_seconds_bucket[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High trading signal processing delay"
+          description: "95th percentile signal processing time is {{ $value }}s (threshold: 0.1s)."
+
+      - alert: HighRiskExposure
+        expr: noderr_total_risk_exposure_usd > 1000000
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High risk exposure detected"
+          description: "Total risk exposure is ${{ $value | humanize }} (threshold: $1M)."
+
+      - alert: ExecutionFailureRate
+        expr: rate(noderr_execution_failures_total[5m]) > 0.05
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High execution failure rate"
+          description: "Execution failure rate is {{ $value | humanize }} failures/sec."
+
+      - alert: SlippageExceeded
+        expr: histogram_quantile(0.95, rate(noderr_slippage_bps_bucket[5m])) > 50
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High slippage detected"
+          description: "95th percentile slippage is {{ $value }} bps (threshold: 50 bps)."
+
+  - name: noderr_blockchain_alerts
+    interval: 30s
+    rules:
+      # Blockchain Integration Alerts
+      - alert: OnChainSettlementDelay
+        expr: histogram_quantile(0.95, rate(noderr_settlement_duration_seconds_bucket[5m])) > 300
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High on-chain settlement delay"
+          description: "95th percentile settlement time is {{ $value }}s (threshold: 300s)."
+
+      - alert: GasPrice TooHigh
+        expr: noderr_gas_price_gwei > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Gas price is very high"
+          description: "Current gas price is {{ $value }} gwei (threshold: 100 gwei)."
+
+      - alert: RPCConnectionFailed
+        expr: noderr_rpc_connection_status == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RPC connection failed on {{ $labels.instance }}"
+          description: "Node {{ $labels.instance }} cannot connect to RPC endpoint."
+
+  - name: noderr_security_alerts
+    interval: 30s
+    rules:
+      # Security Alerts
+      - alert: OracleSlashed
+        expr: increase(noderr_oracle_slashed_total[5m]) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "Oracle node was slashed"
+          description: "Oracle {{ $labels.oracle_id }} was slashed for malicious behavior."
+
+      - alert: UnauthorizedAccessAttempt
+        expr: increase(noderr_unauthorized_access_attempts_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Multiple unauthorized access attempts"
+          description: "{{ $value }} unauthorized access attempts in the last 5 minutes."
+
+      - alert: SignatureVerificationFailed
+        expr: rate(noderr_signature_verification_failures_total[5m]) > 0.01
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High signature verification failure rate"
+          description: "Signature verification failure rate is {{ $value | humanize }} failures/sec."
