@@ -256,6 +256,25 @@ importers:
         specifier: ^5.3.0
         version: 5.9.3
 
+  packages/autonomous-execution:
+    dependencies:
+      '@noderr/oracle-consensus':
+        specifier: workspace:*
+        version: link:../oracle-consensus
+      '@noderr/telemetry':
+        specifier: workspace:*
+        version: link:../telemetry
+      '@noderr/types':
+        specifier: workspace:*
+        version: link:../types
+      '@noderr/utils':
+        specifier: workspace:*
+        version: link:../utils
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
   packages/backtesting:
     dependencies:
       '@noderr/types':
