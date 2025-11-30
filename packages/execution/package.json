@@ -1,0 +1,77 @@
+{
+  "name": "@noderr/execution",
+  "version": "1.0.0",
+  "description": "Unified execution engine for Noderr Protocol - Smart routing, MEV protection, and advanced algorithms",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc -w",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "clean": "rimraf dist coverage",
+    "prepare": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "trading",
+    "execution",
+    "smart-order-routing",
+    "mev-protection",
+    "algorithms",
+    "twap",
+    "vwap",
+    "crypto"
+  ],
+  "author": "Noderr Protocol Team",
+  "license": "MIT",
+  "dependencies": {
+    "@noderr/phoenix-types": "workspace:*",
+    "@noderr/utils": "workspace:*",
+    "@noderr/telemetry": "workspace:*",
+    "@noderr/risk-engine": "workspace:*",
+    "@flashbots/ethers-provider-bundle": "^0.6.1",
+    "axios": "^1.6.7",
+    "bignumber.js": "^9.1.2",
+    "ccxt": "^4.2.4",
+    "ethers": "^6.9.0",
+    "lodash": "^4.17.21",
+    "mathjs": "^12.4.0",
+    "p-queue": "^6.6.2",
+    "redis": "^4.6.8",
+    "simple-statistics": "^7.8.3",
+    "uuid": "^9.0.1",
+    "web3": "^4.1.1",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/lodash": "^4.14.202",
+    "@types/node": "^20.11.24",
+    "@types/uuid": "^9.0.8",
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "rimraf": "^5.0.5",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "peerDependencies": {
+    "@noderr/phoenix-types": "workspace:*",
+    "@noderr/utils": "workspace:*",
+    "@noderr/telemetry": "workspace:*",
+    "@noderr/risk-engine": "workspace:*"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noderr/protocol.git",
+    "directory": "packages/execution"
+  }
+} 

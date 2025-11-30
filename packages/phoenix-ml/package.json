@@ -1,0 +1,17 @@
+{
+  "name": "@noderr/phoenix-ml",
+  "version": "1.0.0",
+  "description": "Project Phoenix: PhD-level ML engine for Noderr Protocol",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@noderr/phoenix-types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
