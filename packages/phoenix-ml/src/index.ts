@@ -21,3 +21,4 @@ export class PhoenixEngine implements IStrategy {
 }
 
 export * from './kelly';
+export * from './client';

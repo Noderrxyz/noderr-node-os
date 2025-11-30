@@ -34,4 +34,5 @@ class PhoenixEngine {
 }
 exports.PhoenixEngine = PhoenixEngine;
 __exportStar(require("./kelly"), exports);
+__exportStar(require("./client"), exports);
 //# sourceMappingURL=index.js.map

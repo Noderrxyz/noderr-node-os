@@ -8,4 +8,5 @@ export declare class PhoenixEngine implements IStrategy {
     generateSignal(features: IFeatureSet): Promise<ITradingSignal>;
 }
 export * from './kelly';
+export * from './client';
 //# sourceMappingURL=index.d.ts.map
