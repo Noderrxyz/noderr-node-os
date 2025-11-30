@@ -144,9 +144,11 @@ ENV NODE_ENV=production \
 
 # Labels for metadata
 LABEL org.opencontainers.image.title="NODERR Node (Oracle)" \
-      org.opencontainers.image.description="NODERR decentralized node with PyTorch ML service for ORACLE tier" \
+      org.opencontainers.image.description="NODERR decentralized node with PyTorch ML service for ORACLE tier - ML inference and price predictions" \
       org.opencontainers.image.vendor="NODERR Team" \
-      org.opencontainers.image.version="2.0.0"
+      org.opencontainers.image.version="2.0.0" \
+      org.opencontainers.image.tier="ORACLE" \
+      org.opencontainers.image.stake="500000 NODR"
 
 # Start both services
 CMD ["/app/start.sh"]

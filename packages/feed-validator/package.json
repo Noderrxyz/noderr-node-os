@@ -1,0 +1,31 @@
+{
+  "name": "@noderr/feed-validator",
+  "version": "1.0.0",
+  "description": "Market data feed validation and quarantine system for VALIDATOR tier nodes",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "lint": "eslint src --ext .ts"
+  },
+  "keywords": [
+    "noderr",
+    "validator",
+    "feed",
+    "quarantine",
+    "data-quality"
+  ],
+  "author": "NODERR Team",
+  "license": "MIT",
+  "dependencies": {
+    "@noderr/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  }
+}

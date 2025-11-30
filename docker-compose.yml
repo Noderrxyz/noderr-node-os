@@ -7,15 +7,15 @@
 version: '3.8'
 
 services:
-  # ALL tier node (basic P2P only)
-  node-all:
+  # VALIDATOR tier node (data validation)
+  node-validator:
     build:
       context: .
-      dockerfile: Dockerfile.base
-    container_name: noderr-node-all
+      dockerfile: Dockerfile.validator
+    container_name: noderr-node-validator
     environment:
-      - NODE_ID=local-all-001
-      - NODE_TIER=ALL
+      - NODE_ID=local-validator-001
+      - NODE_TIER=VALIDATOR
       - NODE_ENV=development
       - LOG_LEVEL=debug
     ports:
@@ -25,6 +25,8 @@ services:
     restart: unless-stopped
     networks:
       - noderr-network
+    volumes:
+      - ./logs:/app/logs
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
       interval: 30s
@@ -63,11 +65,11 @@ services:
       retries: 3
       start_period: 60s
 
-  # GUARDIAN tier node (full trading capabilities)
+  # GUARDIAN tier node (backtesting)
   node-guardian:
     build:
       context: .
-      dockerfile: Dockerfile.base
+      dockerfile: Dockerfile.guardian
     container_name: noderr-node-guardian
     environment:
       - NODE_ID=local-guardian-001
@@ -81,6 +83,9 @@ services:
     restart: unless-stopped
     networks:
       - noderr-network
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
       interval: 30s
@@ -98,11 +103,14 @@ networks:
 # Build all images:
 #   docker-compose build
 #
-# Start ALL node only:
-#   docker-compose up node-all
+# Start VALIDATOR node only:
+#   docker-compose up node-validator
 #
 # Start ORACLE node only:
 #   docker-compose up node-oracle
+#
+# Start GUARDIAN node only:
+#   docker-compose up node-guardian
 #
 # Start all nodes:
 #   docker-compose up

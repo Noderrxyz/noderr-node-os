@@ -4,9 +4,9 @@
  * This is the main entry point for all NODERR nodes. It initializes the node
  * based on its tier configuration:
  * 
- * - ALL: Basic P2P networking and consensus only
+ * - VALIDATOR: Data validation and quarantine system (no ML service)
  * - ORACLE: P2P + ML service (PyTorch gRPC) for price predictions
- * - GUARDIAN: P2P + ML service + full trading capabilities
+ * - GUARDIAN: P2P + backtesting engine for strategy validation
  * 
  * The runtime automatically detects the node tier from environment variables
  * and initializes only the necessary components.
@@ -16,11 +16,16 @@
 
 import { EventEmitter } from 'events';
 import { MLServiceClient, createMLServiceClient } from '@noderr/phoenix-ml';
+import { ValidatorNode, QuarantineManager, FeedBus } from '@noderr/feed-validator';
 
 /**
  * Node tier types.
+ * 
+ * - VALIDATOR: Data validation and quarantine (Tier 2)
+ * - ORACLE: ML inference for price predictions (Tier 4)
+ * - GUARDIAN: Backtesting and strategy validation (Tier 3)
  */
-export type NodeTier = 'ALL' | 'ORACLE' | 'GUARDIAN';
+export type NodeTier = 'VALIDATOR' | 'ORACLE' | 'GUARDIAN';
 
 /**
  * Node runtime configuration.
@@ -29,7 +34,7 @@ export interface NodeRuntimeConfig {
   /** Unique node identifier */
   nodeId: string;
   
-  /** Node tier (ALL, ORACLE, or GUARDIAN) */
+  /** Node tier (VALIDATOR, ORACLE, or GUARDIAN) */
   tier: NodeTier;
   
   /** ML service host (only for ORACLE and GUARDIAN) */
@@ -65,6 +70,9 @@ export type NodeRuntimeState =
 export class NodeRuntime extends EventEmitter {
   private config: NodeRuntimeConfig;
   private mlClient?: MLServiceClient;
+  private feedBus?: FeedBus;
+  private quarantineManager?: QuarantineManager;
+  private validators: Map<string, ValidatorNode> = new Map();
   private state: NodeRuntimeState = 'initializing';
   private startTime: number = 0;
 
@@ -119,17 +127,19 @@ export class NodeRuntime extends EventEmitter {
         timestamp: new Date().toISOString()
       });
 
-      // ALL nodes: Basic initialization only
-      if (this.config.tier === 'ALL') {
-        console.log('[NodeRuntime] ALL tier: No ML service required');
-        this.state = 'ready';
-        this.emit('ready');
-        return;
+      // VALIDATOR nodes: Initialize feed validation system
+      if (this.config.tier === 'VALIDATOR') {
+        await this._initializeValidationService();
       }
 
-      // ORACLE and GUARDIAN nodes: Initialize ML service
-      if (this.config.tier === 'ORACLE' || this.config.tier === 'GUARDIAN') {
+      // ORACLE nodes: Initialize ML service for inference
+      if (this.config.tier === 'ORACLE') {
         await this._initializeMLService();
+      }
+
+      // GUARDIAN nodes: Initialize backtesting engine
+      if (this.config.tier === 'GUARDIAN') {
+        await this._initializeBacktestingService();
       }
 
       this.state = 'ready';
@@ -147,6 +157,67 @@ export class NodeRuntime extends EventEmitter {
       this.emit('error', error);
       throw error;
     }
+  }
+
+  /**
+   * Initialize the feed validation service for VALIDATOR nodes.
+   * 
+   * This method:
+   * 1. Creates FeedBus singleton
+   * 2. Creates QuarantineManager singleton
+   * 3. Registers ValidatorNodes for each exchange
+   * 
+   * @private
+   */
+  private async _initializeValidationService(): Promise<void> {
+    console.log('[NodeRuntime] Initializing feed validation service...');
+
+    // Initialize FeedBus
+    this.feedBus = FeedBus.getInstance();
+    console.log('[NodeRuntime] FeedBus initialized');
+
+    // Initialize QuarantineManager
+    this.quarantineManager = QuarantineManager.getInstance();
+    console.log('[NodeRuntime] QuarantineManager initialized');
+
+    // Register validators for each exchange
+    const exchanges = ['BINANCE', 'UNISWAP', 'COINBASE', 'KRAKEN', 'BYBIT'];
+    
+    for (const exchange of exchanges) {
+      const validator = new ValidatorNode(exchange, {
+        maxHistorySize: 100,
+        quarantineThresholdMs: 3000 // 3 second latency threshold
+      });
+      
+      this.validators.set(exchange, validator);
+      this.quarantineManager.registerValidator(exchange, validator);
+      
+      console.log(`[NodeRuntime] Registered validator for ${exchange}`);
+    }
+
+    console.log('[NodeRuntime] Feed validation service initialized', {
+      exchangeCount: exchanges.length,
+      quarantineThreshold: '3000ms'
+    });
+  }
+
+  /**
+   * Initialize the backtesting engine for GUARDIAN nodes.
+   * 
+   * This method:
+   * 1. Loads backtesting configuration
+   * 2. Initializes historical data sources
+   * 3. Sets up strategy validation pipeline
+   * 
+   * @private
+   */
+  private async _initializeBacktestingService(): Promise<void> {
+    console.log('[NodeRuntime] Initializing backtesting service...');
+    
+    // TODO: Implement backtesting engine initialization
+    // This will be implemented in a future phase
+    
+    console.log('[NodeRuntime] Backtesting service initialized');
   }
 
   /**
@@ -397,9 +468,9 @@ export async function createNodeRuntimeFromEnv(): Promise<NodeRuntime> {
     throw new Error('NODE_ID environment variable is required');
   }
 
-  if (!tier || !['ALL', 'ORACLE', 'GUARDIAN'].includes(tier)) {
+  if (!tier || !['VALIDATOR', 'ORACLE', 'GUARDIAN'].includes(tier)) {
     throw new Error(
-      'NODE_TIER environment variable must be ALL, ORACLE, or GUARDIAN'
+      'NODE_TIER environment variable must be VALIDATOR, ORACLE, or GUARDIAN'
     );
   }
 

@@ -552,3 +552,42 @@ export interface PerformanceSnapshot {
   positions: Position[];
   riskMetrics: RiskMetrics;
 }
+
+// Feed Validator Types
+export interface MarketSnapshot {
+  source: string;           // 'BINANCE', 'UNISWAP', 'COINBASE', etc.
+  symbol: string;           // 'BTC/USD', 'ETH/USD', etc.
+  timestamp: number;        // Unix timestamp (ms)
+  lastPrice: number;        // Last traded price
+  lastSize: number;         // Last traded size
+  latencyMs?: number;       // Optional latency measurement
+  bid?: number;             // Best bid price
+  ask?: number;             // Best ask price
+  volume24h?: number;       // 24h trading volume
+}
+
+export interface FeedStats {
+  source: string;
+  symbol: string;
+  lastUpdate: number;
+  latencyMs: number;
+  uptimePct: number;
+  errorCount: number;
+  messageCount: number;
+}
+
+export interface ValidatorMetrics {
+  latencyMs: number;
+  lastUpdate: number;
+  errorCount: number;
+  quarantineCount: number;
+  score: number;
+}
+
+export enum FeedSource {
+  BINANCE = 'BINANCE',
+  UNISWAP = 'UNISWAP',
+  COINBASE = 'COINBASE',
+  KRAKEN = 'KRAKEN',
+  BYBIT = 'BYBIT',
+}
