@@ -1,5 +1,7 @@
 /**
- * Project Phoenix: PhD-Level ML Engine
+ * @fileoverview Phoenix ML - PhD-Level Machine Learning for Trading
+ * @author Manus AI
+ * @version 1.0.0
  */
 
 import { IFeatureSet, ITradingSignal, IStrategy } from '@noderr/phoenix-types';
@@ -17,3 +19,5 @@ export class PhoenixEngine implements IStrategy {
     };
   }
 }
+
+export * from './kelly';
