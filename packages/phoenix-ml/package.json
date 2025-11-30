@@ -1,0 +1,26 @@
+{
+  "name": "@noderr/phoenix-ml",
+  "version": "1.0.0",
+  "description": "Project Phoenix: PhD-level ML engine for Noderr Protocol",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.14.1",
+    "@grpc/proto-loader": "^0.8.0",
+    "@noderr/phoenix-types": "workspace:*",
+    "@tensorflow/tfjs-node": "^4.22.0",
+    "seedrandom": "^3.0.5"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.10.1",
+    "@types/seedrandom": "^3.0.8",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@noderr/phoenix-types",
+  "version": "1.0.0",
+  "description": "Project Phoenix: Core types and interfaces for Noderr Protocol",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.3.3"
+  }
+}

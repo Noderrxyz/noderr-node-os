@@ -1,0 +1,81 @@
+# NODERR Node - Base Image (ALL & GUARDIAN tiers)
+# 
+# This Dockerfile creates a lightweight Node.js-only image for:
+# - ALL nodes: Basic P2P networking and consensus
+# - GUARDIAN nodes: Full trading capabilities (when ML service is optional)
+#
+# Image size: ~200MB (optimized with Alpine Linux)
+
+FROM node:22-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    git
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+COPY packages ./packages
+
+# Install pnpm globally
+RUN npm install -g pnpm@latest
+
+# Install dependencies (frozen lockfile for reproducibility)
+RUN pnpm install --frozen-lockfile
+
+# Build all packages
+RUN pnpm build
+
+# Production stage
+FROM node:22-alpine
+
+# Install runtime dependencies only
+RUN apk add --no-cache \
+    ca-certificates \
+    wget \
+    curl
+
+# Create non-root user for security
+RUN addgroup -g 1001 noderr && \
+    adduser -D -u 1001 -G noderr noderr
+
+WORKDIR /app
+
+# Copy built artifacts from builder
+COPY --from=builder --chown=noderr:noderr /app/node_modules ./node_modules
+COPY --from=builder --chown=noderr:noderr /app/packages ./packages
+COPY --from=builder --chown=noderr:noderr /app/package.json ./
+
+# Install pnpm in production image
+RUN npm install -g pnpm@latest
+
+# Switch to non-root user
+USER noderr
+
+# Expose ports
+# 8080: HTTP API
+# 8081: WebSocket
+# 9090: Metrics/Monitoring
+EXPOSE 8080 8081 9090
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=40s \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+
+# Environment variables with defaults
+ENV NODE_ENV=production \
+    NODE_TIER=ALL \
+    LOG_LEVEL=info
+
+# Labels for metadata
+LABEL org.opencontainers.image.title="NODERR Node (Base)" \
+      org.opencontainers.image.description="NODERR decentralized node for ALL and GUARDIAN tiers" \
+      org.opencontainers.image.vendor="NODERR Team" \
+      org.opencontainers.image.version="2.0.0"
+
+# Start the node runtime
+CMD ["node", "packages/node-runtime/dist/index.js"]

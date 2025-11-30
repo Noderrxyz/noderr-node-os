@@ -1,0 +1,103 @@
+# NODERR Node - Docker Ignore File
+# Optimizes Docker build by excluding unnecessary files
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+.pnpm-store/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+ml-service/venv/
+ml-service/.venv/
+*.egg-info/
+dist/
+build/
+
+# TypeScript
+*.tsbuildinfo
+packages/*/dist/
+packages/*/build/
+
+# Git
+.git/
+.gitignore
+.gitmodules
+.github/
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.nyc_output/
+*.test.ts
+*.spec.ts
+__tests__/
+__mocks__/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+.cache/
+
+# Backup files
+*.backup
+.backup/
+
+# Analysis and reports
+ARCHITECTURE_ANALYSIS.md
+CODE_FIRST_ROADMAP.md
+COMPLETE_ML_SYSTEM_SUMMARY.md
+CRITICAL_GAP_ANALYSIS.md
+DEPLOYMENT_COMPLETE.md
+DEPLOYMENT_READY_HANDOFF.md
+DEPLOY_NOW.md
+DOCKER_STATUS.md
+FINAL_SESSION_SUMMARY.md
+FINAL_SYSTEM_INTEGRATION_REPORT.md
+HANDOFF_TO_NEXT_SESSION.md
+INTEGRATION_PLAN.md
+INTEGRATION_ROADMAP.md
+MASTER_SPRINT_PLAN.md
+MIGRATION_MANIFEST.json
+MIGRATION_STATUS.md
+NEXT_STEPS_WHEN_HOME.md
+OPERATOR_GUIDE.md
+PHASE_*.md
+PRODUCTION_DEPLOYMENT_GUIDE.md
+PROGRESS_REPORT.md
+PROJECT_PHOENIX_STATUS_REPORT.md
+QUICK_START.md
+RELEASE_NOTES.md
+ROADMAP_STATUS.md
+SESSION_*.md
+SPRINT_*.md

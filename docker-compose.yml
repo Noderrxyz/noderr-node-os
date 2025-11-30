@@ -1,0 +1,114 @@
+# NODERR Node - Docker Compose Configuration
+#
+# This file provides easy local testing of all node tiers.
+# For production deployment, use the generated docker-compose.yml
+# from the credential generator service.
+
+version: '3.8'
+
+services:
+  # ALL tier node (basic P2P only)
+  node-all:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    container_name: noderr-node-all
+    environment:
+      - NODE_ID=local-all-001
+      - NODE_TIER=ALL
+      - NODE_ENV=development
+      - LOG_LEVEL=debug
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+      - "9090:9090"
+    restart: unless-stopped
+    networks:
+      - noderr-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ORACLE tier node (P2P + ML service)
+  node-oracle:
+    build:
+      context: .
+      dockerfile: Dockerfile.oracle
+    container_name: noderr-node-oracle
+    environment:
+      - NODE_ID=local-oracle-001
+      - NODE_TIER=ORACLE
+      - ML_SERVICE_HOST=localhost
+      - ML_SERVICE_PORT=50051
+      - NODE_ENV=development
+      - LOG_LEVEL=debug
+    ports:
+      - "8082:8080"
+      - "8083:8081"
+      - "9091:9090"
+      - "50051:50051"
+    restart: unless-stopped
+    networks:
+      - noderr-network
+    volumes:
+      # Mount models directory for easy model updates
+      - ./models:/app/models:ro
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # GUARDIAN tier node (full trading capabilities)
+  node-guardian:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    container_name: noderr-node-guardian
+    environment:
+      - NODE_ID=local-guardian-001
+      - NODE_TIER=GUARDIAN
+      - NODE_ENV=development
+      - LOG_LEVEL=debug
+    ports:
+      - "8084:8080"
+      - "8085:8081"
+      - "9092:9090"
+    restart: unless-stopped
+    networks:
+      - noderr-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  noderr-network:
+    driver: bridge
+    name: noderr-network
+
+# Usage:
+# 
+# Build all images:
+#   docker-compose build
+#
+# Start ALL node only:
+#   docker-compose up node-all
+#
+# Start ORACLE node only:
+#   docker-compose up node-oracle
+#
+# Start all nodes:
+#   docker-compose up
+#
+# View logs:
+#   docker-compose logs -f node-oracle
+#
+# Stop all:
+#   docker-compose down

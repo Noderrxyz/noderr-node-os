@@ -1,0 +1,152 @@
+# NODERR Node - Oracle Image (ORACLE tier with ML service)
+#
+# This Dockerfile creates a full-featured image for ORACLE nodes with:
+# - Node.js runtime for P2P networking and consensus
+# - Python 3.11 + PyTorch for ML inference
+# - gRPC communication between Node.js and Python
+#
+# Image size: ~2.5GB (includes PyTorch and ML models)
+
+FROM python:3.11-slim AS python-builder
+
+# Install system dependencies for PyTorch
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    wget \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy Python ML service
+COPY ml-service /app/ml-service
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r /app/ml-service/requirements.txt
+
+# Compile Python files for faster startup
+RUN python3 -m compileall /app/ml-service/src
+
+# Node.js builder stage
+FROM node:22-slim AS node-builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+COPY packages ./packages
+
+# Install pnpm
+RUN npm install -g pnpm@latest
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Build all packages
+RUN pnpm build
+
+# Production stage (combines Python + Node.js)
+FROM python:3.11-slim
+
+# Install Node.js and runtime dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    ca-certificates \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g pnpm@latest \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd -g 1001 noderr && \
+    useradd -m -u 1001 -g noderr noderr
+
+WORKDIR /app
+
+# Copy Python ML service from builder
+COPY --from=python-builder --chown=noderr:noderr /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=python-builder --chown=noderr:noderr /app/ml-service /app/ml-service
+
+# Copy Node.js artifacts from builder
+COPY --from=node-builder --chown=noderr:noderr /app/node_modules ./node_modules
+COPY --from=node-builder --chown=noderr:noderr /app/packages ./packages
+COPY --from=node-builder --chown=noderr:noderr /app/package.json ./
+
+# Create startup script
+RUN echo '#!/bin/bash' > /app/start.sh && \
+    echo 'set -e' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo 'echo "[Startup] Starting NODERR ORACLE node..."' >> /app/start.sh && \
+    echo 'echo "[Startup] Node ID: ${NODE_ID}"' >> /app/start.sh && \
+    echo 'echo "[Startup] Tier: ${NODE_TIER}"' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo '# Start Python ML service in background' >> /app/start.sh && \
+    echo 'echo "[Startup] Starting Python ML service on port 50051..."' >> /app/start.sh && \
+    echo 'python3 /app/ml-service/src/server.py &' >> /app/start.sh && \
+    echo 'ML_PID=$!' >> /app/start.sh && \
+    echo 'echo "[Startup] ML service started with PID: $ML_PID"' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo '# Wait for ML service to be ready' >> /app/start.sh && \
+    echo 'echo "[Startup] Waiting for ML service to be ready..."' >> /app/start.sh && \
+    echo 'sleep 10' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo '# Start Node.js runtime' >> /app/start.sh && \
+    echo 'echo "[Startup] Starting Node.js runtime..."' >> /app/start.sh && \
+    echo 'node packages/node-runtime/dist/index.js &' >> /app/start.sh && \
+    echo 'NODE_PID=$!' >> /app/start.sh && \
+    echo 'echo "[Startup] Node runtime started with PID: $NODE_PID"' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo '# Wait for either process to exit' >> /app/start.sh && \
+    echo 'wait -n' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo '# If one exits, kill the other' >> /app/start.sh && \
+    echo 'echo "[Startup] Process exited, shutting down..."' >> /app/start.sh && \
+    echo 'kill $ML_PID $NODE_PID 2>/dev/null || true' >> /app/start.sh && \
+    echo 'exit 1' >> /app/start.sh && \
+    chmod +x /app/start.sh && \
+    chown noderr:noderr /app/start.sh
+
+# Create directory for ML models
+RUN mkdir -p /app/models && chown -R noderr:noderr /app/models
+
+# Switch to non-root user
+USER noderr
+
+# Expose ports
+# 8080: HTTP API
+# 8081: WebSocket
+# 9090: Metrics/Monitoring
+# 50051: gRPC ML service
+EXPOSE 8080 8081 9090 50051
+
+# Health check (checks both Node.js and ML service)
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=60s \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+
+# Environment variables with defaults
+ENV NODE_ENV=production \
+    NODE_TIER=ORACLE \
+    ML_SERVICE_HOST=localhost \
+    ML_SERVICE_PORT=50051 \
+    LOG_LEVEL=info \
+    PYTHONUNBUFFERED=1
+
+# Labels for metadata
+LABEL org.opencontainers.image.title="NODERR Node (Oracle)" \
+      org.opencontainers.image.description="NODERR decentralized node with PyTorch ML service for ORACLE tier" \
+      org.opencontainers.image.vendor="NODERR Team" \
+      org.opencontainers.image.version="2.0.0"
+
+# Start both services
+CMD ["/app/start.sh"]
