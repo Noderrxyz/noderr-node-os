@@ -1,0 +1,31 @@
+{
+  "name": "@noderr/ml-deployment",
+  "version": "1.0.0",
+  "description": "ML model packaging and deployment system for NODERR nodes",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest"
+  },
+  "keywords": [
+    "noderr",
+    "ml",
+    "deployment",
+    "model-packaging"
+  ],
+  "author": "NODERR Team",
+  "license": "MIT",
+  "dependencies": {
+    "@tensorflow/tfjs-node": "^4.11.0",
+    "@aws-sdk/client-s3": "^3.450.0",
+    "@supabase/supabase-js": "^2.38.4",
+    "tar": "^6.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/tar": "^6.1.7",
+    "typescript": "^5.0.0"
+  }
+}

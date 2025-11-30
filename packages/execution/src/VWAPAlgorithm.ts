@@ -15,7 +15,7 @@ import {
   OrderStatus,
   ExecutionError,
   ExecutionErrorCode
-} from '@noderr/phoenix-types';
+} from '@noderr/types';
 import { Logger } from 'winston';
 import EventEmitter from 'events';
 
@@ -114,7 +114,7 @@ export class VWAPAlgorithm extends EventEmitter {
     this.logger.info('Starting VWAP execution', {
       orderId: order.id,
       quantity: order.quantity,
-      participationRate: config.parameters.participationRate
+      participationRate: config.parameters.targetPercentage
     });
 
     // Validate parameters
@@ -186,11 +186,17 @@ export class VWAPAlgorithm extends EventEmitter {
 
   private validateParameters(params: AlgorithmParameters): void {
     if (!params.duration || params.duration <= 0) {
-      throw new ExecutionError(ExecutionErrorCode.INVALID_ORDER, 'Invalid VWAP duration');
+      throw new ExecutionError(
+        'Invalid VWAP duration',
+        ExecutionErrorCode.INVALID_ORDER
+      );
     }
     
-    if (params.participationRate && (params.participationRate <= 0 || params.participationRate > 1)) {
-      throw new ExecutionError(ExecutionErrorCode.INVALID_ORDER, 'Invalid participation rate');
+    if (params.targetPercentage && (params.targetPercentage <= 0 || params.targetPercentage > 100)) {
+      throw new ExecutionError(
+        'Invalid participation rate',
+        ExecutionErrorCode.INVALID_ORDER
+      );
     }
   }
 
@@ -259,9 +265,9 @@ export class VWAPAlgorithm extends EventEmitter {
     volumeProfile: VolumeProfile
   ): VWAPState {
     const duration = params.duration || 3600000; // 1 hour default
-    const participationRate = params.participationRate || 0.1; // 10% default
+    const participationRate = params.targetPercentage || 10; // 10% default
     
-    const startTime = Date.now();
+    const startTime = params.startTime || Date.now();
     const endTime = startTime + duration;
     
     // Calculate target VWAP from current market
@@ -276,7 +282,7 @@ export class VWAPAlgorithm extends EventEmitter {
       participationRate
     );
     
-    const quantity = order.quantity;
+    const quantity = order.quantity ?? order.amount;
     return {
       orderId: order.id,
       totalQuantity: quantity,
@@ -290,7 +296,7 @@ export class VWAPAlgorithm extends EventEmitter {
       endTime,
       fills: [],
       status: ExecutionStatus.PARTIAL,
-      
+      adaptiveMode: params.adaptiveMode !== false,
       participationRate: participationRate / 100
     };
   }
@@ -337,7 +343,7 @@ export class VWAPAlgorithm extends EventEmitter {
         startTime: sliceStart,
         endTime: sliceEnd,
         targetVolume: expectedVolume,
-        targetQuantity: order.quantity * volumeRatio,
+        targetQuantity: (order.quantity ?? order.amount) * volumeRatio,
         executedQuantity: 0,
         expectedPrice: this.calculateTargetVWAP(order.symbol),
         status: 'pending',
@@ -726,7 +732,7 @@ export class VWAPAlgorithm extends EventEmitter {
     // Map ExecutionStatus to OrderStatus
     const orderStatus = state.status === ExecutionStatus.COMPLETED ? OrderStatus.FILLED :
                         state.status === ExecutionStatus.PARTIAL ? OrderStatus.PARTIALLY_FILLED :
-                        state.status = ExecutionStatus.FAILED;D ? OrderStatus.REJECTED :
+                        state.status === ExecutionStatus.FAILED ? OrderStatus.REJECTED :
                         state.status === ExecutionStatus.CANCELLED ? OrderStatus.CANCELLED :
                         OrderStatus.OPEN;
     
@@ -785,12 +791,12 @@ export class VWAPAlgorithm extends EventEmitter {
     
     // Calculate average prices
     for (const route of routeMap.values()) {
-      const exchangeFills = state.fills.filter(f => f.exchange === route.exchange);
+      const exchangeFills = state.fills.filter(f => (f.exchange ?? f.venue) === route.exchange);
       const totalValue = exchangeFills.reduce((sum, f) => sum + f.quantity * f.price, 0);
       if (route.averagePrice !== undefined) {
         route.averagePrice = totalValue / route.quantity;
       }
-      route.averagePrice = totalValue / route.quantity;
+      route.avgPrice = totalValue / route.quantity;
     }
     
     return Array.from(routeMap.values());

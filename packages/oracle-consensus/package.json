@@ -1,0 +1,20 @@
+{
+  "name": "@noderr/oracle-consensus",
+  "version": "0.2.0",
+  "description": "Oracle consensus mechanism with BFT algorithm for Noderr Node OS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@noderr/types": "workspace:*",
+    "@noderr/utils": "workspace:*",
+    "@noderr/telemetry": "workspace:*",
+    "ethers": "^6.9.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

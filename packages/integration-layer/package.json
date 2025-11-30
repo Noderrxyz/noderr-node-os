@@ -1,0 +1,47 @@
+{
+  "name": "@noderr/integration-layer",
+  "version": "1.0.0",
+  "description": "Integration Layer - System orchestration, messaging, and health monitoring for Noderr Protocol",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/**/*.ts",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "integration",
+    "orchestration",
+    "messaging",
+    "health-monitoring",
+    "recovery",
+    "microservices"
+  ],
+  "author": "Noderr Protocol Team",
+  "license": "MIT",
+  "dependencies": {
+    "@noderr/types": "workspace:*",
+    "@noderr/utils": "workspace:*",
+    "@noderr/capital-ai": "workspace:*",
+    "@noderr/core": "workspace:*",
+    "winston": "^3.11.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.11",
+    "ts-jest": "^29.1.1",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+} 

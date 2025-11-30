@@ -1,0 +1,19 @@
+{
+  "name": "@noderr/human-oversight",
+  "version": "0.2.0",
+  "description": "Human oversight layer with multi-channel notifications for Noderr Node OS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@noderr/types": "workspace:*",
+    "@noderr/utils": "workspace:*",
+    "@noderr/telemetry": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

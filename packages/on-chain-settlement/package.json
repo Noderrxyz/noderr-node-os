@@ -1,0 +1,21 @@
+{
+  "name": "@noderr/on-chain-settlement",
+  "version": "0.2.0",
+  "description": "On-chain settlement layer with consensus validation for Noderr Node OS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@noderr/types": "workspace:*",
+    "@noderr/utils": "workspace:*",
+    "@noderr/telemetry": "workspace:*",
+    "@noderr/oracle-consensus": "workspace:*",
+    "ethers": "^6.9.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

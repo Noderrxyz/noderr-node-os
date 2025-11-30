@@ -23,7 +23,7 @@
   "author": "Noderr Protocol Team",
   "license": "MIT",
   "dependencies": {
-    "@noderr/phoenix-types": "workspace:*",
+    "@noderr/types": "workspace:*",
     "lodash": "^4.17.21",
     "uuid": "^9.0.1",
     "winston": "^3.11.0",
@@ -45,7 +45,7 @@
     "typescript": "^5.3.3"
   },
   "peerDependencies": {
-    "@noderr/phoenix-types": "workspace:*"
+    "@noderr/types": "workspace:*"
   },
   "engines": {
     "node": ">=18.0.0"

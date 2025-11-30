@@ -1,0 +1,20 @@
+{
+  "name": "@noderr/autonomous-execution",
+  "version": "0.2.0",
+  "description": "Autonomous execution layer with ML integration for Noderr Node OS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@noderr/types": "workspace:*",
+    "@noderr/utils": "workspace:*",
+    "@noderr/telemetry": "workspace:*",
+    "@noderr/oracle-consensus": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

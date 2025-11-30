@@ -1,0 +1,61 @@
+{
+  "name": "@noderr/risk-engine",
+  "version": "1.0.0",
+  "description": "Institutional-grade risk management engine for Noderr Protocol",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint . --ext .ts",
+    "clean": "rm -rf dist coverage"
+  },
+  "dependencies": {
+    "@noderr/types": "workspace:*",
+    "@noderr/utils": "workspace:*",
+    "ethers": "^5.7.2",
+    "mathjs": "^11.11.0",
+    "simple-statistics": "^7.8.3",
+    "events": "^3.3.0",
+    "winston": "^3.10.0",
+    "node-cache": "^5.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.5",
+    "@types/jest": "^29.5.3",
+    "@typescript-eslint/eslint-plugin": "^6.2.0",
+    "@typescript-eslint/parser": "^6.2.0",
+    "eslint": "^8.45.0",
+    "jest": "^29.6.1",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.1.6"
+  },
+  "keywords": [
+    "risk-management",
+    "var",
+    "portfolio-optimization",
+    "position-sizing",
+    "stress-testing",
+    "liquidation",
+    "capital-protection",
+    "crypto",
+    "trading",
+    "institutional"
+  ],
+  "author": "Noderr Protocol",
+  "license": "MIT",
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/__tests__/**/*.test.ts"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/**/*.d.ts",
+      "!src/index.ts"
+    ]
+  }
+} 

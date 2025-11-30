@@ -8,21 +8,20 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
-    "composite": false,
+    "composite": true,
     "types": ["node", "jest"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts"],
-  // "references": [
-  //   { "path": "../types" },
-  //   { "path": "../utils" },
-  //   { "path": "../telemetry" }
-  // ]
+  "references": [
+    { "path": "../types" },
+    { "path": "../utils" },
+    { "path": "../telemetry" }
+  ]
 } 
