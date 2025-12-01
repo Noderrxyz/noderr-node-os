@@ -175,16 +175,17 @@ export class RiskEngineService extends EventEmitter {
       return report;
       
     } catch (error) {
-      this.logger.error('Failed to generate risk report', error);
+      const err = error as Error;
+      this.logger.error('Failed to generate risk report', err);
       this.telemetry.errors.push({
         code: 'REPORT_GENERATION_FAILED',
-        message: error.message,
+        message: err.message,
         severity: 'high',
         timestamp: Date.now(),
         context: { portfolioId: portfolio.id },
-        stackTrace: error.stack
+        stackTrace: err.stack
       });
-      throw error;
+      throw err;
     }
   }
 

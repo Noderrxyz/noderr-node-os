@@ -581,7 +581,7 @@ export class VaRCalculator {
               operator: '>',
               value: 50 // VIX > 50
             }
-          ]
+          ] as any
         });
       }
     }

@@ -245,6 +245,11 @@ export interface RiskLimits {
   maxLeverage: number;
   maxDrawdown: number;
   dailyLossLimit: number;
+  maxDailyLoss?: number; // Alias for dailyLossLimit
+  maxOrderSize?: number;
+  maxOpenOrders?: number;
+  marginRequirement?: number;
+  maxConcentration?: number;
   positionLimits: Record<string, number>;
 }
 

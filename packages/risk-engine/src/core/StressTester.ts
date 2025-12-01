@@ -379,6 +379,11 @@ export class StressTester {
   }
 
   private getAssetShock(symbol: string, scenario: HistoricalEvent): number {
+    // Return default if no market moves defined
+    if (!scenario.marketMoves) {
+      return -0.20; // Default 20% shock
+    }
+
     // Direct match
     if (scenario.marketMoves[symbol]) {
       return scenario.marketMoves[symbol];

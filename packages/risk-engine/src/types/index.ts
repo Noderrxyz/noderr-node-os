@@ -76,8 +76,11 @@ export interface VaRResult {
   percentage: number;
   methodology: string;
   confidenceLevel: number;
+  confidence?: number; // Alias for confidenceLevel
   timeHorizon: number;
   components?: VaRComponent[];
+  componentVaR?: Record<string, number>; // Backward compatibility - map of asset to component VaR
+  marginalVaR?: Record<string, number>; // Backward compatibility - map of asset to marginal VaR
   timestamp: number;
 }
 
@@ -98,6 +101,7 @@ export interface CVaRResult extends VaRResult {
 export interface PositionSizerConfig {
   methodology: 'kelly' | 'volatilityTarget' | 'riskParity' | 'maxDrawdown' | 'optimal';
   targetVolatility?: number;
+  confidenceLevel?: number; // Confidence level for risk calculations
   maxPositionSize: number;
   minPositionSize: number;
   correlationAdjustment: boolean;
@@ -111,6 +115,7 @@ export interface PositionLimits {
   maxPortfolioExposure: number;
   maxSectorExposure?: number;
   maxCorrelatedExposure?: number;
+  maxConcentration?: number; // Maximum concentration in single asset
   minDiversification?: number;
 }
 
@@ -137,14 +142,14 @@ export interface StressScenario {
 
 export interface HistoricalEvent {
   name: string;
-  date: Date;
-  startDate?: Date; // For backward compatibility
-  endDate?: Date; // For backward compatibility
-  description: string;
-  marketMoves: Record<string, number>;
+  date?: Date | number; // Optional - can use startDate/endDate instead
+  startDate?: Date | number; // For backward compatibility
+  endDate?: Date | number; // For backward compatibility
+  description?: string; // Optional
+  marketMoves?: Record<string, number>; // Optional
   affectedAssets?: string[]; // For backward compatibility
   marketConditions?: any; // For backward compatibility
-  volatilityRegime: number;
+  volatilityRegime?: number; // Optional
   correlationBreakdown?: boolean;
 }
 
@@ -153,6 +158,7 @@ export interface StressTestResult {
   portfolioLoss: number;
   percentageLoss: number;
   worstPosition: string;
+  worstPositions?: string[]; // Alias/extension for backward compatibility
   worstPositionLoss: number;
   varBreach?: boolean; // For backward compatibility
   marginCall: boolean;
@@ -178,11 +184,13 @@ export interface LiquidationConfig {
   deleveragingStrategy: 'proportional' | 'worstFirst' | 'riskWeighted' | 'optimal';
   gracePeriod?: number; // milliseconds before liquidation
   partialLiquidationAllowed: boolean;
+  maxSlippage?: number; // Maximum allowed slippage during liquidation
 }
 
 export interface MarginStatus {
   currentMargin: number;
   usedMargin: number;
+  marginUsed?: number; // Alias for usedMargin
   availableMargin: number;
   marginLevel: number; // percentage
   status: 'safe' | 'warning' | 'marginCall' | 'liquidation';
@@ -191,7 +199,7 @@ export interface MarginStatus {
 }
 
 export interface MarginCallAction {
-  type: 'addFunds' | 'closePosition' | 'reduceSize';
+  type: 'addFunds' | 'closePosition' | 'reduceSize' | 'reducePosition';
   amount?: number;
   positions?: string[];
   deadline: number;
@@ -199,11 +207,13 @@ export interface MarginCallAction {
 }
 
 export interface LiquidationResult {
-  liquidatedPositions: string[];
-  totalLiquidated: number;
-  remainingExposure: number;
-  liquidationCost: number;
-  slippage: number;
+  liquidatedPositions: Position[] | string[]; // Can be Position objects or IDs
+  totalLoss?: number; // Alias for totalLiquidated
+  totalLiquidated?: number;
+  remainingPositions?: Position[];
+  remainingExposure?: number;
+  liquidationCost?: number;
+  slippage?: number;
   finalMarginLevel: number;
   timestamp: number;
 }
@@ -288,6 +298,7 @@ export interface ReentryRule {
 export interface RiskMetrics {
   portfolio: Portfolio;
   var: VaRResult;
+  portfolioVar?: number; // Alias for var.value
   cvar?: CVaRResult;
   sharpeRatio: number;
   sortinoRatio: number;
@@ -299,6 +310,7 @@ export interface RiskMetrics {
   correlation: number;
   informationRatio?: number;
   treynorRatio?: number;
+  trackingError?: number; // Tracking error vs benchmark
   downsideDeviation: number;
   uptime: number;
   lastUpdate: number;
@@ -306,6 +318,7 @@ export interface RiskMetrics {
 
 export interface RiskReport {
   timestamp: number;
+  date?: Date | number; // Alias for timestamp
   portfolio: Portfolio;
   metrics: RiskMetrics;
   stressTests: StressTestResult[];
@@ -319,7 +332,7 @@ export interface RiskReport {
 export interface RiskAlert {
   id: string;
   severity: 'info' | 'warning' | 'critical';
-  type: 'var' | 'margin' | 'drawdown' | 'correlation' | 'liquidity' | 'concentration';
+  type: 'var' | 'margin' | 'drawdown' | 'correlation' | 'liquidity' | 'concentration' | 'var_breach' | 'margin_warning';
   message: string;
   metric?: string;
   currentValue?: number;
@@ -342,8 +355,10 @@ export interface CorrelationMatrix {
   assets: string[];
   matrix: number[][];
   timeframe: number; // days
+  period?: number; // Alias for timeframe
   confidence: number[];
   lastUpdate: number;
+  timestamp?: number; // Alias for lastUpdate
   methodology: 'pearson' | 'spearman' | 'kendall';
 }
 
@@ -509,4 +524,93 @@ export interface PriceData {
   close: number;
   volume: number;
   symbol: string;
+}
+
+// Additional types for backward compatibility
+export interface TradingSignal {
+  symbol: string;
+  action: 'buy' | 'sell' | 'hold';
+  strength: number;
+  confidence: number;
+  source: string;
+  timestamp: number;
+}
+
+export interface PositionSize {
+  symbol: string;
+  recommendedSize: number;
+  maxSize: number;
+  minSize: number;
+  sizingMethod: string;
+  riskContribution: number;
+}
+
+// Execution Integration Types
+export enum RiskViolationType {
+  POSITION_LIMIT = 'POSITION_LIMIT',
+  LEVERAGE_LIMIT = 'LEVERAGE_LIMIT',
+  LEVERAGE = 'LEVERAGE', // Alias
+  DAILY_LOSS_LIMIT = 'DAILY_LOSS_LIMIT',
+  DAILY_LOSS = 'DAILY_LOSS', // Alias
+  ORDER_SIZE_LIMIT = 'ORDER_SIZE_LIMIT',
+  ORDER_SIZE = 'ORDER_SIZE', // Alias
+  MARGIN_REQUIREMENT = 'MARGIN_REQUIREMENT',
+  MARGIN = 'MARGIN', // Alias
+  CONCENTRATION_RISK = 'CONCENTRATION_RISK',
+  CONCENTRATION = 'CONCENTRATION', // Alias
+  OPEN_ORDER_LIMIT = 'OPEN_ORDER_LIMIT',
+  ORDER_COUNT = 'ORDER_COUNT', // Alias
+  MARKET_CONDITION = 'MARKET_CONDITION',
+  LIQUIDITY = 'LIQUIDITY',
+  SLIPPAGE = 'SLIPPAGE',
+  VENUE = 'VENUE'
+}
+
+export interface RiskCheckResult {
+  approved: boolean;
+  violationType?: RiskViolationType;
+  reason?: string;
+  details?: any;
+  maxSlippage?: number;
+  urgency?: 'low' | 'medium' | 'high' | 'critical';
+  allowedVenues?: string[];
+  adjustedSize?: number;
+  riskScore?: number;
+  timestamp: number;
+}
+
+export interface RoutingDecision {
+  orderId: string;
+  routes: OrderRoute[];
+  totalQuantity: number;
+  estimatedCost: number;
+  estimatedSlippage: number;
+  expectedSlippage?: number; // Alias for estimatedSlippage
+  estimatedExecutionTime: number;
+  riskScore: number;
+  timestamp: number;
+}
+
+export interface OrderRoute {
+  venue: string;
+  exchange?: string; // Alias for venue
+  quantity: number;
+  estimatedPrice: number;
+  estimatedFee: number;
+  priority: number;
+  darkPool?: boolean;
+}
+
+
+
+// Risk Assessment Types
+export interface RiskAssessment {
+  portfolio: Portfolio;
+  var: VaRResult;
+  stressTests: StressTestResult[];
+  marginStatus: MarginStatus;
+  riskScore: number;
+  warnings: string[];
+  recommendations: string[];
+  timestamp: number;
 }
