@@ -938,3 +938,230 @@ export interface ServiceHealthStatus {
 
 // Export as HealthStatus for backward compatibility
 export type { ServiceHealthStatus as HealthStatusLegacy };
+
+
+// ============================================================================
+// Node Type System
+// ============================================================================
+
+/**
+ * Node types in the Noderr network
+ */
+export enum NodeType {
+  ORACLE = 'ORACLE',
+  GUARDIAN = 'GUARDIAN',
+  VALIDATOR = 'VALIDATOR'
+}
+
+/**
+ * Node configuration based on type
+ */
+export interface NodeTypeConfig {
+  type: NodeType;
+  capabilities: string[];
+  requiredStake: number;
+  rewardMultiplier: number;
+  maxConcurrentOperations: number;
+  priority: number;
+}
+
+/**
+ * Node registration information
+ */
+export interface NodeRegistration {
+  nodeId: string;
+  type: NodeType;
+  publicKey: string;
+  walletAddress: string;
+  nftTokenId?: string;
+  stakeAmount: number;
+  status: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'DEACTIVATED';
+  registeredAt: number;
+  activatedAt?: number;
+  metadata?: Record<string, any>;
+}
+
+/**
+ * Oracle node specific configuration
+ */
+export interface OracleNodeConfig extends NodeTypeConfig {
+  type: NodeType.ORACLE;
+  dataFeeds: string[];
+  updateInterval: number;
+  aggregationMethod: 'MEDIAN' | 'MEAN' | 'VWAP';
+}
+
+/**
+ * Guardian node specific configuration
+ */
+export interface GuardianNodeConfig extends NodeTypeConfig {
+  type: NodeType.GUARDIAN;
+  monitoringInterval: number;
+  alertThresholds: {
+    maxDrawdown: number;
+    maxPositionSize: number;
+    maxDailyLoss: number;
+    minLiquidity: number;
+  };
+  emergencyActions: string[];
+}
+
+/**
+ * Validator node specific configuration
+ */
+export interface ValidatorNodeConfig extends NodeTypeConfig {
+  type: NodeType.VALIDATOR;
+  consensusAlgorithm: 'BFT' | 'PBFT' | 'RAFT';
+  votingPower: number;
+  blockProposalInterval: number;
+  minValidatorStake: number;
+}
+
+/**
+ * Node function definition
+ */
+export interface NodeFunction {
+  id: string;
+  name: string;
+  description: string;
+  nodeType: NodeType;
+  category: string;
+  priority: number;
+  requiredPermissions: string[];
+  estimatedExecutionTime: number;
+  enabled: boolean;
+}
+
+/**
+ * Node function execution result
+ */
+export interface NodeFunctionResult {
+  functionId: string;
+  nodeId: string;
+  success: boolean;
+  result?: any;
+  error?: string;
+  executionTime: number;
+  timestamp: number;
+}
+
+/**
+ * Inter-node coordination message
+ */
+export interface CoordinationMessage {
+  id: string;
+  from: string;
+  to: string | string[];
+  type: 'REQUEST' | 'RESPONSE' | 'BROADCAST' | 'ALERT';
+  payload: any;
+  timestamp: number;
+  signature: string;
+}
+
+/**
+ * Node health status
+ */
+export interface NodeHealthStatus {
+  nodeId: string;
+  nodeType: NodeType;
+  status: HealthStatus;
+  uptime: number;
+  lastHeartbeat: number;
+  activeFunctions: number;
+  queuedTasks: number;
+  metrics: {
+    cpu: number;
+    memory: number;
+    network: number;
+    disk: number;
+  };
+}
+
+// ============================================================================
+// User Application & NFT System
+// ============================================================================
+
+/**
+ * User application from Typeform
+ */
+export interface UserApplication {
+  id: string;
+  typeformResponseId: string;
+  email: string;
+  walletAddress: string;
+  requestedNodeType: NodeType;
+  stakeAmount: number;
+  experience: string;
+  motivation: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  submittedAt: number;
+  reviewedAt?: number;
+  reviewedBy?: string;
+  rejectionReason?: string;
+  metadata?: Record<string, any>;
+}
+
+/**
+ * Utility NFT information
+ */
+export interface UtilityNFT {
+  tokenId: string;
+  contractAddress: string;
+  owner: string;
+  nodeType: NodeType;
+  nodeId?: string;
+  stakeAmount: number;
+  mintedAt: number;
+  activatedAt?: number;
+  expiresAt?: number;
+  metadata: {
+    name: string;
+    description: string;
+    image: string;
+    attributes: Array<{
+      trait_type: string;
+      value: string | number;
+    }>;
+  };
+}
+
+/**
+ * Node credentials (encrypted)
+ */
+export interface NodeCredentials {
+  nodeId: string;
+  nftTokenId: string;
+  privateKey: string; // Encrypted
+  publicKey: string;
+  apiKeys: Record<string, string>; // Encrypted
+  exchangeCredentials: Record<string, ExchangeCredentials>; // Encrypted
+  createdAt: number;
+  lastRotated?: number;
+}
+
+/**
+ * Exchange credentials
+ */
+export interface ExchangeCredentials {
+  apiKey: string; // Encrypted
+  apiSecret: string; // Encrypted
+  passphrase?: string; // Encrypted
+  testnet?: boolean;
+}
+
+/**
+ * Authorization record
+ */
+export interface Authorization {
+  id: string;
+  applicationId: string;
+  authorizedBy: string;
+  nftTokenId?: string;
+  nodeId?: string;
+  authorizedAt: number;
+  expiresAt?: number;
+  revoked: boolean;
+  revokedAt?: number;
+  revokedBy?: string;
+  revokedReason?: string;
+}
