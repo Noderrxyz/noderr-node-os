@@ -1,4 +1,5 @@
 import { Logger } from 'winston';
+import 'reflect-metadata';
 import { EventEmitter } from 'events';
 
 export interface ServiceMetadata {
@@ -158,9 +159,9 @@ export class DIContainer extends EventEmitter {
     const instance = this.get(token);
 
     // Call init method if exists
-    if (instance && typeof instance.init === 'function') {
+    if (instance && typeof (instance as any).init === 'function') {
       this.logger?.debug(`Initializing service: ${token}`);
-      await instance.init();
+      await (instance as any).init();
     }
 
     service.initialized = true;

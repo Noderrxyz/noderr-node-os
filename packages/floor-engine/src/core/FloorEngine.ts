@@ -10,12 +10,13 @@ import { ethers } from 'ethers';
 import {
   FloorEngineConfig,
   AllocationStrategy,
-  Position,
   PerformanceMetrics,
   RebalanceResult,
   RebalanceAction,
   PerformanceSnapshot,
-} from '@noderr/types';
+  FloorPosition,
+  AdapterCategory,
+} from '../types';
 import { AdapterRegistry } from './AdapterRegistry';
 import { RiskManager } from './RiskManager';
 
@@ -33,7 +34,7 @@ export class FloorEngine extends EventEmitter {
   private riskManager: RiskManager;
 
   private totalDeposited: bigint = 0n;
-  private positions: Position[] = [];
+  private positions: FloorPosition[] = [];
   private performanceHistory: PerformanceSnapshot[] = [];
   private lastRebalance: number = 0;
   private lastHarvest: number = 0;
@@ -113,9 +114,9 @@ export class FloorEngine extends EventEmitter {
     const yieldAmount = (amount * BigInt(allocationStrategy.yield)) / 100n;
 
     // Get enabled adapters by category
-    const lendingAdapters = this.adapterRegistry.getAllAdapters('lending', true);
-    const stakingAdapters = this.adapterRegistry.getAllAdapters('staking', true);
-    const yieldAdapters = this.adapterRegistry.getAllAdapters('yield', true);
+    const lendingAdapters = this.adapterRegistry.getAllAdapters(AdapterCategory.LENDING, true);
+    const stakingAdapters = this.adapterRegistry.getAllAdapters(AdapterCategory.STAKING, true);
+    const yieldAdapters = this.adapterRegistry.getAllAdapters(AdapterCategory.YIELD, true);
 
     // Allocate to lending adapters
     if (lendingAmount > 0n && lendingAdapters.length > 0) {
@@ -288,7 +289,7 @@ export class FloorEngine extends EventEmitter {
    * 
    * @returns Array of positions
    */
-  async getPositions(): Promise<Position[]> {
+  async getPositions(): Promise<FloorPosition[]> {
     await this.updatePositions();
     return [...this.positions]; // Return copy
   }

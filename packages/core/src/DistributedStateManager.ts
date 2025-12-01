@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import * as Redis from 'ioredis';
+import Redis, { Cluster } from 'ioredis';
 import CircuitBreaker from 'opossum';
 import { Logger } from 'winston';
 import { createHash } from 'crypto';
@@ -34,7 +34,7 @@ export interface StateOptions {
 }
 
 export class DistributedStateManager extends EventEmitter {
-  private redis: Redis.Redis | Redis.Cluster;
+  private redis: Redis | Cluster;
   private breaker: CircuitBreaker;
   private logger: Logger;
   private config: StateManagerConfig;
@@ -48,7 +48,7 @@ export class DistributedStateManager extends EventEmitter {
 
     // Initialize Redis connection
     if (config.redis.cluster) {
-      this.redis = new Redis.Cluster(
+      this.redis = new Cluster(
         config.redis.sentinels || [{ host: config.redis.host, port: config.redis.port }],
         {
           redisOptions: {
@@ -118,7 +118,7 @@ export class DistributedStateManager extends EventEmitter {
         return null;
       }
 
-      let value = result;
+      let value = result as string;
 
       // Decompress if needed
       if (this.isCompressed(value)) {
@@ -214,7 +214,7 @@ export class DistributedStateManager extends EventEmitter {
         await this.breaker.fire('expire', fullKey, options.ttl);
       }
 
-      return result;
+      return result as number;
     } catch (error) {
       this.logger.error('Failed to increment', { key: fullKey, error });
       throw error;
@@ -226,11 +226,11 @@ export class DistributedStateManager extends EventEmitter {
     const results = new Map<string, T>();
 
     try {
-      const values = await this.breaker.fire('mget', ...fullKeys);
+      const values = await this.breaker.fire('mget', ...fullKeys) as string[];
       
       for (let i = 0; i < keys.length; i++) {
         if (values[i]) {
-          let value = values[i];
+          let value = values[i] as string;
           
           if (this.isCompressed(value)) {
             value = await this.decompress(value);

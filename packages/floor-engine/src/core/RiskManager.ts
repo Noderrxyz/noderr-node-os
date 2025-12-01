@@ -9,9 +9,9 @@ import { EventEmitter } from 'events';
 import {
   RiskParameters,
   RiskMetrics,
-  Position,
+  FloorPosition,
   AdapterMetadata,
-} from '@noderr/types';
+} from '../types';
 import { AdapterRegistry } from './AdapterRegistry';
 
 /**
@@ -45,7 +45,7 @@ export class RiskManager extends EventEmitter {
   async validateAllocation(
     adapterId: string,
     amount: bigint,
-    currentPositions: Position[]
+    currentPositions: FloorPosition[]
   ): Promise<{ valid: boolean; reason?: string }> {
     // Check if system is paused
     if (this.isPaused) {
@@ -201,7 +201,7 @@ export class RiskManager extends EventEmitter {
    * @param positions Current positions
    * @returns Total exposure to protocol
    */
-  getProtocolExposure(protocol: string, positions: Position[]): bigint {
+  getProtocolExposure(protocol: string, positions: FloorPosition[]): bigint {
     return this.calculateProtocolExposure(protocol, positions);
   }
 
@@ -212,7 +212,7 @@ export class RiskManager extends EventEmitter {
    * @param positions Current positions
    * @returns Total exposure to chain
    */
-  getChainExposure(chain: string, positions: Position[]): bigint {
+  getChainExposure(chain: string, positions: FloorPosition[]): bigint {
     return this.calculateChainExposure(chain, positions);
   }
 
@@ -223,7 +223,7 @@ export class RiskManager extends EventEmitter {
    * @param totalDeposited Total capital deposited
    * @returns Risk metrics
    */
-  calculateRiskMetrics(positions: Position[], totalDeposited: bigint): RiskMetrics {
+  calculateRiskMetrics(positions: FloorPosition[], totalDeposited: bigint): RiskMetrics {
     // Calculate total exposure
     const totalExposure = positions.reduce((sum, p) => sum + p.value, 0n);
 
@@ -374,7 +374,7 @@ export class RiskManager extends EventEmitter {
    * @param positions Current positions
    * @returns Total exposure to protocol
    */
-  private calculateProtocolExposure(protocol: string, positions: Position[]): bigint {
+  private calculateProtocolExposure(protocol: string, positions: FloorPosition[]): bigint {
     return positions
       .filter((p) => p.protocol === protocol)
       .reduce((sum, p) => sum + p.value, 0n);
@@ -387,7 +387,7 @@ export class RiskManager extends EventEmitter {
    * @param positions Current positions
    * @returns Total exposure to chain
    */
-  private calculateChainExposure(chain: string, positions: Position[]): bigint {
+  private calculateChainExposure(chain: string, positions: FloorPosition[]): bigint {
     return positions
       .filter((p) => {
         const metadata = this.adapterRegistry.getMetadata(p.adapterId);

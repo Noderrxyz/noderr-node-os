@@ -5,7 +5,7 @@ import {
   RiskAlert,
   RiskEngineError,
   RiskErrorCode
-} from '@noderr/types';
+} from '../types';
 import { Logger } from 'winston';
 import EventEmitter from 'events';
 

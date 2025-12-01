@@ -13,7 +13,7 @@ import {
   ILendingAdapter,
   IStakingAdapter,
   IYieldAdapter,
-} from '@noderr/types';
+} from '../types';
 
 /**
  * Base adapter interface that all adapters must implement
@@ -53,7 +53,6 @@ export class AdapterRegistry extends EventEmitter {
     this.adaptersByCategory.set(AdapterCategory.LENDING, new Set());
     this.adaptersByCategory.set(AdapterCategory.STAKING, new Set());
     this.adaptersByCategory.set(AdapterCategory.YIELD, new Set());
-    this.adaptersByCategory.set(AdapterCategory.LIQUIDITY, new Set());
   }
 
   /**

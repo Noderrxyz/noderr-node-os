@@ -88,7 +88,7 @@ export class TelemetrySystem {
         const prometheusExporter = new PrometheusExporter({
           port: this.config.prometheus.port,
         }, () => {
-          this.logger.info(`Prometheus metrics server started on port ${this.config.prometheus.port}`);
+          this.logger.info(`Prometheus metrics server started on port ${this.config.prometheus?.port}`);
         });
         metricReaders.push(prometheusExporter);
       }
@@ -103,7 +103,7 @@ export class TelemetrySystem {
       // Initialize SDK
       this.sdk = new NodeSDK({
         resource,
-        spanProcessors,
+        spanProcessor: spanProcessors[0] as any, // Use first span processor
         instrumentations: [
           getNodeAutoInstrumentations({
             '@opentelemetry/instrumentation-fs': {
@@ -112,7 +112,8 @@ export class TelemetrySystem {
           }),
           new HttpInstrumentation({
             requestHook: (span, request) => {
-              span.setAttribute('http.request.body', JSON.stringify(request.body));
+              // Skip body logging to avoid type issues
+              span.setAttribute('http.method', 'request' in request ? 'HTTP' : 'HTTPS');
             },
           }),
           new GrpcInstrumentation(),
@@ -252,7 +253,7 @@ export class TelemetrySystem {
   registerGauge(name: string, description: string, callback?: () => number): void {
     if (callback) {
       const gauge = this.meter.createObservableGauge(name, { description });
-      gauge.addCallback((observableResult) => {
+      gauge.addCallback((observableResult: any) => {
         observableResult.observe(callback());
       });
       this.gauges.set(name, gauge);

@@ -468,6 +468,10 @@ export interface RiskParameters {
   emergencyPauseEnabled?: boolean;
   allowedTokens?: string[];
   allowedProtocols?: string[];
+  maxAllocationPerAdapter?: number;
+  maxAllocationPerProtocol?: number;
+  maxAllocationPerChain?: number;
+  maxSlippageBps?: number;
 }
 
 export enum AdapterCategory {
@@ -552,3 +556,8 @@ export interface PerformanceSnapshot {
   positions: Position[];
   riskMetrics: RiskMetrics;
 }
+
+// ============================================================================
+// ML and AI Types
+// ============================================================================
+export * from './ml-types';

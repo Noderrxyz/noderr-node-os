@@ -16,11 +16,11 @@ import {
   RiskEngineError,
   RiskErrorCode,
   RiskTelemetry
-} from '@noderr/types';
-import { VaRCalculator } from '@noderr/core/VaRCalculator';
-import { PositionSizer } from '@noderr/core/PositionSizer';
-import { StressTester } from '@noderr/core/StressTester';
-import { LiquidationTrigger } from '@noderr/core/LiquidationTrigger';
+} from '../types';
+import { VaRCalculator } from '../core/VaRCalculator';
+import { PositionSizer } from '../core/PositionSizer';
+import { StressTester } from '../core/StressTester';
+import { LiquidationTrigger } from '../core/LiquidationTrigger';
 import { CircuitBreakerService } from '../capital-protection/CircuitBreakerService';
 import { Logger } from 'winston';
 import EventEmitter from 'events';

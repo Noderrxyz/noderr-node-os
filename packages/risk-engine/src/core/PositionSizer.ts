@@ -8,7 +8,7 @@ import {
   RiskEngineError,
   RiskErrorCode,
   CorrelationMatrix
-} from '@noderr/types';
+} from '../types';
 import * as ss from 'simple-statistics';
 import { Logger } from 'winston';
 

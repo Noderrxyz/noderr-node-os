@@ -12,7 +12,7 @@ import {
   RiskLimits,
   RiskViolationType,
   MarketCondition
-} from '@noderr/types';
+} from './types';
 
 export interface RiskAwareRoutingOptions {
   maxSlippage: number;

@@ -13,7 +13,11 @@ import { BigNumberish } from 'ethers';
 /**
  * Adapter category classification
  */
-export type AdapterCategory = 'lending' | 'staking' | 'yield';
+export enum AdapterCategory {
+  LENDING = 'lending',
+  STAKING = 'staking',
+  YIELD = 'yield'
+}
 
 /**
  * Risk level classification
@@ -133,7 +137,7 @@ export interface IYieldAdapter {
 /**
  * Generic position across all adapter types
  */
-export interface Position {
+export interface FloorPosition {
   adapterId: string;
   protocol: string;
   category: AdapterCategory;
@@ -212,7 +216,7 @@ export interface PerformanceMetrics {
   averageAPY: number; // 30-day rolling average
   sharpeRatio: number;
   maxDrawdown: number;
-  positions: Position[];
+  positions: FloorPosition[];
   lastRebalance: number; // timestamp
   lastHarvest: number; // timestamp
 }
@@ -224,7 +228,7 @@ export interface PerformanceSnapshot {
   timestamp: number;
   totalValue: bigint;
   apy: number;
-  positions: Position[];
+  positions: FloorPosition[];
 }
 
 // ============================================================================

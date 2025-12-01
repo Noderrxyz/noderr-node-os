@@ -21,12 +21,17 @@ export interface Position {
   symbol: string;
   side: 'long' | 'short';
   size: number;
+  quantity: number; // Alias for size for backward compatibility
   entryPrice: number;
   currentPrice: number;
   unrealizedPnL: number;
   realizedPnL: number;
   margin: number;
   liquidationPrice: number;
+  leverage?: number;
+  marginRequired?: number; // For backward compatibility
+  positionType?: 'long' | 'short'; // Alias for side
+  averagePrice?: number; // Alias for entryPrice
   stopLoss?: number;
   takeProfit?: number;
   openTime: number;
@@ -36,6 +41,7 @@ export interface Position {
 export interface Asset {
   symbol: string;
   price: number;
+  type?: 'crypto' | 'forex' | 'stock' | 'commodity'; // For backward compatibility
   volatility: number;
   volume24h: number;
   marketCap?: number;
@@ -44,6 +50,19 @@ export interface Asset {
 
 // VaR Types
 export interface VaRConfig {
+  confidenceLevel: number; // 0.95 or 0.99
+  lookbackPeriod: number; // days
+  method: 'parametric' | 'historical' | 'monteCarlo';
+  methodology?: 'parametric' | 'historical' | 'monteCarlo'; // Alias for method
+  timeHorizon: number;
+  correlationMatrix?: CorrelationMatrix;
+  decayFactor?: number; // for exponential weighting
+}
+
+// Alias for backward compatibility
+export type VaRCalculatorConfig = VaRConfig;
+
+export interface _VaRConfig_OLD {
   confidenceLevel: number; // 0.95 or 0.99
   lookbackPeriod: number; // days
   methodology: 'parametric' | 'historical' | 'monteCarlo';
@@ -87,6 +106,7 @@ export interface PositionSizerConfig {
 }
 
 export interface PositionLimits {
+  maxLeverage?: number; // For backward compatibility
   maxPositionSize: number;
   maxPortfolioExposure: number;
   maxSectorExposure?: number;
@@ -118,8 +138,12 @@ export interface StressScenario {
 export interface HistoricalEvent {
   name: string;
   date: Date;
+  startDate?: Date; // For backward compatibility
+  endDate?: Date; // For backward compatibility
   description: string;
   marketMoves: Record<string, number>;
+  affectedAssets?: string[]; // For backward compatibility
+  marketConditions?: any; // For backward compatibility
   volatilityRegime: number;
   correlationBreakdown?: boolean;
 }
@@ -130,6 +154,7 @@ export interface StressTestResult {
   percentageLoss: number;
   worstPosition: string;
   worstPositionLoss: number;
+  varBreach?: boolean; // For backward compatibility
   marginCall: boolean;
   liquidation: boolean;
   recoveryTime?: number;
@@ -342,7 +367,14 @@ export interface Scenario {
   marketConditions: MarketCondition[];
 }
 
-export interface MarketCondition {
+export enum MarketCondition {
+  CALM = 'CALM',
+  NORMAL = 'NORMAL',
+  VOLATILE = 'VOLATILE',
+  EXTREME = 'EXTREME'
+}
+
+export interface MarketConditionRule {
   metric: string;
   operator: '>' | '<' | '=' | '>=' | '<=';
   value: number;
@@ -453,4 +485,28 @@ export class RiskEngineError extends Error {
     super(message);
     this.name = 'RiskEngineError';
   }
-} 
+}
+
+ 
+// Telemetry types for backward compatibility
+export interface TelemetryClient {
+  track(event: any): void;
+  flush(): Promise<void>;
+}
+
+export interface RiskTelemetryEvent {
+  eventType: string;
+  data: any;
+  duration?: number;
+  timestamp: number;
+}
+
+export interface PriceData {
+  timestamp: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  symbol: string;
+}

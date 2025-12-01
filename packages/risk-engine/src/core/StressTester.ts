@@ -10,7 +10,7 @@ import {
   MarketCondition,
   RiskEngineError,
   RiskErrorCode
-} from '@noderr/types';
+} from '../types';
 import * as math from 'mathjs';
 import * as ss from 'simple-statistics';
 import { Logger } from 'winston';
