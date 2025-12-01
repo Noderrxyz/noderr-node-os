@@ -1,0 +1,23 @@
+{
+  "name": "@noderr/typeform-integration",
+  "version": "1.0.0",
+  "description": "Typeform integration for Noderr node operator applications",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@noderr/types": "workspace:*",
+    "@noderr/utils": "workspace:*",
+    "@types/pg": "^8.15.6",
+    "axios": "^1.6.0",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  }
+}
