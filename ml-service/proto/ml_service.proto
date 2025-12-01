@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package noderr.ml;
+
+// ML Service for PyTorch-based predictions
+service MLService {
+  // Get price predictions from Transformer ensemble
+  rpc Predict(PredictRequest) returns (PredictResponse);
+  
+  // Classify market regime using GAF-CNN
+  rpc ClassifyRegime(RegimeRequest) returns (RegimeResponse);
+  
+  // Generate 94-characteristic features
+  rpc GenerateFeatures(FeatureRequest) returns (FeatureResponse);
+  
+  // Batch predictions for multiple symbols
+  rpc BatchPredict(BatchPredictRequest) returns (BatchPredictResponse);
+  
+  // Health check
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+// Request for price prediction
+message PredictRequest {
+  string symbol = 1;
+  repeated float features = 2;  // Flattened array: batch_size * seq_len * n_features
+  int32 batch_size = 3;
+  int32 seq_len = 4;
+  int32 n_features = 5;
+}
+
+// Response with price prediction
+message PredictResponse {
+  string symbol = 1;
+  float predicted_return = 2;
+  float predicted_volatility = 3;
+  float confidence = 4;
+  int32 model_count = 5;
+  float latency_ms = 6;
+}
+
+// Request for regime classification
+message RegimeRequest {
+  string symbol = 1;
+  repeated float prices = 2;  // Price history
+}
+
+// Response with regime classification
+message RegimeResponse {
+  string symbol = 1;
+  string regime = 2;  // BULL, BEAR, SIDEWAYS, VOLATILE
+  float confidence = 3;
+  float bull_prob = 4;
+  float bear_prob = 5;
+  float sideways_prob = 6;
+  float volatile_prob = 7;
+  float latency_ms = 8;
+}
+
+// Request for feature generation
+message FeatureRequest {
+  string symbol = 1;
+  repeated float open = 2;
+  repeated float high = 3;
+  repeated float low = 4;
+  repeated float close = 5;
+  repeated float volume = 6;
+}
+
+// Response with generated features
+message FeatureResponse {
+  string symbol = 1;
+  repeated float features = 2;  // 94 features
+  int32 feature_count = 3;
+  float latency_ms = 4;
+}
+
+// Request for batch prediction
+message BatchPredictRequest {
+  repeated string symbols = 1;
+  repeated float features = 2;  // Flattened for all symbols
+  int32 seq_len = 3;
+  int32 n_features = 4;
+}
+
+// Response with batch predictions
+message BatchPredictResponse {
+  repeated PredictResponse predictions = 1;
+  float total_latency_ms = 2;
+}
+
+// Health check request
+message HealthCheckRequest {
+  string service = 1;
+}
+
+// Health check response
+message HealthCheckResponse {
+  string status = 1;  // SERVING, NOT_SERVING
+  int64 uptime_seconds = 2;
+  int64 request_count = 3;
+  float avg_latency_ms = 4;
+  string version = 5;
+}

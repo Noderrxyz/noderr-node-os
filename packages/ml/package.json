@@ -1,95 +1,20 @@
 {
   "name": "@noderr/ml",
   "version": "1.0.0",
-  "description": "Unified ML/AI engine for Noderr Protocol - Advanced models, online learning, and strategy evolution",
+  "description": "Machine Learning service integration for Noderr Protocol - PyTorch backend via gRPC",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc -w",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix",
-    "train": "ts-node src/scripts/train.ts",
-    "benchmark": "ts-node src/benchmarks/run-all.ts",
-    "clean": "rimraf dist coverage",
-    "prepare": "npm run clean && npm run build"
+    "build": "tsc"
   },
-  "keywords": [
-    "ml",
-    "ai",
-    "machine-learning",
-    "deep-learning",
-    "reinforcement-learning",
-    "trading",
-    "prediction",
-    "neural-networks"
-  ],
-  "author": "Noderr Protocol Team",
-  "license": "MIT",
   "dependencies": {
+    "@noderr/ml-client": "workspace:*",
     "@noderr/types": "workspace:*",
     "@noderr/utils": "workspace:*",
-    "@noderr/telemetry": "workspace:*",
-    "@noderr/execution": "workspace:*",
-    "@noderr/risk-engine": "workspace:*",
-    "@tensorflow/tfjs": "^4.17.0",
-    "@tensorflow/tfjs-node": "^4.17.0",
-    "brain.js": "^2.0.0-beta.23",
-    "synaptic": "^1.1.4",
-    "ml-matrix": "^6.10.5",
-    "ml-regression": "^5.0.0",
-    "ml-kmeans": "^6.0.0",
-    "ml-random-forest": "^2.0.0",
-    "simple-statistics": "^7.8.3",
-    "mathjs": "^12.4.0",
-    "gaussian": "^1.3.0",
-    "genetic-js": "^0.1.14",
-    "natural": "^6.10.0",
-    "compromise": "^14.10.0",
-    "sentiment": "^5.0.2",
-    "technicalindicators": "^3.1.0",
-    "lodash": "^4.17.21",
-    "uuid": "^9.0.1",
-    "winston": "^3.11.0",
-    "node-cache": "^5.1.2",
-    "p-queue": "^6.6.2"
+    "@noderr/telemetry": "workspace:*"
   },
   "devDependencies": {
-    "@types/gaussian": "^1.2.2",
-    "@types/jest": "^29.5.12",
-    "@types/lodash": "^4.14.202",
-    "@types/node": "^20.11.24",
-    "@types/uuid": "^9.0.8",
-    "@typescript-eslint/eslint-plugin": "^7.1.0",
-    "@typescript-eslint/parser": "^7.1.0",
-    "eslint": "^8.57.0",
-    "jest": "^29.7.0",
-    "rimraf": "^5.0.5",
-    "sinon": "^17.0.1",
-    "ts-jest": "^29.1.2",
-    "ts-node": "^10.9.2",
+    "@types/node": "^20.10.0",
     "typescript": "^5.3.3"
-  },
-  "optionalDependencies": {
-    "@tensorflow/tfjs-node-gpu": "^4.17.0",
-    "onnxruntime-node": "^1.17.0"
-  },
-  "peerDependencies": {
-    "@noderr/types": "workspace:*",
-    "@noderr/utils": "workspace:*",
-    "@noderr/telemetry": "workspace:*",
-    "@noderr/execution": "workspace:*",
-    "@noderr/risk-engine": "workspace:*"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/noderr/protocol.git",
-    "directory": "packages/ml"
   }
-} 
+}

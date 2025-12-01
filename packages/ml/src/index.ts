@@ -1,26 +1,247 @@
 /**
- * @noderr/ml - Unified ML/AI engine
- * Production-ready machine learning models for algorithmic trading
+ * Noderr ML Package - PyTorch Backend Integration
+ * 
+ * High-level API for machine learning predictions using PyTorch models
+ * served via gRPC. Provides clean interface for:
+ * - Price predictions (Transformer ensemble)
+ * - Market regime classification (GAF-CNN)
+ * - Feature engineering (94 characteristics)
  */
 
-// Core ML Models
-export { TransformerPredictor } from './TransformerPredictor';
-export { ReinforcementLearner } from './ReinforcementLearner';
-export { StrategyEvolution } from './StrategyEvolution';
-export { FeatureEngineer } from './FeatureEngineer';
+import { MLClient, MLClientConfig, PredictRequest, RegimeRequest, FeatureRequest } from '@noderr/ml-client';
+import { EventEmitter } from 'events';
 
-// Advanced Components
-export { AICoreService } from './AICoreService';
-export { ModelOrchestrator } from './ModelOrchestrator';
-export { FractalPatternDetector } from './FractalPatternDetector';
-export { MarketRegimeClassifier } from './MarketRegimeClassifier';
+export interface MLServiceConfig {
+  mlServiceHost?: string;
+  mlServicePort?: number;
+  timeout?: number;
+  maxRetries?: number;
+  autoReconnect?: boolean;
+}
 
-// Type Exports
-export type { MarketRegime, RegimeTransition, RegimeFeatures } from './MarketRegimeTypes';
+export interface PricePrediction {
+  symbol: string;
+  expectedReturn: number;
+  volatility: number;
+  confidence: number;
+  timestamp: number;
+}
 
-// Aliases for backward compatibility
-export { ReinforcementLearner as RLTrader } from './ReinforcementLearner';
-export { FeatureEngineer as FeatureEngine } from './FeatureEngineer';
+export interface MarketRegimeResult {
+  symbol: string;
+  regime: 'BULL' | 'BEAR' | 'SIDEWAYS' | 'VOLATILE';
+  confidence: number;
+  probabilities: {
+    bull: number;
+    bear: number;
+    sideways: number;
+    volatile: number;
+  };
+  timestamp: number;
+}
 
-// Version
-export const VERSION = '1.0.0';
+export interface FeatureSet {
+  symbol: string;
+  features: number[];
+  featureCount: number;
+  timestamp: number;
+}
+
+/**
+ * Main ML Service class
+ */
+export class MLService extends EventEmitter {
+  private client: MLClient;
+  private config: Required<MLServiceConfig>;
+  private initialized: boolean = false;
+
+  constructor(config: MLServiceConfig = {}) {
+    super();
+
+    this.config = {
+      mlServiceHost: config.mlServiceHost || process.env.ML_SERVICE_HOST || 'localhost',
+      mlServicePort: config.mlServicePort || parseInt(process.env.ML_SERVICE_PORT || '50051'),
+      timeout: config.timeout || 30000,
+      maxRetries: config.maxRetries || 3,
+      autoReconnect: config.autoReconnect !== false
+    };
+
+    this.client = new MLClient({
+      host: this.config.mlServiceHost,
+      port: this.config.mlServicePort,
+      timeout: this.config.timeout,
+      maxRetries: this.config.maxRetries
+    });
+
+    this.setupEventHandlers();
+    this.initialized = true;
+  }
+
+  private setupEventHandlers(): void {
+    this.client.on('connected', () => {
+      this.emit('connected');
+    });
+
+    this.client.on('disconnected', () => {
+      this.emit('disconnected');
+      if (this.config.autoReconnect) {
+        // Reconnection logic would go here
+      }
+    });
+
+    this.client.on('error', (error) => {
+      this.emit('error', error);
+    });
+  }
+
+  /**
+   * Get price prediction for a symbol
+   * 
+   * @param symbol - Trading symbol
+   * @param features - Feature array (batch_size * seq_len * n_features)
+   * @param batchSize - Batch size (default: 1)
+   * @param seqLen - Sequence length (default: 60)
+   * @param nFeatures - Number of features (default: 94)
+   */
+  async predictPrice(
+    symbol: string,
+    features: number[],
+    batchSize: number = 1,
+    seqLen: number = 60,
+    nFeatures: number = 94
+  ): Promise<PricePrediction> {
+    if (!this.initialized) {
+      throw new Error('MLService not initialized');
+    }
+
+    const request: PredictRequest = {
+      symbol,
+      features,
+      batch_size: batchSize,
+      seq_len: seqLen,
+      n_features: nFeatures
+    };
+
+    const response = await this.client.predict(request);
+
+    return {
+      symbol: response.symbol,
+      expectedReturn: response.predicted_return,
+      volatility: response.predicted_volatility,
+      confidence: response.confidence,
+      timestamp: Date.now()
+    };
+  }
+
+  /**
+   * Classify market regime for a symbol
+   * 
+   * @param symbol - Trading symbol
+   * @param prices - Price history array
+   */
+  async classifyRegime(symbol: string, prices: number[]): Promise<MarketRegimeResult> {
+    if (!this.initialized) {
+      throw new Error('MLService not initialized');
+    }
+
+    const request: RegimeRequest = {
+      symbol,
+      prices
+    };
+
+    const response = await this.client.classifyRegime(request);
+
+    return {
+      symbol: response.symbol,
+      regime: response.regime,
+      confidence: response.confidence,
+      probabilities: {
+        bull: response.bull_prob,
+        bear: response.bear_prob,
+        sideways: response.sideways_prob,
+        volatile: response.volatile_prob
+      },
+      timestamp: Date.now()
+    };
+  }
+
+  /**
+   * Generate 94-characteristic features from OHLCV data
+   * 
+   * @param symbol - Trading symbol
+   * @param ohlcv - OHLCV data
+   */
+  async generateFeatures(
+    symbol: string,
+    ohlcv: {
+      open: number[];
+      high: number[];
+      low: number[];
+      close: number[];
+      volume: number[];
+    }
+  ): Promise<FeatureSet> {
+    if (!this.initialized) {
+      throw new Error('MLService not initialized');
+    }
+
+    const request: FeatureRequest = {
+      symbol,
+      ...ohlcv
+    };
+
+    const response = await this.client.generateFeatures(request);
+
+    return {
+      symbol: response.symbol,
+      features: response.features,
+      featureCount: response.feature_count,
+      timestamp: Date.now()
+    };
+  }
+
+  /**
+   * Check if ML service is healthy
+   */
+  async isHealthy(): Promise<boolean> {
+    try {
+      const response = await this.client.healthCheck('ml');
+      return response.status === 'SERVING';
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Get ML service status
+   */
+  async getStatus(): Promise<{
+    healthy: boolean;
+    uptime: number;
+    requestCount: number;
+    avgLatency: number;
+    version: string;
+  }> {
+    const response = await this.client.healthCheck('ml');
+    
+    return {
+      healthy: response.status === 'SERVING',
+      uptime: response.uptime_seconds,
+      requestCount: response.request_count,
+      avgLatency: response.avg_latency_ms,
+      version: response.version
+    };
+  }
+
+  /**
+   * Close ML service connection
+   */
+  close(): void {
+    this.client.close();
+    this.initialized = false;
+  }
+}
+
+// Export types and client
+export * from '@noderr/ml-client';
+export { MLClient };

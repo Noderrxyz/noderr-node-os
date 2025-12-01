@@ -1,0 +1,23 @@
+{
+  "name": "@noderr/ml-client",
+  "version": "1.0.0",
+  "description": "gRPC client for Noderr PyTorch ML Service",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "proto:generate": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./src --grpc_out=grpc_js:./src --ts_out=grpc_js:./src -I ../../ml-service/proto ../../ml-service/proto/ml_service.proto"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.9.0",
+    "@grpc/proto-loader": "^0.7.10",
+    "@noderr/types": "workspace:*",
+    "@noderr/telemetry": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "grpc-tools": "^1.12.4",
+    "grpc_tools_node_protoc_ts": "^5.3.3",
+    "typescript": "^5.3.3"
+  }
+}

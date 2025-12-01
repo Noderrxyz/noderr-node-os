@@ -62,7 +62,7 @@ importers:
         version: link:../market-intel
       '@noderr/ml':
         specifier: workspace:*
-        version: link:../ml
+        version: link:../ml-tensorflow-old
       '@noderr/risk-engine':
         specifier: workspace:*
         version: link:../risk-engine
@@ -138,7 +138,7 @@ importers:
         version: link:../market-intel
       '@noderr/ml':
         specifier: workspace:*
-        version: link:../ml
+        version: link:../ml-tensorflow-old
       '@noderr/risk-engine':
         specifier: workspace:*
         version: link:../risk-engine
@@ -762,6 +762,84 @@ importers:
 
   packages/ml:
     dependencies:
+      '@noderr/ml-client':
+        specifier: workspace:*
+        version: link:../ml-client
+      '@noderr/telemetry':
+        specifier: workspace:*
+        version: link:../telemetry
+      '@noderr/types':
+        specifier: workspace:*
+        version: link:../types
+      '@noderr/utils':
+        specifier: workspace:*
+        version: link:../utils
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.25
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  packages/ml-client:
+    dependencies:
+      '@grpc/grpc-js':
+        specifier: ^1.9.0
+        version: 1.14.1
+      '@grpc/proto-loader':
+        specifier: ^0.7.10
+        version: 0.7.15
+      '@noderr/telemetry':
+        specifier: workspace:*
+        version: link:../telemetry
+      '@noderr/types':
+        specifier: workspace:*
+        version: link:../types
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.25
+      grpc-tools:
+        specifier: ^1.12.4
+        version: 1.13.0(encoding@0.1.13)
+      grpc_tools_node_protoc_ts:
+        specifier: ^5.3.3
+        version: 5.3.3
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  packages/ml-deployment:
+    dependencies:
+      '@aws-sdk/client-s3':
+        specifier: ^3.450.0
+        version: 3.940.0
+      '@supabase/supabase-js':
+        specifier: ^2.38.4
+        version: 2.86.0
+      '@tensorflow/tfjs-node':
+        specifier: ^4.11.0
+        version: 4.22.0(encoding@0.1.13)(seedrandom@3.0.5)
+      tar:
+        specifier: ^6.2.0
+        version: 6.2.1
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.25
+      '@types/tar':
+        specifier: ^6.1.7
+        version: 6.1.13
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+
+  packages/ml-tensorflow-old:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.20.0
+        version: 0.20.9(encoding@0.1.13)
       '@noderr/execution':
         specifier: workspace:*
         version: link:../execution
@@ -819,6 +897,9 @@ importers:
       node-cache:
         specifier: ^5.1.2
         version: 5.1.2
+      openai:
+        specifier: ^4.28.0
+        version: 4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76)
       p-queue:
         specifier: ^6.6.2
         version: 6.6.2
@@ -840,6 +921,9 @@ importers:
       winston:
         specifier: ^3.11.0
         version: 3.18.3
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
     devDependencies:
       '@types/gaussian':
         specifier: ^1.2.2
@@ -890,31 +974,6 @@ importers:
       onnxruntime-node:
         specifier: ^1.17.0
         version: 1.23.2
-
-  packages/ml-deployment:
-    dependencies:
-      '@aws-sdk/client-s3':
-        specifier: ^3.450.0
-        version: 3.940.0
-      '@supabase/supabase-js':
-        specifier: ^2.38.4
-        version: 2.86.0
-      '@tensorflow/tfjs-node':
-        specifier: ^4.11.0
-        version: 4.22.0(encoding@0.1.13)(seedrandom@3.0.5)
-      tar:
-        specifier: ^6.2.0
-        version: 6.2.1
-    devDependencies:
-      '@types/node':
-        specifier: ^20.0.0
-        version: 20.19.25
-      '@types/tar':
-        specifier: ^6.1.7
-        version: 6.1.13
-      typescript:
-        specifier: ^5.0.0
-        version: 5.9.3
 
   packages/network-optimizer:
     dependencies:
@@ -1063,7 +1122,7 @@ importers:
         version: link:../market-intel
       '@noderr/ml':
         specifier: workspace:*
-        version: link:../ml
+        version: link:../ml-tensorflow-old
       '@tensorflow/tfjs':
         specifier: ^4.11.0
         version: 4.22.0(encoding@0.1.13)(seedrandom@3.0.5)
@@ -1389,6 +1448,9 @@ packages:
 
   '@adraffy/ens-normalize@1.11.1':
     resolution: {integrity: sha512-nhCBV3quEgesuf7c7KYfperqSS14T8bYuvJ8PcLJp6znkZpFc0AuW4qBtr8eKVyPPe/8RSr7sglCWPU5eaxwKQ==}
+
+  '@anthropic-ai/sdk@0.20.9':
+    resolution: {integrity: sha512-Lq74+DhiEQO6F9/gdVOLmHx57pX45ebK2Q/zH14xYe1157a7QeUVknRqIp0Jz5gQI01o7NKbuv9Dag2uQsLjDg==}
 
   '@assemblyscript/loader@0.19.23':
     resolution: {integrity: sha512-ulkCYfFbYj01ie1MDOyxv2F6SpRN1TOj7fQxbP07D6HmeR+gr2JLSmINKjga2emB+b1L2KGrFKBTc+e00p54nw==}
@@ -3830,6 +3892,10 @@ packages:
       zod:
         optional: true
 
+  abort-controller@3.0.0:
+    resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
+    engines: {node: '>=6.5'}
+
   abort-error@1.0.1:
     resolution: {integrity: sha512-fxqCblJiIPdSXIUrxI0PL+eJG49QdP9SQ70qtB65MVAoMr2rASlOyAbJFOylfB467F/f+5BCLJJq58RYi7mGfg==}
 
@@ -4665,6 +4731,10 @@ packages:
   event-iterator@2.0.0:
     resolution: {integrity: sha512-KGft0ldl31BZVV//jj+IAIGCxkvvUkkON+ScH6zfoX+l+omX6001ggyRSpI0Io2Hlro0ThXotswCtfzS8UkIiQ==}
 
+  event-target-shim@5.0.1:
+    resolution: {integrity: sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==}
+    engines: {node: '>=6'}
+
   eventemitter3@3.1.2:
     resolution: {integrity: sha512-tvtQIeLVHjDkJYnzf2dgVMxfuSGJeM/7UCG17TT4EumTfNtF+0nebF/4zWOIkCreAbtNqhGEboB6BWrwqNaw4Q==}
 
@@ -4783,6 +4853,9 @@ packages:
     resolution: {integrity: sha512-gIXjKqtFuWEgzFRJA9WCQeSJLZDjgJUOMCMzxtvFq/37KojM1BFGufqsCy0r4qSQmYLsZYMeyRqzIWOMup03sw==}
     engines: {node: '>=14'}
 
+  form-data-encoder@1.7.2:
+    resolution: {integrity: sha512-qfqtYan3rxrnCk1VYaA4H+Ms9xdpPqvLZa6xmMgFvhO32x7/3J/ExcTd6qpxM0vH2GdMI+poehyBZvqfMTto8A==}
+
   form-data@2.5.5:
     resolution: {integrity: sha512-jqdObeR2rxZZbPSGL+3VckHMYtu+f9//KXBsVny6JSX/pa38Fy+bGjuG8eW/H6USNQWhLi8Num++cU2yOCNz4A==}
     engines: {node: '>= 0.12'}
@@ -4790,6 +4863,10 @@ packages:
   form-data@4.0.5:
     resolution: {integrity: sha512-8RipRLol37bNs2bhoV67fiTEvdTrbMUYcFTiy3+wuuOnUog2QBHCZWXDRijWQfAkhBj2Uf5UnVaiWwA5vdd82w==}
     engines: {node: '>= 6'}
+
+  formdata-node@4.4.1:
+    resolution: {integrity: sha512-0iirZp3uVDjVGt9p49aTaqjk84TrglENEDuqfdlZQ1roC9CWlPk6Avf8EEnZNcAqPonwkG35x4n3ww/1THYAeQ==}
+    engines: {node: '>= 12.20'}
 
   forwarded-parse@2.1.2:
     resolution: {integrity: sha512-alTFZZQDKMporBH77856pXgzhEzaUVmLCDk+egLgIgHst3Tpndzz8MnKe+GzRJRfvVdn69HhpW7cmXzvtLvJAw==}
@@ -4941,6 +5018,9 @@ packages:
     resolution: {integrity: sha512-NEgUnEcBiP5HrPzufUkBzJOD/Sxsco3rLNo1F1TNf7ieU8ryUzBhqba8r756CjLX7rn3fHl6iLEwPYuqpoKgQQ==}
     engines: {node: '>=14'}
 
+  google-protobuf@3.15.8:
+    resolution: {integrity: sha512-2jtfdqTaSxk0cuBJBtTTWsot4WtR9RVr2rXg7x7OoqiuOKopPrwXpM1G4dXIkLcUNRh3RKzz76C8IOkksZSeOw==}
+
   google-protobuf@3.21.4:
     resolution: {integrity: sha512-MnG7N936zcKTco4Jd2PX2U96Kf9PxygAPKBug+74LHzmHXmceN16MmRcdgZv+DGef/S9YvQAfRsNCn4cjf9yyQ==}
 
@@ -4966,6 +5046,19 @@ packages:
 
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
+
+  grpc-tools@1.13.0:
+    resolution: {integrity: sha512-7CbkJ1yWPfX0nHjbYG58BQThNhbICXBZynzCUxCb3LzX5X9B3hQbRY2STiRgIEiLILlK9fgl0z0QVGwPCdXf5g==}
+    hasBin: true
+
+  grpc_tools_node_protoc_ts@5.3.3:
+    resolution: {integrity: sha512-M/YrklvVXMtuuj9kb42PxeouZhs7Ul+R4e/31XwrankUcKL8cQQP50Q9q+KEHGyHQaPt6VtKKsxMgLaKbCxeww==}
+    hasBin: true
+
+  handlebars@4.7.7:
+    resolution: {integrity: sha512-aAcXm5OAfE/8IXkcZvCepKU3VzW1/39Fb5ZuqMtgI/hT8X2YgoMvBY5dLhq/cpOvw7Lk1nK/UF71aLG/ZnVYRA==}
+    engines: {node: '>=0.4.7'}
+    hasBin: true
 
   handlebars@4.7.8:
     resolution: {integrity: sha512-vafaFqs8MZkRrSX7sFVUdo3ap/eNiLnb4IakshzvP56X5Nr1iGKAIqdX6tMlm6HcNRIkr6AxO5jFEoJzzpT8aQ==}
@@ -5993,6 +6086,11 @@ packages:
     resolution: {integrity: sha512-dOal67//nohNgYWb+nWmg5dkFdIwDm8EpeGYMekPMrngV3637lqnX0lbUcCtgibHTz6SEz7DAIjKvKDFYCnO1A==}
     engines: {node: '>=6.0.0'}
 
+  node-domexception@1.0.0:
+    resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
+    engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
+
   node-fetch@2.6.13:
     resolution: {integrity: sha512-StxNAxh15zr77QvvkmveSQ8uCQ4+v5FkvNTj0OESmiHu+VRi/gXArXtkWMElOsOUNLtUEvI4yS+rdtOHZTwlQA==}
     engines: {node: 4.x || >=6.0.0}
@@ -6101,6 +6199,18 @@ packages:
   onnxruntime-node@1.23.2:
     resolution: {integrity: sha512-OBTsG0W8ddBVOeVVVychpVBS87A9YV5sa2hJ6lc025T97Le+J4v++PwSC4XFs1C62SWyNdof0Mh4KvnZgtt4aw==}
     os: [win32, darwin, linux]
+
+  openai@4.104.0:
+    resolution: {integrity: sha512-p99EFNsA/yX6UhVO93f5kJsDRLAg+CTA2RBqdHK4RtK8u5IJw32Hyb2dTGKbnnFmnuoBv5r7Z2CURI9sGZpSuA==}
+    hasBin: true
+    peerDependencies:
+      ws: ^8.18.0
+      zod: ^3.23.8
+    peerDependenciesMeta:
+      ws:
+        optional: true
+      zod:
+        optional: true
 
   opentracing@0.14.7:
     resolution: {integrity: sha512-vz9iS7MJ5+Bp1URw8Khvdyw1H/hGvzHWlKQ7eRrQojSCDL1/SrWfrY9QebLw97n2deyRtzHRC3MkQfVNUCo91Q==}
@@ -7047,6 +7157,14 @@ packages:
   weald@1.1.1:
     resolution: {integrity: sha512-PaEQShzMCz8J/AD2N3dJMc1hTZWkJeLKS2NMeiVkV5KDHwgZe7qXLEzyodsT/SODxWDdXJJqocuwf3kHzcXhSQ==}
 
+  web-streams-polyfill@3.3.3:
+    resolution: {integrity: sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==}
+    engines: {node: '>= 8'}
+
+  web-streams-polyfill@4.0.0-beta.3:
+    resolution: {integrity: sha512-QW95TCTaHmsYfHDybGMwO5IJIM93I/6vTRk+daHTWFPhwh+C8Cg7j7XyKrwrj8Ib6vYXe0ocYNrmzY4xAAN6ug==}
+    engines: {node: '>= 14'}
+
   web3-core@4.7.1:
     resolution: {integrity: sha512-9KSeASCb/y6BG7rwhgtYC4CvYY66JfkmGNEYb7q1xgjt9BWfkf09MJPaRyoyT5trdOxYDHkT9tDlypvQWaU8UQ==}
     engines: {node: '>=14', npm: '>=6.12.0'}
@@ -7285,6 +7403,19 @@ snapshots:
   '@adraffy/ens-normalize@1.10.1': {}
 
   '@adraffy/ens-normalize@1.11.1': {}
+
+  '@anthropic-ai/sdk@0.20.9(encoding@0.1.13)':
+    dependencies:
+      '@types/node': 18.19.130
+      '@types/node-fetch': 2.6.13
+      abort-controller: 3.0.0
+      agentkeepalive: 4.6.0
+      form-data-encoder: 1.7.2
+      formdata-node: 4.4.1
+      node-fetch: 2.7.0(encoding@0.1.13)
+      web-streams-polyfill: 3.3.3
+    transitivePeerDependencies:
+      - encoding
 
   '@assemblyscript/loader@0.19.23': {}
 
@@ -11255,6 +11386,10 @@ snapshots:
     optionalDependencies:
       zod: 3.25.76
 
+  abort-controller@3.0.0:
+    dependencies:
+      event-target-shim: 5.0.1
+
   abort-error@1.0.1: {}
 
   abortable-iterator@5.1.0:
@@ -12182,6 +12317,8 @@ snapshots:
 
   event-iterator@2.0.0: {}
 
+  event-target-shim@5.0.1: {}
+
   eventemitter3@3.1.2: {}
 
   eventemitter3@4.0.7: {}
@@ -12339,6 +12476,8 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
+  form-data-encoder@1.7.2: {}
+
   form-data@2.5.5:
     dependencies:
       asynckit: 0.4.0
@@ -12355,6 +12494,11 @@ snapshots:
       es-set-tostringtag: 2.1.0
       hasown: 2.0.2
       mime-types: 2.1.35
+
+  formdata-node@4.4.1:
+    dependencies:
+      node-domexception: 1.0.0
+      web-streams-polyfill: 4.0.0-beta.3
 
   forwarded-parse@2.1.2: {}
 
@@ -12544,6 +12688,8 @@ snapshots:
 
   google-logging-utils@0.0.2: {}
 
+  google-protobuf@3.15.8: {}
+
   google-protobuf@3.21.4: {}
 
   gopd@1.2.0: {}
@@ -12568,6 +12714,27 @@ snapshots:
   grad-school@0.0.5: {}
 
   graphemer@1.4.0: {}
+
+  grpc-tools@1.13.0(encoding@0.1.13):
+    dependencies:
+      '@mapbox/node-pre-gyp': 1.0.9(encoding@0.1.13)
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+
+  grpc_tools_node_protoc_ts@5.3.3:
+    dependencies:
+      google-protobuf: 3.15.8
+      handlebars: 4.7.7
+
+  handlebars@4.7.7:
+    dependencies:
+      minimist: 1.2.8
+      neo-async: 2.6.2
+      source-map: 0.6.1
+      wordwrap: 1.0.0
+    optionalDependencies:
+      uglify-js: 3.19.3
 
   handlebars@4.7.8:
     dependencies:
@@ -14125,6 +14292,8 @@ snapshots:
     dependencies:
       uuid: 8.3.2
 
+  node-domexception@1.0.0: {}
+
   node-fetch@2.6.13(encoding@0.1.13):
     dependencies:
       whatwg-url: 5.0.0
@@ -14231,6 +14400,21 @@ snapshots:
       global-agent: 3.0.0
       onnxruntime-common: 1.23.2
     optional: true
+
+  openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76):
+    dependencies:
+      '@types/node': 18.19.130
+      '@types/node-fetch': 2.6.13
+      abort-controller: 3.0.0
+      agentkeepalive: 4.6.0
+      form-data-encoder: 1.7.2
+      formdata-node: 4.4.1
+      node-fetch: 2.7.0(encoding@0.1.13)
+    optionalDependencies:
+      ws: 8.18.3
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - encoding
 
   opentracing@0.14.7: {}
 
@@ -15271,6 +15455,10 @@ snapshots:
     dependencies:
       ms: 3.0.0-canary.202508261828
       supports-color: 10.2.2
+
+  web-streams-polyfill@3.3.3: {}
+
+  web-streams-polyfill@4.0.0-beta.3: {}
 
   web3-core@4.7.1(encoding@0.1.13):
     dependencies:
