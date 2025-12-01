@@ -8,10 +8,18 @@
 import { EventEmitter } from 'events';
 import { Logger } from 'winston';
 import {
-  Message,
-  DeadLetterEntry,
-  MessageHandler
-} from '@noderr/types/messages';
+  Message
+} from '@noderr/types';
+
+interface DeadLetterEntry {
+  message: Message;
+  error: Error;
+  retries: number;
+  firstAttempt: number;
+  lastAttempt: number;
+}
+
+type MessageHandler = (message: Message) => Promise<void>;
 
 interface RetryStrategy {
   maxRetries: number;
@@ -44,7 +52,7 @@ export class DeadLetterQueue extends EventEmitter {
   private logger: Logger;
   private queue: Map<string, DeadLetterEntry> = new Map();
   private config: DLQConfig;
-  private processTimer?: NodeJS.Timer;
+  private processTimer?: NodeJS.Timeout;
   private stats: DLQStats = {
     totalMessages: 0,
     retriedMessages: 0,

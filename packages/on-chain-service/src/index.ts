@@ -5,7 +5,7 @@ import { CircuitBreaker } from './utils/circuitBreaker';
 import { CapitalManager } from './services/CapitalManager';
 import { RewardDistributor } from './services/RewardDistributor';
 import { TrustUpdater } from './services/TrustUpdater';
-import { OnChainServiceConfig, HealthStatus } from '@noderr/types';
+import { OnChainServiceConfig, ServiceHealthStatus } from '@noderr/types';
 import { Logger } from 'winston';
 
 /**
@@ -65,7 +65,7 @@ export class OnChainService {
   /**
    * Get service health status
    */
-  async getHealth(): Promise<HealthStatus> {
+  async getHealth(): Promise<ServiceHealthStatus> {
     try {
       // Check RPC connection
       const provider = this.capitalManager['provider'];

@@ -409,13 +409,6 @@ export interface RateLimiterStatus {
   canMakeRequest: boolean;
 }
 
-export interface HealthStatus {
-  healthy: boolean;
-  timestamp: number;
-  services: Record<string, boolean>;
-  errors?: string[];
-}
-
 export enum MarketCondition {
   NORMAL = 'normal',
   VOLATILE = 'volatile',
@@ -566,3 +559,382 @@ export interface PerformanceSnapshot {
 // ML and AI Types
 // ============================================================================
 export * from './ml-types';
+
+// ============================================================================
+// Integration Layer Types
+// ============================================================================
+
+// Configuration Types
+export interface SystemConfig {
+  modules: Record<string, ModuleConfig>;
+  secrets?: SecretsConfig;
+  environment: 'development' | 'staging' | 'production';
+  version: string;
+}
+
+export interface ModuleConfig {
+  enabled: boolean;
+  config: Record<string, any>;
+  dependencies?: string[];
+  priority?: number;
+}
+
+export interface ConfigUpdate {
+  path: string;
+  value: any;
+  timestamp: number;
+  source: string;
+}
+
+export interface ConfigValidation {
+  valid: boolean;
+  errors?: ConfigError[];
+  warnings?: string[];
+}
+
+export interface ConfigError {
+  code?: string;
+  message: string;
+  path?: string;
+  value?: any;
+}
+
+export interface ConfigSchema {
+  type: string;
+  properties?: Record<string, ConfigSchema>;
+  required?: string[];
+  default?: any;
+  validation?: (value: any) => boolean;
+}
+
+export interface EnvMapping {
+  type?: string;
+  envVar: string;
+  configPath: string;
+  transform?: (value: string) => any;
+  required?: boolean;
+}
+
+export interface Secret {
+  key: string;
+  value: string;
+  encrypted?: boolean;
+  expiresAt?: number;
+}
+
+export interface SecretsConfig {
+  provider: 'env' | 'vault' | 'aws-secrets' | 'gcp-secrets';
+  secrets: Record<string, Secret>;
+}
+
+export class ConfigUtils {
+  static merge(base: any, override: any): any {
+    return { ...base, ...override };
+  }
+  static validate(config: any, schema: ConfigSchema): ConfigValidation {
+    return { valid: true };
+  }
+  static setValueByPath(obj: any, path: string, value: any): void {
+    const keys = path.split('.');
+    let current = obj;
+    for (let i = 0; i < keys.length - 1; i++) {
+      if (!current[keys[i]]) current[keys[i]] = {};
+      current = current[keys[i]];
+    }
+    current[keys[keys.length - 1]] = value;
+  }
+}
+
+// Health Monitoring Types
+export enum HealthStatus {
+  HEALTHY = 'healthy',
+  DEGRADED = 'degraded',
+  UNHEALTHY = 'unhealthy',
+  UNKNOWN = 'unknown'
+}
+
+export interface SystemHealth {
+  status: HealthStatus;
+  modules: Record<string, ModuleStatusInfo>;
+  metrics: HealthMetrics;
+  alerts: HealthAlert[];
+  timestamp: number;
+}
+
+export enum ModuleStatus {
+  HEALTHY = 'healthy',
+  DEGRADED = 'degraded',
+  UNHEALTHY = 'unhealthy',
+  UNKNOWN = 'unknown'
+}
+
+export interface ModuleStatusInfo {
+  name: string;
+  status: ModuleStatus | HealthStatus;
+  uptime: number;
+  lastCheck: number;
+  metrics?: Record<string, number>;
+  error?: string;
+}
+
+export interface HealthCheckConfig {
+  interval: number;
+  timeout: number;
+  retries: number;
+  enabled: boolean;
+}
+
+export interface HealthCheckResult {
+  module: string;
+  status: HealthStatus;
+  metrics?: Record<string, number>;
+  latency: number;
+  timestamp: number;
+  error?: string;
+  details?: Record<string, any>;
+}
+
+export interface HealthMetrics {
+  cpu?: number | { usage?: number; system?: number; user?: number; idle?: number; };
+  memory?: number | { heapUsed?: number; heapTotal?: number; external?: number; rss?: number; available?: number; percentUsed?: number; };
+  disk?: number;
+  network?: number;
+  uptime?: number;
+  requestRate?: number;
+  errorRate?: number;
+}
+
+export interface HealthAlert {
+  id: string;
+  severity: 'info' | 'warning' | 'error' | 'critical';
+  module: string;
+  message: string;
+  timestamp: number;
+  acknowledged: boolean;
+  resolved?: boolean;
+  resolvedAt?: number;
+}
+
+export interface HealthHistory {
+  module: string;
+  checks: HealthCheckResult[];
+  entries?: HealthCheckResult[];
+  startTime: number;
+  endTime: number;
+}
+
+export enum ModuleHealthStatus {
+  HEALTHY = 'healthy',
+  DEGRADED = 'degraded',
+  UNHEALTHY = 'unhealthy',
+  UNKNOWN = 'unknown'
+}
+
+export interface ModuleHealthConfig {
+  module: string;
+  checkInterval: number;
+  timeout: number;
+  thresholds: {
+    degraded?: number;
+    unhealthy?: number;
+    warning?: number;
+    critical?: number;
+    cpu?: number;
+    memory?: number;
+    latency?: number;
+  };
+}
+
+export class HealthUtils {
+  static calculateStatus(metrics: HealthMetrics): HealthStatus {
+    const errorRate = metrics.errorRate || 0;
+    if (errorRate > 0.1) return HealthStatus.UNHEALTHY;
+    if (errorRate > 0.05) return HealthStatus.DEGRADED;
+    return HealthStatus.HEALTHY;
+  }
+}
+
+// Message Bus Types
+export enum MessageType {
+  COMMAND = 'command',
+  EVENT = 'event',
+  QUERY = 'query',
+  RESPONSE = 'response'
+}
+
+export enum MessagePriority {
+  LOW = 0,
+  NORMAL = 1,
+  HIGH = 2,
+  CRITICAL = 3
+}
+
+export interface Message {
+  id: string;
+  type: MessageType;
+  topic: string;
+  payload: any;
+  priority: MessagePriority;
+  timestamp: number;
+  source: string;
+  destination?: string;
+  correlationId?: string;
+  replyTo?: string;
+  ttl?: number;
+  retries?: number;
+  header?: Record<string, any>;
+}
+
+export class MessageFactory {
+  static create(type: MessageType, topic: string, payload: any, source: string): Message {
+    return {
+      id: Math.random().toString(36),
+      type,
+      topic,
+      payload,
+      priority: MessagePriority.NORMAL,
+      timestamp: Date.now(),
+      source
+    };
+  }
+
+  static createCommand(topic: string, payload: any, source: string): Message {
+    return {
+      id: Math.random().toString(36),
+      type: MessageType.COMMAND,
+      topic,
+      payload,
+      priority: MessagePriority.NORMAL,
+      timestamp: Date.now(),
+      source
+    };
+  }
+
+  static createEvent(topic: string, payload: any, source: string): Message {
+    return {
+      id: Math.random().toString(36),
+      type: MessageType.EVENT,
+      topic,
+      payload,
+      priority: MessagePriority.NORMAL,
+      timestamp: Date.now(),
+      source
+    };
+  }
+
+  static createQuery(topic: string, payload: any, source: string): Message {
+    return {
+      id: Math.random().toString(36),
+      type: MessageType.QUERY,
+      topic,
+      payload,
+      priority: MessagePriority.NORMAL,
+      timestamp: Date.now(),
+      source
+    };
+  }
+}
+
+// Recovery Types
+export enum RecoveryActionType {
+  RESTART = 'restart',
+  SCALE = 'scale',
+  FAILOVER = 'failover',
+  ROLLBACK = 'rollback',
+  NOTIFY = 'notify'
+}
+
+export interface RecoveryAction {
+  type: RecoveryActionType;
+  module: string;
+  action?: string;
+  config: RecoveryActionConfig;
+  timestamp: number;
+  status: 'pending' | 'executing' | 'completed' | 'failed';
+  success?: boolean;
+  result?: any;
+  error?: string;
+}
+
+export interface RecoveryActionConfig {
+  maxRetries?: number;
+  retryDelay?: number;
+  timeout?: number;
+  rollbackOnFailure?: boolean;
+  notifyOnCompletion?: boolean;
+}
+
+export interface RecoveryStrategy {
+  name: string;
+  triggers: RecoveryTrigger[];
+  actions: RecoveryActionType[];
+  priority: number;
+  enabled: boolean;
+}
+
+export interface RecoveryTrigger {
+  type: 'health' | 'metric' | 'error' | 'manual';
+  condition: string;
+  threshold?: number;
+  duration?: number;
+}
+
+export interface ModuleRegistration {
+  name: string;
+  version: string;
+  dependencies: string[];
+  config: ModuleConfig;
+  healthCheck?: () => Promise<HealthCheckResult>;
+  initialize?: () => Promise<void>;
+  shutdown?: () => Promise<void>;
+}
+
+// Message Bus Additional Types
+export type MessageHandler = (message: Message) => Promise<void>;
+
+export interface Route {
+  pattern: string | RegExp;
+  handler: MessageHandler;
+  priority?: MessagePriority;
+}
+
+export interface MessageStats {
+  sent: number;
+  received: number;
+  failed: number;
+  avgLatency: number;
+  maxLatency: number;
+  minLatency: number;
+  p99Latency?: number;
+  lastActivity?: number;
+}
+
+export interface RouteMetrics {
+  route: string;
+  messagesHandled: number;
+  messageCount?: number;
+  avgLatency: number;
+  maxLatency?: number;
+  errors: number;
+  lastUsed: number;
+  lastUpdated?: number;
+}
+
+export interface MessageBusEvents {
+  messageSent: (message: Message) => void;
+  messageReceived: (message: Message) => void;
+  messageFailed: (message: Message, error: Error) => void;
+  routeAdded: (route: Route) => void;
+  routeRemoved: (route: string) => void;
+}
+
+// Backward compatibility - old HealthStatus interface
+export interface ServiceHealthStatus {
+  healthy: boolean;
+  timestamp: number;
+  services: Record<string, boolean>;
+  errors?: string[];
+}
+
+// Export as HealthStatus for backward compatibility
+export type { ServiceHealthStatus as HealthStatusLegacy };

@@ -25,7 +25,8 @@
     "strictFunctionTypes": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["node", "jest"]
+    "types": ["node", "jest"],
+    "composite": true
   },
   "include": ["src/**/*"],
   "exclude": [
