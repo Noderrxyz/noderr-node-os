@@ -53,3 +53,43 @@ pids/
 temp/
 *.tmp
 .env
+
+# === Added by Safe Repository Fixes ===
+# Large binary files
+*.tar.gz
+*.zip
+*.rar
+*.7z
+*.dmg
+*.iso
+go*.linux-*.tar.gz
+
+# Large PDFs (use Git LFS if needed)
+# *.pdf
+
+# Build artifacts
+_book/
+.next/
+dist/
+build/
+out/
+.cache/
+*.log
+
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+.Python
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# === End Safe Repository Fixes ===
