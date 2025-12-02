@@ -219,4 +219,7 @@ export const logger = new Logger('noderr');
 export * from './graceful-shutdown';
 
 // Export state persistence utilities
-export * from './state-persistence'; 
+export * from './state-persistence';
+
+// Export NFT verification utilities
+export * from './nft-verification'; 
