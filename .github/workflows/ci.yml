@@ -13,7 +13,7 @@ jobs:
     
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [22.x]
     
     steps:
       - name: Checkout code
@@ -27,7 +27,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 9
       
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -71,12 +71,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: 22.x
       
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 9
       
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
@@ -96,12 +96,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: 22.x
       
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 9
       
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
