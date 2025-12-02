@@ -1,0 +1,38 @@
+name: Mirror to GitLab
+
+on:
+  push:
+    branches:
+      - '**'
+  delete:
+    branches:
+      - '**'
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup SSH for GitLab
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.GITLAB_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+          git config --global user.email "github-mirror@noderrxyz.com"
+          git config --global user.name "GitHub Mirror Bot"
+
+      - name: Mirror to GitLab
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          GITLAB_URL="git@gitlab.com:Noderrxyz/${REPO_NAME}.git"
+          
+          echo "Mirroring ${GITHUB_REPOSITORY} to ${GITLAB_URL}"
+          
+          git remote add gitlab "${GITLAB_URL}" || git remote set-url gitlab "${GITLAB_URL}"
+          git fetch --unshallow || true
+          git push gitlab --mirror --force
