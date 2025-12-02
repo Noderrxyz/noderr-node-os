@@ -1,5 +1,5 @@
-# Noderr Node OS - ORACLE Tier Dockerfile
-# Advanced node with ML capabilities and market intelligence
+# Noderr Node OS - VALIDATOR Tier Dockerfile
+# Execution-focused node with order routing and MEV protection
 
 FROM node:20-alpine AS builder
 
@@ -20,21 +20,19 @@ COPY tsconfig.base.json ./
 # Install pnpm
 RUN npm install -g pnpm@8
 
-# Copy ALL tier packages (ORACLE includes ALL)
+# Copy VALIDATOR-specific packages
 COPY packages/types ./packages/types
 COPY packages/utils ./packages/utils
 COPY packages/telemetry ./packages/telemetry
 COPY packages/market-data ./packages/market-data
 COPY packages/exchanges ./packages/exchanges
 COPY packages/data-connectors ./packages/data-connectors
-
-# Copy ORACLE-specific packages
-COPY packages/ml ./packages/ml
-COPY packages/quant-research ./packages/quant-research
-COPY packages/market-intel ./packages/market-intel
-COPY packages/strategy ./packages/strategy
-COPY packages/capital-ai ./packages/capital-ai
-COPY packages/backtesting ./packages/backtesting
+COPY packages/execution ./packages/execution
+COPY packages/autonomous-execution ./packages/autonomous-execution
+COPY packages/floor-engine ./packages/floor-engine
+COPY packages/integration-layer ./packages/integration-layer
+COPY packages/system-orchestrator ./packages/system-orchestrator
+COPY packages/on-chain-service ./packages/on-chain-service
 COPY packages/compliance ./packages/compliance
 COPY packages/testing ./packages/testing
 
@@ -46,12 +44,12 @@ RUN pnpm install --frozen-lockfile \
     --filter "@noderr/market-data" \
     --filter "@noderr/exchanges" \
     --filter "@noderr/data-connectors" \
-    --filter "@noderr/ml" \
-    --filter "@noderr/quant-research" \
-    --filter "@noderr/market-intel" \
-    --filter "@noderr/strategy" \
-    --filter "@noderr/capital-ai" \
-    --filter "@noderr/backtesting" \
+    --filter "@noderr/execution" \
+    --filter "@noderr/autonomous-execution" \
+    --filter "@noderr/floor-engine" \
+    --filter "@noderr/integration-layer" \
+    --filter "@noderr/system-orchestrator" \
+    --filter "@noderr/on-chain-service" \
     --filter "@noderr/compliance" \
     --filter "@noderr/testing"
 
@@ -62,12 +60,12 @@ RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/market-data" build && \
     pnpm --filter "@noderr/exchanges" build && \
     pnpm --filter "@noderr/data-connectors" build && \
-    pnpm --filter "@noderr/ml" build && \
-    pnpm --filter "@noderr/quant-research" build && \
-    pnpm --filter "@noderr/market-intel" build && \
-    pnpm --filter "@noderr/strategy" build && \
-    pnpm --filter "@noderr/capital-ai" build && \
-    pnpm --filter "@noderr/backtesting" build && \
+    pnpm --filter "@noderr/execution" build && \
+    pnpm --filter "@noderr/autonomous-execution" build && \
+    pnpm --filter "@noderr/floor-engine" build && \
+    pnpm --filter "@noderr/integration-layer" build && \
+    pnpm --filter "@noderr/system-orchestrator" build && \
+    pnpm --filter "@noderr/on-chain-service" build && \
     pnpm --filter "@noderr/compliance" build && \
     pnpm --filter "@noderr/testing" build
 
@@ -79,12 +77,12 @@ RUN pnpm install --frozen-lockfile --prod \
     --filter "@noderr/market-data" \
     --filter "@noderr/exchanges" \
     --filter "@noderr/data-connectors" \
-    --filter "@noderr/ml" \
-    --filter "@noderr/quant-research" \
-    --filter "@noderr/market-intel" \
-    --filter "@noderr/strategy" \
-    --filter "@noderr/capital-ai" \
-    --filter "@noderr/backtesting" \
+    --filter "@noderr/execution" \
+    --filter "@noderr/autonomous-execution" \
+    --filter "@noderr/floor-engine" \
+    --filter "@noderr/integration-layer" \
+    --filter "@noderr/system-orchestrator" \
+    --filter "@noderr/on-chain-service" \
     --filter "@noderr/compliance" \
     --filter "@noderr/testing"
 
@@ -97,7 +95,6 @@ FROM node:20-alpine
 RUN apk add --no-cache \
     tini \
     ca-certificates \
-    python3 \
     && rm -rf /var/cache/apk/*
 
 # Create non-root user
@@ -120,20 +117,20 @@ COPY --from=builder --chown=noderr:noderr /build/packages/telemetry ./packages/t
 COPY --from=builder --chown=noderr:noderr /build/packages/market-data ./packages/market-data
 COPY --from=builder --chown=noderr:noderr /build/packages/exchanges ./packages/exchanges
 COPY --from=builder --chown=noderr:noderr /build/packages/data-connectors ./packages/data-connectors
-COPY --from=builder --chown=noderr:noderr /build/packages/ml ./packages/ml
-COPY --from=builder --chown=noderr:noderr /build/packages/quant-research ./packages/quant-research
-COPY --from=builder --chown=noderr:noderr /build/packages/market-intel ./packages/market-intel
-COPY --from=builder --chown=noderr:noderr /build/packages/strategy ./packages/strategy
-COPY --from=builder --chown=noderr:noderr /build/packages/capital-ai ./packages/capital-ai
-COPY --from=builder --chown=noderr:noderr /build/packages/backtesting ./packages/backtesting
+COPY --from=builder --chown=noderr:noderr /build/packages/execution ./packages/execution
+COPY --from=builder --chown=noderr:noderr /build/packages/autonomous-execution ./packages/autonomous-execution
+COPY --from=builder --chown=noderr:noderr /build/packages/floor-engine ./packages/floor-engine
+COPY --from=builder --chown=noderr:noderr /build/packages/integration-layer ./packages/integration-layer
+COPY --from=builder --chown=noderr:noderr /build/packages/system-orchestrator ./packages/system-orchestrator
+COPY --from=builder --chown=noderr:noderr /build/packages/on-chain-service ./packages/on-chain-service
 COPY --from=builder --chown=noderr:noderr /build/packages/compliance ./packages/compliance
 COPY --from=builder --chown=noderr:noderr /build/packages/testing ./packages/testing
 
 # Copy PM2 ecosystem configuration
-COPY --chown=noderr:noderr docker/oracle/ecosystem.config.js /app/ecosystem.config.js
+COPY --chown=noderr:noderr docker/validator/ecosystem.config.js /app/ecosystem.config.js
 
 # Create startup script
-COPY --chown=noderr:noderr docker/oracle/start.sh /app/start.sh
+COPY --chown=noderr:noderr docker/validator/start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
 # Create directories for logs and data
@@ -141,8 +138,8 @@ RUN mkdir -p /app/logs /app/data && chown -R noderr:noderr /app/logs /app/data
 
 # Set environment variables
 ENV NODE_ENV=production \
-    NODE_TIER=ORACLE \
-    NODE_OPTIONS="--max-old-space-size=4096" \
+    NODE_TIER=VALIDATOR \
+    NODE_OPTIONS="--max-old-space-size=6144" \
     PNPM_HOME="/pnpm" \
     PATH="$PNPM_HOME:$PATH"
 

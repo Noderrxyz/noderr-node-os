@@ -7,6 +7,7 @@ echo "========================================="
 echo "Node ID: ${NODE_ID:-unknown}"
 echo "Tier: ${NODE_TIER}"
 echo "Version: ${NODE_VERSION:-unknown}"
+echo "Process Manager: PM2"
 echo "========================================="
 
 # Validate required environment variables
@@ -20,60 +21,28 @@ if [ -z "$DEPLOYMENT_ENGINE_URL" ]; then
     exit 1
 fi
 
+# Create necessary directories
+mkdir -p /app/logs /app/data
+
+# Set proper permissions (ignore errors if already correct)
+chown -R noderr:noderr /app/logs /app/data 2>/dev/null || true
+
 # Check version from Deployment Engine
 echo "Checking for updates..."
 CURRENT_VERSION=$(cat /app/VERSION 2>/dev/null || echo "0.0.0")
 echo "Current version: $CURRENT_VERSION"
 
-# Start telemetry service
-echo "Starting telemetry service..."
-node packages/telemetry/dist/index.js &
-TELEMETRY_PID=$!
-
-# Start market data service
-echo "Starting market data service..."
-node packages/market-data/dist/index.js &
-MARKET_DATA_PID=$!
-
-# Start exchange connectors
-echo "Starting exchange connectors..."
-node packages/exchanges/dist/index.js &
-EXCHANGES_PID=$!
-
-# Start data connectors
-echo "Starting data connectors..."
-node packages/data-connectors/dist/index.js &
-DATA_CONNECTORS_PID=$!
-
-# Start ML service
-echo "Starting ML service..."
-node packages/ml/dist/index.js &
-ML_PID=$!
-
-# Start quant research service
-echo "Starting quant research service..."
-node packages/quant-research/dist/index.js &
-QUANT_PID=$!
-
-# Start market intelligence service
-echo "Starting market intelligence service..."
-node packages/market-intel/dist/index.js &
-INTEL_PID=$!
-
-# Start strategy service
-echo "Starting strategy service..."
-node packages/strategy/dist/index.js &
-STRATEGY_PID=$!
-
-# Start capital AI service
-echo "Starting capital AI service..."
-node packages/capital-ai/dist/index.js &
-CAPITAL_AI_PID=$!
-
 echo "========================================="
-echo "All services started successfully"
+echo "Starting Oracle services with PM2..."
 echo "========================================="
 
-# Wait for all background processes
-wait $TELEMETRY_PID $MARKET_DATA_PID $EXCHANGES_PID $DATA_CONNECTORS_PID \
-     $ML_PID $QUANT_PID $INTEL_PID $STRATEGY_PID $CAPITAL_AI_PID
+# Start all services using PM2
+# --no-daemon keeps PM2 in foreground (required for Docker)
+# --update-env updates environment variables
+pm2-runtime start /app/ecosystem.config.js \
+    --update-env \
+    --no-daemon
+
+# This line is never reached unless PM2 exits
+echo "PM2 exited unexpectedly"
+exit 1

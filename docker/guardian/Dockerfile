@@ -68,8 +68,8 @@ RUN addgroup -g 1001 noderr && \
 
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm@8
+# Install pnpm and PM2 for process management
+RUN npm install -g pnpm@8 pm2@5
 
 # Copy workspace configuration
 COPY --chown=noderr:noderr package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -78,9 +78,15 @@ COPY --chown=noderr:noderr package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY --from=builder --chown=noderr:noderr /build/node_modules ./node_modules
 COPY --from=builder --chown=noderr:noderr /build/packages ./packages
 
+# Copy PM2 ecosystem configuration
+COPY --chown=noderr:noderr docker/guardian/ecosystem.config.js /app/ecosystem.config.js
+
 # Create startup script
 COPY --chown=noderr:noderr docker/guardian/start.sh /app/start.sh
 RUN chmod +x /app/start.sh
+
+# Create directories for logs and data
+RUN mkdir -p /app/logs /app/data && chown -R noderr:noderr /app/logs /app/data
 
 # Set environment variables
 ENV NODE_ENV=production \

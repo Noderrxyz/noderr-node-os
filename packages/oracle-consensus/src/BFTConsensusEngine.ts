@@ -17,6 +17,7 @@
 
 import { ethers } from 'ethers';
 import { EventEmitter } from 'events';
+import { OracleLotterySelector, CommitteeSelection } from './OracleLotterySelector';
 
 export interface ConsensusConfig {
   oracleVerifierAddress: string;
@@ -25,6 +26,8 @@ export interface ConsensusConfig {
   consensusThreshold?: number; // Basis points (default: 6700 = 67%)
   submissionWindow?: number; // Milliseconds (default: 300000 = 5 minutes)
   minOracles?: number; // Minimum oracles for consensus (default: 4)
+  enableLottery?: boolean; // Enable lottery selection (default: true)
+  lotterySelector?: OracleLotterySelector; // Lottery selector instance
 }
 
 export interface OracleSubmission {
@@ -60,11 +63,13 @@ export interface OracleInfo {
  * Manages consensus rounds and coordinates with OracleVerifier smart contract.
  */
 export class BFTConsensusEngine extends EventEmitter {
-  private config: Required<ConsensusConfig>;
+  private config: ConsensusConfig & Required<Pick<ConsensusConfig, 'consensusThreshold' | 'submissionWindow' | 'minOracles'>>;
   private contract: ethers.Contract;
   private currentRoundId: number = 0;
   private activeRounds: Map<number, ConsensusResult> = new Map();
   private oracleRegistry: Map<string, OracleInfo> = new Map();
+  private lotterySelector: OracleLotterySelector | null = null;
+  private committeeSelections: Map<number, CommitteeSelection> = new Map();
   
   // OracleVerifier ABI (minimal interface)
   private static readonly ABI = [
@@ -86,7 +91,20 @@ export class BFTConsensusEngine extends EventEmitter {
       consensusThreshold: config.consensusThreshold ?? 6700,
       submissionWindow: config.submissionWindow ?? 300000,
       minOracles: config.minOracles ?? 4,
+      enableLottery: config.enableLottery ?? true,
     };
+    
+    // Initialize lottery selector if enabled
+    if (this.config.enableLottery) {
+      this.lotterySelector = config.lotterySelector || new OracleLotterySelector({
+        minCommitteeSize: 7,
+        maxCommitteeSize: 15,
+        targetCommitteeSize: 10,
+        stakeWeighting: true,
+        rotationEnabled: true,
+        cooldownPeriods: 3,
+      });
+    }
     
     this.contract = new ethers.Contract(
       config.oracleVerifierAddress,
@@ -106,15 +124,24 @@ export class BFTConsensusEngine extends EventEmitter {
     // Load oracle registry
     await this.loadOracleRegistry();
     
+    // Initialize lottery selector with oracle pool
+    if (this.lotterySelector) {
+      const oracleList = Array.from(this.oracleRegistry.values());
+      this.lotterySelector.updateOraclePool(oracleList);
+      console.log('Lottery selector initialized with oracle pool');
+    }
+    
     // Get current round ID from contract
     // In production, this would query the contract for the latest round
     this.currentRoundId = 1;
     
     console.log(`Initialized with ${this.oracleRegistry.size} active oracles`);
+    console.log(`Lottery selection: ${this.config.enableLottery ? 'ENABLED' : 'DISABLED'}`);
     
     this.emit('initialized', {
       oracles: this.oracleRegistry.size,
       threshold: this.config.consensusThreshold,
+      lotteryEnabled: this.config.enableLottery,
     });
   }
   
@@ -140,6 +167,12 @@ export class BFTConsensusEngine extends EventEmitter {
       if (oracleInfo.isActive && !oracleInfo.isSlashed) {
         this.oracleRegistry.set(oracleAddress.toLowerCase(), oracleInfo);
       }
+    }
+    
+    // Update lottery selector if enabled
+    if (this.lotterySelector) {
+      const oracleList = Array.from(this.oracleRegistry.values());
+      this.lotterySelector.updateOraclePool(oracleList);
     }
   }
   
@@ -180,12 +213,41 @@ export class BFTConsensusEngine extends EventEmitter {
     
     console.log(`Starting consensus round ${roundId}`);
     
+    // Select committee via lottery if enabled
+    let committeeSelection: CommitteeSelection | null = null;
+    if (this.lotterySelector && this.config.enableLottery) {
+      // Get latest block hash for VRF seed
+      const latestBlock = await this.config.provider.getBlock('latest');
+      if (!latestBlock) {
+        throw new Error('Failed to get latest block for lottery seed');
+      }
+      
+      // Select committee
+      committeeSelection = await this.lotterySelector.selectCommittee(
+        roundId,
+        latestBlock.hash || ethers.ZeroHash
+      );
+      
+      this.committeeSelections.set(roundId, committeeSelection);
+      
+      console.log(
+        `Committee selected: ${committeeSelection.committeeSize} oracles ` +
+        `from pool of ${this.oracleRegistry.size}`
+      );
+      console.log(`Selected oracles: ${committeeSelection.selectedOracles.join(', ')}`);
+    }
+    
+    // Calculate total weight (committee only if lottery enabled)
+    const totalWeight = committeeSelection
+      ? Number(committeeSelection.totalStake)
+      : this.getTotalWeight();
+    
     // Create round
     const round: ConsensusResult = {
       roundId,
       consensusHash: null,
       consensusWeight: 0,
-      totalWeight: this.getTotalWeight(),
+      totalWeight,
       submissions: [],
       finalized: false,
       timestamp: Date.now(),
@@ -193,7 +255,12 @@ export class BFTConsensusEngine extends EventEmitter {
     
     this.activeRounds.set(roundId, round);
     
-    this.emit('roundStarted', { roundId, data });
+    this.emit('roundStarted', {
+      roundId,
+      data,
+      committee: committeeSelection,
+      lotteryEnabled: this.config.enableLottery,
+    });
     
     // Set timeout for submission window
     setTimeout(() => {

@@ -27,3 +27,43 @@ export * from './types';
 
 // Version
 export const VERSION = '1.0.0'; 
+
+// ============================================================================
+// Main Entry Point
+// ============================================================================
+
+import { Logger } from '@noderr/utils';
+import { getShutdownHandler, onShutdown } from '@noderr/utils';
+
+let quantResearchService: any | null = null;
+
+export async function startQuantResearchService(): Promise<void> {
+  const logger = new Logger('QuantResearchService');
+  
+  try {
+    logger.info('Starting Quant Research Service...');
+    
+    // TODO: Initialize QuantResearchService when implementation is complete
+    // quantResearchService = new QuantResearchService({...});
+    
+    onShutdown('quant-research-service', async () => {
+      logger.info('Shutting down quant research service...');
+      // TODO: Implement cleanup
+      logger.info('Quant research service shut down complete');
+    }, 10000);
+    
+    logger.info('Quant Research Service started successfully');
+    await new Promise(() => {});
+  } catch (error) {
+    logger.error('Failed to start Quant Research Service', error);
+    throw error;
+  }
+}
+
+if (require.main === module) {
+  getShutdownHandler(30000);
+  startQuantResearchService().catch((error) => {
+    console.error('Fatal error starting Quant Research Service:', error);
+    process.exit(1);
+  });
+}

@@ -257,3 +257,67 @@ export class Panel {
     return this.config.visualization;
   }
 } 
+
+// ============================================================================
+// Main Entry Point for Telemetry Service
+// ============================================================================
+
+import { getShutdownHandler, onShutdown } from '@noderr/utils';
+
+let telemetrySystem: TelemetrySystem | null = null;
+
+/**
+ * Start the telemetry service
+ */
+export async function startTelemetryService(): Promise<void> {
+  const logger = createLogger({
+    format: format.combine(format.timestamp(), format.json()),
+    defaultMeta: { service: 'telemetry-service' },
+    transports: [new transports.Console()]
+  });
+  
+  try {
+    logger.info('Starting Telemetry Service...');
+    
+    // Initialize telemetry system
+    telemetrySystem = new TelemetrySystem({
+      serviceName: process.env.SERVICE_NAME || 'noderr',
+      environment: process.env.NODE_ENV || 'production',
+      exporters: process.env.TELEMETRY_EXPORTERS?.split(',') || ['console', 'prometheus'],
+    });
+    
+    // Register graceful shutdown handlers
+    onShutdown('telemetry-system', async () => {
+      logger.info('Shutting down telemetry system...');
+      
+      // Flush any pending metrics
+      // TODO: Implement metric flushing
+      
+      // Close exporters
+      // TODO: Implement exporter closing
+      
+      logger.info('Telemetry system shut down complete');
+    }, 10000);  // 10 second timeout
+    
+    logger.info('Telemetry Service started successfully');
+    
+    // Keep process alive
+    await new Promise(() => {});  // Never resolves
+  } catch (error) {
+    logger.error('Failed to start Telemetry Service', error);
+    throw error;
+  }
+}
+
+/**
+ * If run directly, start the service
+ */
+if (require.main === module) {
+  // Initialize graceful shutdown
+  getShutdownHandler(30000);  // 30 second global timeout
+  
+  startTelemetryService().catch((error) => {
+    console.error('Fatal error starting Telemetry Service:', error);
+    process.exit(1);
+  });
+}

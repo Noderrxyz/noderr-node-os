@@ -1,23 +1,16 @@
 /**
  * Health Check Module
- * Simple health check for Docker HEALTHCHECK directive
+ * Health check for Docker HEALTHCHECK directive
  */
 
-export function healthCheck(): boolean {
+import { healthCheckRegistry } from './health-check-enhanced';
+
+export async function healthCheck(): Promise<boolean> {
   try {
-    // Basic health check - can be extended with more sophisticated checks
-    const memoryUsage = process.memoryUsage();
-    const heapUsedPercent = (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100;
+    const result = await healthCheckRegistry.runAll();
     
-    // Fail if heap usage is above 95%
-    if (heapUsedPercent > 95) {
-      console.error(`Health check failed: High memory usage (${heapUsedPercent.toFixed(2)}%)`);
-      return false;
-    }
-    
-    // Check if process has been running for at least 1 second
-    if (process.uptime() < 1) {
-      console.error('Health check failed: Process just started');
+    if (!result.healthy) {
+      console.error('Health check failed:', JSON.stringify(result, null, 2));
       return false;
     }
     
@@ -30,6 +23,10 @@ export function healthCheck(): boolean {
 
 // If run directly (for Docker HEALTHCHECK)
 if (require.main === module) {
-  const healthy = healthCheck();
-  process.exit(healthy ? 0 : 1);
+  healthCheck().then((healthy) => {
+    process.exit(healthy ? 0 : 1);
+  }).catch((error) => {
+    console.error('Health check exception:', error);
+    process.exit(1);
+  });
 }

@@ -1,0 +1,255 @@
+groups:
+  # ============================================================================
+  # Resilience & Recovery Alerts
+  # ============================================================================
+  - name: noderr_resilience_alerts
+    interval: 30s
+    rules:
+      # Service Restart Alerts
+      - alert: FrequentServiceRestarts
+        expr: rate(pm2_restarts_total[10m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Frequent service restarts on {{ $labels.instance }}"
+          description: "Service {{ $labels.service }} is restarting {{ $value | humanize }} times/sec (threshold: 0.1/sec)."
+      
+      - alert: ServiceCrashLoop
+        expr: rate(pm2_restarts_total[5m]) > 0.5
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service crash loop detected on {{ $labels.instance }}"
+          description: "Service {{ $labels.service }} is in a crash loop with {{ $value | humanize }} restarts/sec."
+      
+      - alert: ServiceMaxRestartsReached
+        expr: pm2_restarts_total > 100
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service reached max restart limit on {{ $labels.instance }}"
+          description: "Service {{ $labels.service }} has restarted {{ $value }} times. Manual intervention required."
+      
+      # Health Check Alerts
+      - alert: HealthCheckFailing
+        expr: noderr_health_check_status == 0
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Health check failing on {{ $labels.instance }}"
+          description: "Health check {{ $labels.check_name }} has been failing for 3 minutes."
+      
+      - alert: HealthCheckLatencyHigh
+        expr: noderr_health_check_duration_seconds > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Health check latency high on {{ $labels.instance }}"
+          description: "Health check {{ $labels.check_name }} is taking {{ $value }}s (threshold: 5s)."
+      
+      # State Persistence Alerts
+      - alert: StatePersistenceFailure
+        expr: rate(noderr_state_save_failures_total[5m]) > 0.01
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "State persistence failures on {{ $labels.instance }}"
+          description: "Service {{ $labels.service }} is failing to save state at {{ $value | humanize }} failures/sec."
+      
+      - alert: StateRecoveryFailure
+        expr: increase(noderr_state_recovery_failures_total[10m]) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "State recovery failed on {{ $labels.instance }}"
+          description: "Service {{ $labels.service }} failed to recover state {{ $value }} times in the last 10 minutes."
+      
+      - alert: StateBackupCorruption
+        expr: increase(noderr_state_backup_corruption_total[1h]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "State backup corruption detected on {{ $labels.instance }}"
+          description: "{{ $value }} corrupted state backups detected for service {{ $labels.service }}."
+      
+      # Container Health Alerts
+      - alert: ContainerRestarting
+        expr: rate(docker_container_restarts_total[10m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container restarting frequently on {{ $labels.instance }}"
+          description: "Container {{ $labels.container_name }} is restarting {{ $value | humanize }} times/sec."
+      
+      - alert: ContainerOOMKilled
+        expr: increase(docker_container_oom_kills_total[10m]) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container OOM killed on {{ $labels.instance }}"
+          description: "Container {{ $labels.container_name }} was killed due to out-of-memory {{ $value }} times."
+      
+      - alert: ContainerUnhealthy
+        expr: docker_container_health_status{status="unhealthy"} == 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container unhealthy on {{ $labels.instance }}"
+          description: "Container {{ $labels.container_name }} health check is failing."
+
+  # ============================================================================
+  # Database & Connection Alerts
+  # ============================================================================
+  - name: noderr_connection_alerts
+    interval: 30s
+    rules:
+      # Database Connection Alerts
+      - alert: DatabaseConnectionPoolExhausted
+        expr: noderr_db_connection_pool_active / noderr_db_connection_pool_max > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database connection pool near exhaustion on {{ $labels.instance }}"
+          description: "Connection pool usage is {{ $value | humanizePercentage }} (threshold: 90%)."
+      
+      - alert: DatabaseConnectionFailures
+        expr: rate(noderr_db_connection_failures_total[5m]) > 0.1
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection failures on {{ $labels.instance }}"
+          description: "Database connection failure rate is {{ $value | humanize }} failures/sec."
+      
+      - alert: DatabaseQueryTimeout
+        expr: rate(noderr_db_query_timeouts_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database query timeouts on {{ $labels.instance }}"
+          description: "Query timeout rate is {{ $value | humanize }} timeouts/sec."
+      
+      # Redis Connection Alerts
+      - alert: RedisConnectionDown
+        expr: noderr_redis_connection_status == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis connection down on {{ $labels.instance }}"
+          description: "Redis connection has been down for 2 minutes."
+      
+      - alert: RedisMemoryHigh
+        expr: noderr_redis_memory_used_bytes / noderr_redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage high on {{ $labels.instance }}"
+          description: "Redis memory usage is {{ $value | humanizePercentage }} (threshold: 90%)."
+      
+      # External API Connection Alerts
+      - alert: ExchangeAPIDown
+        expr: noderr_exchange_api_status{exchange=~"binance|coinbase|kraken"} == 0
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Exchange API down on {{ $labels.instance }}"
+          description: "{{ $labels.exchange }} API has been down for 3 minutes."
+      
+      - alert: ExchangeAPILatencyHigh
+        expr: histogram_quantile(0.95, rate(noderr_exchange_api_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Exchange API latency high on {{ $labels.instance }}"
+          description: "95th percentile API latency for {{ $labels.exchange }} is {{ $value }}s (threshold: 2s)."
+      
+      - alert: ExchangeAPIRateLimited
+        expr: rate(noderr_exchange_api_rate_limit_errors_total[5m]) > 0.1
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Exchange API rate limiting on {{ $labels.instance }}"
+          description: "{{ $labels.exchange }} API is rate limiting at {{ $value | humanize }} errors/sec."
+
+  # ============================================================================
+  # Performance & Resource Alerts
+  # ============================================================================
+  - name: noderr_performance_alerts
+    interval: 30s
+    rules:
+      # Memory Leak Detection
+      - alert: MemoryLeakSuspected
+        expr: (rate(process_resident_memory_bytes[1h]) > 0) and (rate(process_resident_memory_bytes[1h]) / process_resident_memory_bytes > 0.1)
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Potential memory leak on {{ $labels.instance }}"
+          description: "Memory usage for {{ $labels.service }} is growing at {{ $value | humanize }} bytes/sec."
+      
+      # Event Loop Lag
+      - alert: EventLoopLagHigh
+        expr: nodejs_eventloop_lag_seconds > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High event loop lag on {{ $labels.instance }}"
+          description: "Event loop lag for {{ $labels.service }} is {{ $value }}s (threshold: 0.1s)."
+      
+      # GC Pressure
+      - alert: GarbageCollectionPressure
+        expr: rate(nodejs_gc_duration_seconds_sum[5m]) / rate(nodejs_gc_duration_seconds_count[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High GC pressure on {{ $labels.instance }}"
+          description: "Average GC duration for {{ $labels.service }} is {{ $value }}s (threshold: 0.1s)."
+      
+      # File Descriptor Exhaustion
+      - alert: FileDescriptorsNearLimit
+        expr: process_open_fds / process_max_fds > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "File descriptors near limit on {{ $labels.instance }}"
+          description: "File descriptor usage for {{ $labels.service }} is {{ $value | humanizePercentage }} (threshold: 80%)."
+
+  # ============================================================================
+  # Auto-Update Alerts
+  # ============================================================================
+  - name: noderr_update_alerts
+    interval: 60s
+    rules:
+      - alert: AutoUpdateFailed
+        expr: increase(noderr_auto_update_failures_total[1h]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "Auto-update failed on {{ $labels.instance }}"
+          description: "Node {{ $labels.instance }} failed to auto-update {{ $value }} times in the last hour."
+      
+      - alert: NodeVersionOutdated
+        expr: noderr_node_version_outdated == 1
+        for: 24h
+        labels:
+          severity: info
+        annotations:
+          summary: "Node version outdated on {{ $labels.instance }}"
+          description: "Node {{ $labels.instance }} is running an outdated version. Current: {{ $labels.current_version }}, Latest: {{ $labels.latest_version }}."

@@ -245,3 +245,90 @@ export class MLService extends EventEmitter {
 // Export types and client
 export * from '@noderr/ml-client';
 export { MLClient };
+
+
+// ============================================================================
+// Main Entry Point for ML Service
+// ============================================================================
+
+import { Logger } from '@noderr/utils';
+import { getShutdownHandler, onShutdown } from '@noderr/utils';
+
+let mlService: MLService | null = null;
+
+/**
+ * Start the ML service
+ */
+export async function startMLService(): Promise<void> {
+  const logger = new Logger('MLService');
+  
+  try {
+    logger.info('Starting ML Service...');
+    
+    // Initialize ML service
+    mlService = new MLService({
+      mlServiceHost: process.env.ML_SERVICE_HOST || 'ml-service',
+      mlServicePort: parseInt(process.env.ML_SERVICE_PORT || '50051'),
+      timeout: 30000,
+      maxRetries: 3,
+      autoReconnect: true,
+    });
+    
+    // Wait for ML service to be healthy
+    logger.info('Waiting for ML service to be ready...');
+    let retries = 0;
+    const maxRetries = 30;  // 30 seconds
+    
+    while (retries < maxRetries) {
+      const healthy = await mlService.isHealthy();
+      if (healthy) {
+        logger.info('ML service is healthy');
+        break;
+      }
+      
+      retries++;
+      if (retries >= maxRetries) {
+        throw new Error('ML service did not become healthy within 30 seconds');
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    // Get status
+    const status = await mlService.getStatus();
+    logger.info('ML service status', status);
+    
+    // Register graceful shutdown handlers
+    onShutdown('ml-service', async () => {
+      logger.info('Shutting down ML service...');
+      
+      if (mlService) {
+        // Close gRPC connection
+        mlService.close();
+      }
+      
+      logger.info('ML service shut down complete');
+    }, 10000);  // 10 second timeout
+    
+    logger.info('ML Service started successfully');
+    
+    // Keep process alive
+    await new Promise(() => {});  // Never resolves
+  } catch (error) {
+    logger.error('Failed to start ML Service', error);
+    throw error;
+  }
+}
+
+/**
+ * If run directly, start the service
+ */
+if (require.main === module) {
+  // Initialize graceful shutdown
+  getShutdownHandler(30000);  // 30 second global timeout
+  
+  startMLService().catch((error) => {
+    console.error('Fatal error starting ML Service:', error);
+    process.exit(1);
+  });
+}

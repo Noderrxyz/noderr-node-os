@@ -213,4 +213,10 @@ export function deepClone<T>(obj: T): T {
 }
 
 // Export default logger instance
-export const logger = new Logger('noderr'); 
+export const logger = new Logger('noderr');
+
+// Export graceful shutdown utilities
+export * from './graceful-shutdown';
+
+// Export state persistence utilities
+export * from './state-persistence'; 
