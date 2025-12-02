@@ -13,11 +13,22 @@ Noderr Node OS is the institutional-grade software that powers the Noderr Protoc
 
 ## Architecture
 
-The Node OS is designed with three tier-specific variants:
+The Node OS implements a three-node decentralized trading architecture designed to compete with institutional systems like BlackRock's Aladdin:
 
-- **Oracle Nodes:** Full ML/AI systems with strategy generation and treasury management
-- **Guardian Nodes:** Risk monitoring, fraud detection, and circuit breaking
-- **Validator Nodes:** Data validation and basic transaction processing
+- **Oracle Nodes (25-50):** Intelligence and data - market analysis, alpha generation, and consensus on trade proposals
+- **Guardian Nodes (50-100):** Risk and compliance - pre-trade risk assessment, portfolio monitoring, and circuit breaking
+- **Validator Nodes (100-500):** Execution - smart order routing, liquidity aggregation, and trade execution
+
+**📚 [Complete Architecture Documentation](./docs/architecture/)**
+
+### Information Flow
+
+```
+Oracle Consensus → Guardian Approval → Validator Execution → Feedback Loop
+    (WHAT)              (WHETHER)            (HOW)           (LEARN)
+```
+
+Each node type operates independently but coordinates through Byzantine Fault Tolerant consensus mechanisms. See the [architecture documentation](./docs/architecture/) for detailed analysis and diagrams.
 
 ## Key Features
 
