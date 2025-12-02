@@ -28,9 +28,11 @@ const UTILITY_NFT_ABI = [
   'function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256)',
 ];
 
+// NOTE: NodeRegistry functions are not yet implemented in the current contract version
+// Node authorization is based solely on NFT ownership for now
 const NODE_REGISTRY_ABI = [
-  'function getNodeInfo(uint256 tokenId) external view returns (tuple(address operator, uint8 tier, bool isActive, uint256 registeredAt, uint256 lastHeartbeat))',
-  'function isNodeActive(uint256 tokenId) external view returns (bool)',
+  // 'function getNodeInfo(uint256 tokenId) external view returns (tuple(address operator, uint8 tier, bool isActive, uint256 registeredAt, uint256 lastHeartbeat))',
+  // 'function isNodeActive(uint256 tokenId) external view returns (bool)',
 ];
 
 // Initialize provider
@@ -217,24 +219,24 @@ export async function verifyNFTOwnershipWithRetry(
 /**
  * Check if node is registered on-chain
  * 
+ * NOTE: Node registration is not yet implemented in the current contract version.
+ * This function always returns false for now.
+ * 
  * @param tokenId - NFT token ID
  * @returns True if node is registered and active
  */
 export async function isNodeRegistered(tokenId: string): Promise<boolean> {
-  try {
-    initializeContracts();
-
-    const isActive = await nodeRegistry.isNodeActive(tokenId);
-    return isActive;
-
-  } catch (error) {
-    console.error('❌ Failed to check node registration:', error);
-    return false;
-  }
+  // Node registration feature is not yet implemented
+  // For now, NFT ownership is sufficient for node authorization
+  console.log(`ℹ️ Node registration check skipped (not yet implemented)`);
+  return false;
 }
 
 /**
  * Get node information from registry
+ * 
+ * NOTE: Node registration is not yet implemented in the current contract version.
+ * This function always returns null for now.
  * 
  * @param tokenId - NFT token ID
  * @returns Node information or null if not found
@@ -246,23 +248,9 @@ export async function getNodeInfo(tokenId: string): Promise<{
   registeredAt: bigint;
   lastHeartbeat: bigint;
 } | null> {
-  try {
-    initializeContracts();
-
-    const nodeInfo = await nodeRegistry.getNodeInfo(tokenId);
-    
-    return {
-      operator: nodeInfo[0],
-      tier: nodeInfo[1],
-      isActive: nodeInfo[2],
-      registeredAt: nodeInfo[3],
-      lastHeartbeat: nodeInfo[4],
-    };
-
-  } catch (error) {
-    console.error('❌ Failed to get node info:', error);
-    return null;
-  }
+  // Node registration feature is not yet implemented
+  console.log(`ℹ️ Node info query skipped (not yet implemented)`);
+  return null;
 }
 
 /**
