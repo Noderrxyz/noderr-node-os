@@ -1,0 +1,42 @@
+name: Mirror to GitLab
+
+on:
+  push:
+    branches:
+      - '**'  # Mirror all branches
+  delete:
+    branches:
+      - '**'  # Sync branch deletions
+  create:
+    branches:
+      - '**'  # Sync new branches
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for proper mirroring
+          
+      - name: Mirror to GitLab
+        env:
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+          GITLAB_URL: ${{ secrets.GITLAB_URL }}
+        run: |
+          # Extract repository name
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          
+          # Configure git
+          git config --global user.name "GitHub Mirror Bot"
+          git config --global user.email "bot@noderr.xyz"
+          
+          # Add GitLab remote with token authentication
+          git remote add gitlab "https://oauth2:${GITLAB_TOKEN}@${GITLAB_URL}/${REPO_NAME}.git" || true
+          
+          # Push all branches and tags to GitLab
+          git push gitlab --all --force
+          git push gitlab --tags --force
+          
+          echo "✅ Successfully mirrored to GitLab: ${GITLAB_URL}/${REPO_NAME}"

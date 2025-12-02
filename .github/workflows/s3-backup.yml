@@ -1,0 +1,108 @@
+name: Backup to S3/R2
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  schedule:
+    # Daily backup at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # Allow manual triggers
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for complete backup
+          
+      - name: Create backup bundle
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          BACKUP_FILE="${REPO_NAME}_${TIMESTAMP}.bundle"
+          
+          # Create git bundle (complete repository backup)
+          git bundle create "${BACKUP_FILE}" --all
+          
+          # Create metadata file
+          cat > "${BACKUP_FILE}.info" <<EOF
+          Repository: ${GITHUB_REPOSITORY}
+          Backup Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          Commit: ${GITHUB_SHA}
+          Branch: ${GITHUB_REF}
+          Size: $(du -h "${BACKUP_FILE}" | cut -f1)
+          EOF
+          
+          echo "BACKUP_FILE=${BACKUP_FILE}" >> $GITHUB_ENV
+          echo "✅ Created backup bundle: ${BACKUP_FILE}"
+          
+      - name: Upload to S3/R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
+          AWS_REGION: ${{ secrets.S3_REGION || 'auto' }}
+        run: |
+          # Install AWS CLI
+          pip install awscli
+          
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          
+          # Configure AWS CLI for S3 or R2
+          if [ -n "$S3_ENDPOINT" ]; then
+            # For Cloudflare R2 or custom S3 endpoint
+            aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+            aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+            aws configure set region "$AWS_REGION"
+            
+            # Upload to R2/S3
+            aws s3 cp "${BACKUP_FILE}" "s3://${S3_BUCKET}/${REPO_NAME}/${BACKUP_FILE}" --endpoint-url "$S3_ENDPOINT"
+            aws s3 cp "${BACKUP_FILE}.info" "s3://${S3_BUCKET}/${REPO_NAME}/${BACKUP_FILE}.info" --endpoint-url "$S3_ENDPOINT"
+          else
+            # For standard AWS S3
+            aws s3 cp "${BACKUP_FILE}" "s3://${S3_BUCKET}/${REPO_NAME}/${BACKUP_FILE}"
+            aws s3 cp "${BACKUP_FILE}.info" "s3://${S3_BUCKET}/${REPO_NAME}/${BACKUP_FILE}.info"
+          fi
+          
+          echo "✅ Backup uploaded to S3/R2: ${S3_BUCKET}/${REPO_NAME}/${BACKUP_FILE}"
+          
+      - name: Cleanup old backups (keep last 30 days)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
+          AWS_REGION: ${{ secrets.S3_REGION || 'auto' }}
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          CUTOFF_DATE=$(date -d '30 days ago' +%Y%m%d)
+          
+          if [ -n "$S3_ENDPOINT" ]; then
+            # List and delete old backups
+            aws s3 ls "s3://${S3_BUCKET}/${REPO_NAME}/" --endpoint-url "$S3_ENDPOINT" | while read -r line; do
+              FILE=$(echo "$line" | awk '{print $4}')
+              FILE_DATE=$(echo "$FILE" | grep -oP '\d{8}' | head -1)
+              
+              if [ -n "$FILE_DATE" ] && [ "$FILE_DATE" -lt "$CUTOFF_DATE" ]; then
+                echo "Deleting old backup: $FILE"
+                aws s3 rm "s3://${S3_BUCKET}/${REPO_NAME}/${FILE}" --endpoint-url "$S3_ENDPOINT"
+              fi
+            done
+          else
+            aws s3 ls "s3://${S3_BUCKET}/${REPO_NAME}/" | while read -r line; do
+              FILE=$(echo "$line" | awk '{print $4}')
+              FILE_DATE=$(echo "$FILE" | grep -oP '\d{8}' | head -1)
+              
+              if [ -n "$FILE_DATE" ] && [ "$FILE_DATE" -lt "$CUTOFF_DATE" ]; then
+                echo "Deleting old backup: $FILE"
+                aws s3 rm "s3://${S3_BUCKET}/${REPO_NAME}/${FILE}"
+              fi
+            done
+          fi
+          
+          echo "✅ Cleaned up backups older than 30 days"
