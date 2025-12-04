@@ -283,9 +283,9 @@ MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE...
       jest.spyOn(getDatabaseService(), 'getNodeCredentials').mockResolvedValue(mockCredentials);
       jest.spyOn(getDatabaseService(), 'updateNodeLastSeen').mockResolvedValue();
 
-      // Mock bcrypt compare
-      const bcrypt = require('bcrypt');
-      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+      // Mock bcryptjs compare
+      const bcryptjs = require('bcryptjs');
+      jest.spyOn(bcryptjs, 'compare').mockResolvedValue(true);
 
       const jwtToken = await authService.verifyNode('0xtest123', 'test-api-key', 'challenge');
 

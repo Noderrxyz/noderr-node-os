@@ -4,7 +4,7 @@
 
 import { randomBytes } from 'crypto';
 import { hash, compare } from 'bcryptjs';
-import { nanoid } from 'nanoid';
+import { randomUUID } from 'crypto';
 import { getDatabaseService } from './database.service';
 import { attestationService } from './attestation.service';
 import {
@@ -50,7 +50,7 @@ export class AuthService {
     }
 
     // Generate temporary node ID
-    const tempNodeId = `temp-${nanoid(16)}`;
+    const tempNodeId = `temp-${randomUUID().replace(/-/g, '').substring(0, 16)}`;
 
     return {
       nodeId: tempNodeId,
