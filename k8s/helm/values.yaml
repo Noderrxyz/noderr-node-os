@@ -1,0 +1,288 @@
+# Noderr Node OS - Kubernetes Helm Chart Values
+# Production-grade configuration for institutional deployment
+
+# Global settings
+global:
+  environment: production
+  domain: noderr.io
+  tlsEnabled: true
+  
+# Validator Node Configuration
+validator:
+  enabled: true
+  replicaCount: 3
+  
+  image:
+    repository: noderr/validator
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  
+  resources:
+    requests:
+      cpu: 2000m
+      memory: 6Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  
+  service:
+    type: ClusterIP
+    port: 3000
+    targetPort: 3000
+  
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - host: validator.noderr.io
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: validator-tls
+        hosts:
+          - validator.noderr.io
+  
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 3000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: 3000
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 2
+  
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - validator
+            topologyKey: kubernetes.io/hostname
+
+# Guardian Node Configuration
+guardian:
+  enabled: true
+  replicaCount: 3
+  
+  image:
+    repository: noderr/guardian
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  
+  resources:
+    requests:
+      cpu: 2500m
+      memory: 8Gi
+    limits:
+      cpu: 5000m
+      memory: 10Gi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 15
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  
+  service:
+    type: ClusterIP
+    port: 3001
+    targetPort: 3001
+  
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - host: guardian.noderr.io
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: guardian-tls
+        hosts:
+          - guardian.noderr.io
+  
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 3001
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: 3001
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 2
+  
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - guardian
+            topologyKey: kubernetes.io/hostname
+
+# Oracle Node Configuration
+oracle:
+  enabled: true
+  replicaCount: 3
+  
+  image:
+    repository: noderr/oracle
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  
+  resources:
+    requests:
+      cpu: 1500m
+      memory: 4Gi
+    limits:
+      cpu: 3000m
+      memory: 6Gi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 75
+    targetMemoryUtilizationPercentage: 80
+  
+  service:
+    type: ClusterIP
+    port: 3002
+    targetPort: 3002
+  
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - host: oracle.noderr.io
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: oracle-tls
+        hosts:
+          - oracle.noderr.io
+  
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 3002
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: 3002
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 2
+  
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - oracle
+            topologyKey: kubernetes.io/hostname
+
+# Database Configuration
+database:
+  enabled: true
+  type: postgresql
+  host: postgres.default.svc.cluster.local
+  port: 5432
+  database: noderr
+  ssl: true
+
+# Redis Configuration
+redis:
+  enabled: true
+  host: redis.default.svc.cluster.local
+  port: 6379
+  password: ""
+
+# Monitoring & Observability
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    interval: 30s
+  grafana:
+    enabled: true
+    dashboards: true
+
+# Security
+security:
+  podSecurityPolicy:
+    enabled: true
+  networkPolicy:
+    enabled: true
+  rbac:
+    enabled: true
+
+# Backup & Disaster Recovery
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  retention: 30  # days
+  destination: s3://noderr-backups
+
+# Logging
+logging:
+  enabled: true
+  level: info
+  format: json
+  elasticsearch:
+    enabled: true
+    host: elasticsearch.default.svc.cluster.local
+    port: 9200

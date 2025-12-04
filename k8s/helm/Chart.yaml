@@ -1,0 +1,27 @@
+apiVersion: v2
+name: noderr-node-os
+description: Noderr Node OS - Institutional-Grade Decentralized Finance Platform
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - decentralized-finance
+  - trading
+  - blockchain
+  - kubernetes
+  - helm
+
+maintainers:
+  - name: Noderr Team
+    email: team@noderr.io
+
+home: https://noderr.io
+sources:
+  - https://github.com/Noderrxyz/noderr-node-os
+
+dependencies: []
+
+annotations:
+  category: Finance
+  licenses: Apache-2.0

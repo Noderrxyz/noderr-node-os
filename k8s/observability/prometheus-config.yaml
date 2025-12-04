@@ -1,0 +1,383 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: observability
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: 'noderr-production'
+        environment: 'production'
+    
+    # Alerting configuration
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+                - alertmanager:9093
+    
+    # Rule files
+    rule_files:
+      - '/etc/prometheus/rules/*.yml'
+    
+    # Scrape configurations
+    scrape_configs:
+      # Prometheus self-monitoring
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+      
+      # Validator Node metrics
+      - job_name: 'validator'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - noderr
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: validator
+          - source_labels: [__meta_kubernetes_pod_container_port_number]
+            action: keep
+            regex: '9090'
+      
+      # Guardian Node metrics
+      - job_name: 'guardian'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - noderr
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: guardian
+          - source_labels: [__meta_kubernetes_pod_container_port_number]
+            action: keep
+            regex: '9090'
+      
+      # Oracle Node metrics
+      - job_name: 'oracle'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - noderr
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: oracle
+          - source_labels: [__meta_kubernetes_pod_container_port_number]
+            action: keep
+            regex: '9090'
+      
+      # Kubernetes API server
+      - job_name: 'kubernetes-apiservers'
+        kubernetes_sd_configs:
+          - role: endpoints
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: default;kubernetes;https
+      
+      # Kubernetes nodes
+      - job_name: 'kubernetes-nodes'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+      
+      # Kubernetes pods
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: 'true'
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: observability
+data:
+  alerts.yml: |
+    groups:
+      - name: noderr_alerts
+        interval: 30s
+        rules:
+          # Validator Node Alerts
+          - alert: ValidatorHighCPU
+            expr: rate(container_cpu_usage_seconds_total{pod=~"validator-.*"}[5m]) > 0.8
+            for: 5m
+            labels:
+              severity: warning
+              component: validator
+            annotations:
+              summary: "Validator node high CPU usage"
+              description: "Validator {{ $labels.pod }} CPU usage is above 80%"
+          
+          - alert: ValidatorHighMemory
+            expr: container_memory_usage_bytes{pod=~"validator-.*"} / container_spec_memory_limit_bytes > 0.8
+            for: 5m
+            labels:
+              severity: warning
+              component: validator
+            annotations:
+              summary: "Validator node high memory usage"
+              description: "Validator {{ $labels.pod }} memory usage is above 80%"
+          
+          - alert: ValidatorPodCrashing
+            expr: rate(container_last_seen{pod=~"validator-.*"}[5m]) > 0.1
+            for: 1m
+            labels:
+              severity: critical
+              component: validator
+            annotations:
+              summary: "Validator pod is crashing"
+              description: "Validator {{ $labels.pod }} is crashing frequently"
+          
+          # Guardian Node Alerts
+          - alert: GuardianHighCPU
+            expr: rate(container_cpu_usage_seconds_total{pod=~"guardian-.*"}[5m]) > 0.8
+            for: 5m
+            labels:
+              severity: warning
+              component: guardian
+            annotations:
+              summary: "Guardian node high CPU usage"
+              description: "Guardian {{ $labels.pod }} CPU usage is above 80%"
+          
+          - alert: GuardianHighMemory
+            expr: container_memory_usage_bytes{pod=~"guardian-.*"} / container_spec_memory_limit_bytes > 0.8
+            for: 5m
+            labels:
+              severity: warning
+              component: guardian
+            annotations:
+              summary: "Guardian node high memory usage"
+              description: "Guardian {{ $labels.pod }} memory usage is above 80%"
+          
+          # Oracle Node Alerts
+          - alert: OracleHighCPU
+            expr: rate(container_cpu_usage_seconds_total{pod=~"oracle-.*"}[5m]) > 0.8
+            for: 5m
+            labels:
+              severity: warning
+              component: oracle
+            annotations:
+              summary: "Oracle node high CPU usage"
+              description: "Oracle {{ $labels.pod }} CPU usage is above 80%"
+          
+          - alert: OracleHighMemory
+            expr: container_memory_usage_bytes{pod=~"oracle-.*"} / container_spec_memory_limit_bytes > 0.8
+            for: 5m
+            labels:
+              severity: warning
+              component: oracle
+            annotations:
+              summary: "Oracle node high memory usage"
+              description: "Oracle {{ $labels.pod }} memory usage is above 80%"
+          
+          # Kubernetes Alerts
+          - alert: KubernetesNodeNotReady
+            expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Kubernetes node not ready"
+              description: "Node {{ $labels.node }} is not ready"
+          
+          - alert: KubernetesPodCrashLooping
+            expr: rate(kube_pod_container_status_restarts_total[15m]) > 0.1
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Kubernetes pod crash looping"
+              description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash looping"
+          
+          # Database Alerts
+          - alert: PostgreSQLDown
+            expr: up{job="postgresql"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "PostgreSQL is down"
+              description: "PostgreSQL database is not responding"
+          
+          # Redis Alerts
+          - alert: RedisDown
+            expr: up{job="redis"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Redis is down"
+              description: "Redis cache is not responding"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: observability
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      serviceAccountName: prometheus
+      containers:
+        - name: prometheus
+          image: prom/prometheus:latest
+          args:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+            - '--storage.tsdb.path=/prometheus'
+            - '--storage.tsdb.retention.time=30d'
+            - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+            - '--web.console.templates=/usr/share/prometheus/consoles'
+          ports:
+            - containerPort: 9090
+              name: web
+          volumeMounts:
+            - name: config
+              mountPath: /etc/prometheus
+            - name: rules
+              mountPath: /etc/prometheus/rules
+            - name: storage
+              mountPath: /prometheus
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: 1000m
+              memory: 4Gi
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: 9090
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 9090
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: config
+          configMap:
+            name: prometheus-config
+        - name: rules
+          configMap:
+            name: prometheus-rules
+        - name: storage
+          emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - prometheus
+                topologyKey: kubernetes.io/hostname
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: observability
+spec:
+  selector:
+    app: prometheus
+  ports:
+    - port: 9090
+      targetPort: 9090
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: observability
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - nodes/proxy
+      - services
+      - endpoints
+      - pods
+    verbs: ["get", "list", "watch"]
+  - apiGroups:
+      - extensions
+    resources:
+      - ingresses
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: observability
