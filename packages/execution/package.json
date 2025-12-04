@@ -12,8 +12,7 @@
     "test:coverage": "jest --coverage",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
-    "clean": "rimraf dist coverage",
-    "prepare": "npm run clean && npm run build"
+    "clean": "rimraf dist coverage"
   },
   "keywords": [
     "trading",
@@ -44,7 +43,9 @@
     "simple-statistics": "^7.8.3",
     "uuid": "^9.0.1",
     "web3": "^4.1.1",
-    "winston": "^3.11.0"
+    "winston": "^3.11.0",
+    "ws": "^8.18.3",
+    "node-cache": "^5.1.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
@@ -74,4 +75,4 @@
     "url": "git+https://github.com/noderr/protocol.git",
     "directory": "packages/execution"
   }
-} 
+}

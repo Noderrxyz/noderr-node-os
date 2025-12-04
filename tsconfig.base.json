@@ -7,12 +7,19 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "resolveJsonModule": true,
     "moduleResolution": "node",
-    "downlevelIteration": true,
-    "types": ["node"]
+    "composite": true,
+    "types": ["node", "jest"],
+    "baseUrl": ".",
+    "paths": {
+      "@noderr/types": ["packages/types/src"],
+      "@noderr/utils": ["packages/utils/src"],
+      "@noderr/auth-api": ["auth-api/src"],
+      "@noderr/deployment-engine": ["deployment-engine/src"]
+    }
   }
 }

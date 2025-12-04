@@ -3,7 +3,7 @@
  */
 
 import { randomBytes } from 'crypto';
-import { hash, compare } from 'bcrypt';
+import { hash, compare } from 'bcryptjs';
 import { nanoid } from 'nanoid';
 import { getDatabaseService } from './database.service';
 import { attestationService } from './attestation.service';
@@ -12,16 +12,20 @@ import {
   RegisterNodeRequest,
   RegisterNodeResponse,
   NodeStatus,
-  NodeTier,
-  OperatingSystem,
 } from '../models/types';
+import { FastifyInstance } from 'fastify';
 
-const SALT_ROUNDS = 12;
+const SALT_ROUNDS = 14; // Increased salt rounds
 const API_KEY_PREFIX = 'ndr_live_';
-const JWT_SECRET_LENGTH = 64;
 const CREDENTIAL_EXPIRY_DAYS = 365;
 
 export class AuthService {
+  private fastify: FastifyInstance;
+
+  constructor(fastify: FastifyInstance) {
+    this.fastify = fastify;
+  }
+
   /**
    * Get installation configuration using install token
    */
@@ -131,12 +135,11 @@ export class AuthService {
     const apiKey = this.generateApiKey();
     const apiKeyHash = await hash(apiKey, SALT_ROUNDS);
 
-    // Generate JWT secret
-    const jwtSecret = randomBytes(JWT_SECRET_LENGTH).toString('hex');
-
     // Create credentials
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + CREDENTIAL_EXPIRY_DAYS);
+
+    const jwtSecret = randomBytes(32).toString('hex');
 
     await db.createNodeCredentials({
       nodeId,
@@ -146,7 +149,7 @@ export class AuthService {
     });
 
     // Generate JWT token
-    const jwtToken = this.generateJWT(nodeId, jwtSecret);
+    const jwtToken = this.generateJWT(nodeId);
 
     return {
       nodeId,
@@ -196,7 +199,7 @@ export class AuthService {
     await db.updateNodeLastSeen(nodeId);
 
     // Generate new JWT
-    return this.generateJWT(nodeId, credentials.jwtSecret);
+    return this.generateJWT(nodeId);
   }
 
   /**
@@ -205,8 +208,12 @@ export class AuthService {
   async processHeartbeat(nodeId: string, jwtToken: string): Promise<void> {
     const db = getDatabaseService();
 
-    // Verify JWT (simplified - in production use proper JWT verification)
-    // For now, just check if node exists and is active
+    // Verify JWT
+    try {
+      await this.fastify.jwt.verify(jwtToken);
+    } catch (err) {
+      throw new Error('Invalid JWT');
+    }
 
     const node = await db.getNodeIdentity(nodeId);
 
@@ -231,26 +238,15 @@ export class AuthService {
   }
 
   /**
-   * Generate JWT token (simplified)
-   * In production, use @fastify/jwt
+   * Generate JWT token
    */
-  private generateJWT(nodeId: string, secret: string): string {
-    // Simplified JWT generation
-    // In production, use proper JWT library with signing
-    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
-    const payload = Buffer.from(
-      JSON.stringify({
-        nodeId,
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 86400, // 24 hours
-      })
-    ).toString('base64url');
-
-    // In production, sign with secret
-    const signature = Buffer.from(secret).toString('base64url').substring(0, 43);
-
-    return `${header}.${payload}.${signature}`;
+  private generateJWT(nodeId: string): string {
+    return this.fastify.jwt.sign({ nodeId });
   }
 }
 
-export const authService = new AuthService();
+export let authService: AuthService;
+
+export function initializeAuthService(fastify: FastifyInstance) {
+  authService = new AuthService(fastify);
+}

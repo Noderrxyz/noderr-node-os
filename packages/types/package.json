@@ -7,8 +7,7 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc -w",
-    "clean": "rimraf dist",
-    "prepare": "npm run clean && npm run build"
+    "clean": "rimraf dist"
   },
   "keywords": [
     "types",
@@ -32,4 +31,4 @@
     "url": "git+https://github.com/noderr/protocol.git",
     "directory": "packages/types"
   }
-} 
+}

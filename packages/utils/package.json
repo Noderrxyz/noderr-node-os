@@ -10,8 +10,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src --ext .ts",
-    "clean": "rimraf dist",
-    "prepare": "npm run clean && npm run build"
+    "clean": "rimraf dist"
   },
   "keywords": [
     "utils",
@@ -29,7 +28,8 @@
     "winston": "^3.11.0",
     "joi": "^17.12.2",
     "dayjs": "^1.11.10",
-    "decimal.js": "^10.4.3"
+    "decimal.js": "^10.4.3",
+    "ethers": "^6.11.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
@@ -55,4 +55,4 @@
     "url": "git+https://github.com/noderr/protocol.git",
     "directory": "packages/utils"
   }
-} 
+}

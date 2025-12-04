@@ -30,10 +30,7 @@ const UTILITY_NFT_ABI = [
 
 // NOTE: NodeRegistry functions are not yet implemented in the current contract version
 // Node authorization is based solely on NFT ownership for now
-const NODE_REGISTRY_ABI = [
-  // 'function getNodeInfo(uint256 tokenId) external view returns (tuple(address operator, uint8 tier, bool isActive, uint256 registeredAt, uint256 lastHeartbeat))',
-  // 'function isNodeActive(uint256 tokenId) external view returns (bool)',
-];
+// // import { NODE_REGISTRY_ABI } from "./NodeRegistry";
 
 // Initialize provider
 let provider: ethers.JsonRpcProvider;
@@ -44,7 +41,7 @@ function initializeContracts() {
   if (!provider) {
     provider = new ethers.JsonRpcProvider(RPC_URL);
     utilityNFT = new ethers.Contract(UTILITY_NFT_ADDRESS, UTILITY_NFT_ABI, provider);
-    nodeRegistry = new ethers.Contract(NODE_REGISTRY_ADDRESS, NODE_REGISTRY_ABI, provider);
+    // // nodeRegistry = new ethers.Contract(NODE_REGISTRY_ADDRESS, [], provider);
   }
 }
 

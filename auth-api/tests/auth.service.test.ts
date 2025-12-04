@@ -2,7 +2,9 @@
  * Authentication Service Tests
  */
 
-import { authService } from '../src/services/auth.service';
+import Fastify from 'fastify';
+import jwt from '@fastify/jwt';
+import { authService, initializeAuthService } from '../src/services/auth.service';
 import { attestationService } from '../src/services/attestation.service';
 import { getDatabaseService, initializeDatabaseService } from '../src/services/database.service';
 import { NodeTier, OperatingSystem, NodeStatus } from '../src/models/types';
@@ -22,9 +24,12 @@ jest.mock('@supabase/supabase-js', () => ({
 }));
 
 describe('AuthService', () => {
-  beforeAll(() => {
+    beforeAll(async () => {
     // Initialize database service with mock
-    initializeDatabaseService('https://test.supabase.co', 'test-key');
+        initializeDatabaseService('https://test.supabase.co', 'test-key');
+    const fastify = Fastify();
+    await fastify.register(jwt, { secret: 'test-secret' });
+    initializeAuthService(fastify);
   });
 
   describe('getInstallConfig', () => {
@@ -315,7 +320,7 @@ MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE...
       jest.spyOn(getDatabaseService(), 'getNodeCredentials').mockResolvedValue(mockCredentials);
 
       // Mock bcrypt compare to return false
-      const bcrypt = require('bcrypt');
+      const bcrypt = require("bcryptjs");
       jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
 
       await expect(

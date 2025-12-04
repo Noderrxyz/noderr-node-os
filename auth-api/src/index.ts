@@ -7,8 +7,10 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
+import jwt from '@fastify/jwt';
 import { registerApiRoutes } from './routes/api.routes';
 import { initializeDatabaseService } from './services/database.service';
+import { initializeAuthService } from './services/auth.service';
 
 // Configuration from environment variables
 const config = {
@@ -54,10 +56,15 @@ async function main() {
     timeWindow: '1 minute', // Per minute
   });
 
-  // Initialize database service
-  fastify.log.info('Initializing database service...');
+  await fastify.register(jwt, {
+    secret: process.env.JWT_SECRET || 'a-very-secret-jwt-secret',
+  });
+
+  // Initialize services
+  fastify.log.info('Initializing services...');
   initializeDatabaseService(config.supabaseUrl, config.supabaseKey);
-  fastify.log.info('Database service initialized');
+  initializeAuthService(fastify);
+  fastify.log.info('Services initialized');
 
   // Register API routes
   await registerApiRoutes(fastify);

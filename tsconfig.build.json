@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/types" },
+    { "path": "./packages/utils" },
+    { "path": "./packages/telemetry" },
+    { "path": "./auth-api" },
+    { "path": "./deployment-engine" }
+  ]
+}
