@@ -1,0 +1,91 @@
+name: Backup to Mega Cloud
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  schedule:
+    # Daily backup at 3 AM UTC (offset from other backups)
+    - cron: '0 3 * * *'
+  workflow_dispatch:  # Allow manual triggers
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for complete backup
+          
+      - name: Install MEGAcmd
+        run: |
+          wget https://mega.nz/linux/repo/xUbuntu_22.04/amd64/megacmd-xUbuntu_22.04_amd64.deb
+          sudo dpkg -i megacmd-xUbuntu_22.04_amd64.deb || sudo apt-get install -f -y
+          
+      - name: Create backup bundle
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S )
+          BACKUP_FILE="${REPO_NAME}_${TIMESTAMP}.bundle"
+          
+          # Create git bundle (complete repository backup)
+          git bundle create "${BACKUP_FILE}" --all
+          
+          # Create metadata file
+          cat > "${BACKUP_FILE}.info" <<EOF
+          Repository: ${GITHUB_REPOSITORY}
+          Backup Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          Commit: ${GITHUB_SHA}
+          Branch: ${GITHUB_REF}
+          Size: $(du -h "${BACKUP_FILE}" | cut -f1)
+          EOF
+          
+          echo "BACKUP_FILE=${BACKUP_FILE}" >> $GITHUB_ENV
+          echo "REPO_NAME=${REPO_NAME}" >> $GITHUB_ENV
+          
+      - name: Upload to Mega Cloud
+        env:
+          MEGA_EMAIL: ${{ secrets.MEGA_EMAIL }}
+          MEGA_PASSWORD: ${{ secrets.MEGA_PASSWORD }}
+        run: |
+          # Login to Mega
+          mega-login "$MEGA_EMAIL" "$MEGA_PASSWORD"
+          
+          # Create repository folder if it doesn't exist
+          mega-mkdir -p "/GitHub-Backups/${REPO_NAME}" || true
+          
+          # Upload backup
+          mega-put "${BACKUP_FILE}" "/GitHub-Backups/${REPO_NAME}/"
+          mega-put "${BACKUP_FILE}.info" "/GitHub-Backups/${REPO_NAME}/"
+          
+          echo "✅ Backup uploaded to Mega Cloud: /GitHub-Backups/${REPO_NAME}/${BACKUP_FILE}"
+          
+          # Logout
+          mega-logout
+          
+      - name: Cleanup old backups (keep last 30 days)
+        env:
+          MEGA_EMAIL: ${{ secrets.MEGA_EMAIL }}
+          MEGA_PASSWORD: ${{ secrets.MEGA_PASSWORD }}
+        run: |
+          # Login to Mega
+          mega-login "$MEGA_EMAIL" "$MEGA_PASSWORD"
+          
+          CUTOFF_DATE=$(date -d '30 days ago' +%Y%m%d)
+          
+          # List files in repository folder
+          mega-ls "/GitHub-Backups/${REPO_NAME}/" | while read -r file; do
+            FILE_DATE=$(echo "$file" | grep -oP '\d{8}' | head -1)
+            
+            if [ -n "$FILE_DATE" ] && [ "$FILE_DATE" -lt "$CUTOFF_DATE" ]; then
+              echo "Deleting old backup: $file"
+              mega-rm "/GitHub-Backups/${REPO_NAME}/$file"
+            fi
+          done
+          
+          # Logout
+          mega-logout
+          
+          echo "✅ Cleaned up backups older than 30 days"
