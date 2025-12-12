@@ -45,6 +45,8 @@ export interface ConsensusResult {
 /**
  * Guardian Consensus Service
  */
+export { StrategyReviewService, type StrategyReviewRequest, type GuardianReview, type ReviewConsensus } from './StrategyReviewService';
+
 export class GuardianConsensusService {
   private logger: Logger;
   private guardians: Map<string, any> = new Map();
