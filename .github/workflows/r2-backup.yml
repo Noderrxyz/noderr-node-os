@@ -1,0 +1,107 @@
+name: Backup to Cloudflare R2
+
+on:
+  schedule:
+    # Daily backup at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # Allow manual triggers
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for complete backup
+          
+      - name: Create backup bundle
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          BACKUP_FILE="${REPO_NAME}_${TIMESTAMP}.bundle"
+          
+          # Create git bundle (complete repository backup)
+          git bundle create "${BACKUP_FILE}" --all
+          
+          # Create metadata file
+          cat > "${BACKUP_FILE}.info" <<EOF
+          Repository: ${GITHUB_REPOSITORY}
+          Backup Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          Commit: ${GITHUB_SHA}
+          Branch: ${GITHUB_REF}
+          Size: $(du -h "${BACKUP_FILE}" | cut -f1)
+          Bundle File: ${BACKUP_FILE}
+          EOF
+          
+          echo "BACKUP_FILE=${BACKUP_FILE}" >> $GITHUB_ENV
+          echo "✅ Created backup bundle: ${BACKUP_FILE}"
+          
+      - name: Upload to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+        run: |
+          # Install AWS CLI
+          pip install awscli --quiet
+          
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          R2_ENDPOINT="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          
+          # Configure AWS CLI for R2
+          aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+          aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+          aws configure set region auto
+          
+          # Upload to R2 with retry logic
+          MAX_RETRIES=3
+          for attempt in $(seq 1 $MAX_RETRIES); do
+            echo "🔄 Upload attempt $attempt of $MAX_RETRIES"
+            
+            if aws s3 cp "${BACKUP_FILE}" "s3://${R2_BUCKET}/${REPO_NAME}/${BACKUP_FILE}" \
+                --endpoint-url "$R2_ENDPOINT" && \
+               aws s3 cp "${BACKUP_FILE}.info" "s3://${R2_BUCKET}/${REPO_NAME}/${BACKUP_FILE}.info" \
+                --endpoint-url "$R2_ENDPOINT"; then
+              echo "✅ Backup uploaded to R2: ${R2_BUCKET}/${REPO_NAME}/${BACKUP_FILE}"
+              exit 0
+            fi
+            
+            if [ $attempt -lt $MAX_RETRIES ]; then
+              echo "⏳ Waiting 10 seconds before retry..."
+              sleep 10
+            fi
+          done
+          
+          echo "❌ Failed to upload backup after $MAX_RETRIES attempts"
+          exit 1
+          
+      - name: Cleanup old backups (keep last 30 days)
+        if: success()
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          R2_ENDPOINT="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          CUTOFF_DATE=$(date -d '30 days ago' +%Y%m%d 2>/dev/null || date -v-30d +%Y%m%d)
+          
+          echo "🧹 Cleaning up backups older than 30 days (before ${CUTOFF_DATE})"
+          
+          # List and delete old backups
+          aws s3 ls "s3://${R2_BUCKET}/${REPO_NAME}/" --endpoint-url "$R2_ENDPOINT" | while read -r line; do
+            FILE=$(echo "$line" | awk '{print $4}')
+            
+            # Extract date from filename (format: reponame_YYYYMMDD_HHMMSS.bundle)
+            FILE_DATE=$(echo "$FILE" | grep -oP '\d{8}' | head -1)
+            
+            if [ -n "$FILE_DATE" ] && [ "$FILE_DATE" -lt "$CUTOFF_DATE" ]; then
+              echo "🗑️  Deleting old backup: $FILE"
+              aws s3 rm "s3://${R2_BUCKET}/${REPO_NAME}/${FILE}" --endpoint-url "$R2_ENDPOINT" || true
+            fi
+          done
+          
+          echo "✅ Cleanup completed"
