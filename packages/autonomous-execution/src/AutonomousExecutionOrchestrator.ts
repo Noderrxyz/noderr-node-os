@@ -12,49 +12,15 @@
 
 import { EventEmitter } from 'events';
 import { OracleCoordinator, TradingSignal } from '@noderr/oracle-consensus';
+import { MLSignalService, MLPrediction as MLPred } from './services/MLSignalService';
+import { RiskCheckService, RiskAssessment as RiskAssess, PortfolioState } from './services/RiskCheckService';
+import { ExecutionService, ExecutionPlan as ExecPlan, ExecutionResult as ExecResult } from './services/ExecutionService';
 
-export interface MLPrediction {
-  symbol: string;
-  action: 'BUY' | 'SELL' | 'HOLD';
-  confidence: number;
-  price: number;
-  targetPrice: number;
-  stopLoss: number;
-  timeHorizon: number; // milliseconds
-  features: Record<string, number>;
-  modelId: string;
-  timestamp: number;
-}
-
-export interface RiskAssessment {
-  approved: boolean;
-  adjustedQuantity: number;
-  riskScore: number;
-  maxLoss: number;
-  positionSize: number;
-  leverage: number;
-  reasons: string[];
-}
-
-export interface ExecutionPlan {
-  symbol: string;
-  side: 'BUY' | 'SELL';
-  quantity: number;
-  algorithm: 'TWAP' | 'VWAP' | 'POV' | 'ICEBERG';
-  urgency: 'LOW' | 'MEDIUM' | 'HIGH';
-  maxSlippage: number;
-  timeLimit: number;
-}
-
-export interface ExecutionResult {
-  success: boolean;
-  executedQuantity: number;
-  averagePrice: number;
-  totalCost: number;
-  slippage: number;
-  duration: number;
-  fills: any[];
-}
+// Re-export types from services
+export type MLPrediction = MLPred;
+export type RiskAssessment = RiskAssess;
+export type ExecutionPlan = ExecPlan;
+export type ExecutionResult = ExecResult;
 
 export interface AutonomousTradeFlow {
   id: string;
@@ -90,11 +56,13 @@ export class AutonomousExecutionOrchestrator extends EventEmitter {
   private completedTrades: AutonomousTradeFlow[] = [];
   private isRunning: boolean = false;
   
-  // Stub implementations for ML, Risk, and Execution services
-  // In production, these would be injected dependencies
-  private mlService: any = null;
-  private riskEngine: any = null;
-  private executionEngine: any = null;
+  // Real service implementations
+  private mlService: MLSignalService;
+  private riskEngine: RiskCheckService;
+  private executionEngine: ExecutionService;
+  
+  // Portfolio state for risk assessment
+  private portfolioState: PortfolioState;
   
   constructor(config: Partial<OrchestratorConfig> = {}) {
     super();
@@ -107,6 +75,61 @@ export class AutonomousExecutionOrchestrator extends EventEmitter {
       maxConcurrentTrades: config.maxConcurrentTrades ?? 5,
       enableNotifications: config.enableNotifications ?? true,
     };
+    
+    // Initialize services
+    this.mlService = new MLSignalService();
+    this.riskEngine = new RiskCheckService();
+    this.executionEngine = new ExecutionService();
+    
+    // Initialize portfolio state
+    this.portfolioState = {
+      totalValue: 100000, // $100k starting capital
+      cash: 100000,
+      positions: new Map(),
+      openOrders: 0,
+      dailyPnL: 0,
+      weeklyPnL: 0,
+      currentDrawdown: 0,
+      maxDrawdown: 0
+    };
+    
+    // Set up service event listeners
+    this.setupServiceListeners();
+  }
+  
+  /**
+   * Set up event listeners for services
+   */
+  private setupServiceListeners(): void {
+    // ML Signal Service events
+    this.mlService.on('new-signal', (prediction: MLPrediction) => {
+      if (this.isRunning) {
+        this.processPrediction(prediction).catch(error => {
+          console.error('[Orchestrator] Error processing prediction:', error);
+        });
+      }
+    });
+    
+    // Risk Check Service events
+    this.riskEngine.on('circuit-breaker-triggered', (event: any) => {
+      console.error('[Orchestrator] 🚨 CIRCUIT BREAKER TRIGGERED 🚨');
+      console.error('[Orchestrator] Reason:', event.reason);
+      this.emit('circuit-breaker-triggered', event);
+      
+      // Optionally stop trading
+      // this.stop();
+    });
+    
+    this.riskEngine.on('prediction-rejected', (event: any) => {
+      console.warn('[Orchestrator] Prediction rejected:', event.reason);
+      this.emit('prediction-rejected', event);
+    });
+    
+    // Execution Service events
+    this.executionEngine.on('execution-complete', (event: any) => {
+      console.log('[Orchestrator] Execution complete');
+      this.updatePortfolioAfterExecution(event.result);
+    });
   }
   
   /**
@@ -114,26 +137,32 @@ export class AutonomousExecutionOrchestrator extends EventEmitter {
    */
   async initialize(options: {
     oracleCoordinator?: OracleCoordinator;
-    mlService?: any;
-    riskEngine?: any;
-    executionEngine?: any;
-  }): Promise<void> {
-    console.log('Initializing Autonomous Execution Orchestrator...');
+  } = {}): Promise<void> {
+    console.log('[Orchestrator] Initializing Autonomous Execution Orchestrator...');
     
     this.oracleCoordinator = options.oracleCoordinator || null;
-    this.mlService = options.mlService || null;
-    this.riskEngine = options.riskEngine || null;
-    this.executionEngine = options.executionEngine || null;
+    
+    // Initialize services
+    console.log('[Orchestrator] Initializing ML Signal Service...');
+    await this.mlService.initialize();
+    
+    console.log('[Orchestrator] Initializing Risk Check Service...');
+    await this.riskEngine.initialize();
+    
+    console.log('[Orchestrator] Initializing Execution Service...');
+    await this.executionEngine.initialize();
     
     if (this.oracleCoordinator) {
+      console.log('[Orchestrator] Initializing Oracle Coordinator...');
       await this.oracleCoordinator.initialize();
     }
     
-    console.log('Autonomous Execution Orchestrator initialized');
-    console.log(`  ML Predictions: ${this.config.enableMLPredictions ? 'ENABLED' : 'DISABLED'}`);
-    console.log(`  Risk Management: ${this.config.enableRiskManagement ? 'ENABLED' : 'DISABLED'}`);
-    console.log(`  Oracle Consensus: ${this.config.enableConsensus ? 'ENABLED' : 'DISABLED'}`);
-    console.log(`  Max Concurrent Trades: ${this.config.maxConcurrentTrades}`);
+    console.log('[Orchestrator] ✅ Autonomous Execution Orchestrator initialized');
+    console.log(`[Orchestrator]   ML Predictions: ${this.config.enableMLPredictions ? 'ENABLED' : 'DISABLED'}`);
+    console.log(`[Orchestrator]   Risk Management: ${this.config.enableRiskManagement ? 'ENABLED' : 'DISABLED'}`);
+    console.log(`[Orchestrator]   Oracle Consensus: ${this.config.enableConsensus ? 'ENABLED' : 'DISABLED'}`);
+    console.log(`[Orchestrator]   Max Concurrent Trades: ${this.config.maxConcurrentTrades}`);
+    console.log(`[Orchestrator]   Portfolio Value: $${this.portfolioState.totalValue.toLocaleString()}`);
     
     this.emit('initialized');
   }
@@ -143,20 +172,23 @@ export class AutonomousExecutionOrchestrator extends EventEmitter {
    */
   async start(): Promise<void> {
     if (this.isRunning) {
-      console.warn('Orchestrator already running');
+      console.warn('[Orchestrator] Orchestrator already running');
       return;
     }
     
-    console.log('Starting autonomous trading...');
+    console.log('[Orchestrator] 🚀 Starting autonomous trading...');
     
     this.isRunning = true;
     
     this.emit('started');
     
-    // Start ML prediction loop (if enabled)
-    if (this.config.enableMLPredictions && this.mlService) {
-      this.startMLPredictionLoop();
+    // Start ML prediction generation (if enabled)
+    if (this.config.enableMLPredictions) {
+      console.log('[Orchestrator] Starting ML signal generation...');
+      await this.mlService.startGenerating(60000); // Generate signals every 60 seconds
     }
+    
+    console.log('[Orchestrator] ✅ Autonomous trading started');
   }
   
   /**
@@ -167,18 +199,21 @@ export class AutonomousExecutionOrchestrator extends EventEmitter {
       return;
     }
     
-    console.log('Stopping autonomous trading...');
+    console.log('[Orchestrator] Stopping autonomous trading...');
     
     this.isRunning = false;
     
+    // Stop ML signal generation
+    this.mlService.stopGenerating();
+    
     // Wait for active trades to complete
-    console.log(`Waiting for ${this.activeTrades.size} active trades to complete...`);
+    console.log(`[Orchestrator] Waiting for ${this.activeTrades.size} active trades to complete...`);
     
     while (this.activeTrades.size > 0) {
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
-    console.log('Autonomous trading stopped');
+    console.log('[Orchestrator] ✅ Autonomous trading stopped');
     
     this.emit('stopped');
   }
@@ -364,63 +399,42 @@ export class AutonomousExecutionOrchestrator extends EventEmitter {
   }
   
   /**
-   * Perform risk assessment
+   * Perform risk assessment using RiskCheckService
    */
   private async performRiskAssessment(prediction: MLPrediction): Promise<RiskAssessment> {
-    // Stub implementation
-    // In production, this would call the risk engine
-    
-    // Simple risk checks
-    const reasons: string[] = [];
-    let approved = true;
-    
-    // Check confidence threshold
-    if (prediction.confidence < 0.7) {
-      approved = false;
-      reasons.push('Confidence too low');
-    }
-    
-    // Calculate position size (simplified)
-    const positionSize = 10000; // $10k position
-    const quantity = Math.floor(positionSize / prediction.price);
-    
-    // Calculate max loss (stop loss)
-    const maxLoss = Math.abs(prediction.price - prediction.stopLoss) * quantity;
-    
-    // Check max loss threshold
-    if (maxLoss > 500) { // Max $500 loss
-      approved = false;
-      reasons.push('Max loss exceeds threshold');
-    }
-    
-    return {
-      approved,
-      adjustedQuantity: quantity,
-      riskScore: 1 - prediction.confidence,
-      maxLoss,
-      positionSize,
-      leverage: 1,
-      reasons: reasons.length > 0 ? reasons : ['All checks passed'],
-    };
+    return await this.riskEngine.validatePrediction(prediction, this.portfolioState);
   }
   
   /**
-   * Create execution plan
+   * Create execution plan based on prediction and risk assessment
    */
   private createExecutionPlan(trade: AutonomousTradeFlow): ExecutionPlan {
     const prediction = trade.prediction;
     const riskAssessment = trade.riskAssessment!;
     
-    // Determine algorithm based on urgency and size
-    let algorithm: 'TWAP' | 'VWAP' | 'POV' | 'ICEBERG' = 'TWAP';
+    // Determine algorithm based on confidence, size, and urgency
+    let algorithm: 'TWAP' | 'VWAP' | 'POV' | 'ICEBERG' | 'SMART' = 'SMART';
     let urgency: 'LOW' | 'MEDIUM' | 'HIGH' = 'MEDIUM';
     
-    if (prediction.confidence > 0.9) {
+    // High confidence = aggressive execution (VWAP)
+    if (prediction.confidence > 0.85) {
       algorithm = 'VWAP';
       urgency = 'HIGH';
-    } else if (riskAssessment.adjustedQuantity > 1000) {
+    }
+    // Large position = stealth execution (ICEBERG)
+    else if (riskAssessment.positionSize > this.portfolioState.totalValue * 0.05) {
       algorithm = 'ICEBERG';
       urgency = 'LOW';
+    }
+    // Medium confidence = time-weighted (TWAP)
+    else if (prediction.confidence > 0.70) {
+      algorithm = 'TWAP';
+      urgency = 'MEDIUM';
+    }
+    // Default = smart routing
+    else {
+      algorithm = 'SMART';
+      urgency = 'MEDIUM';
     }
     
     return {
@@ -429,36 +443,38 @@ export class AutonomousExecutionOrchestrator extends EventEmitter {
       quantity: riskAssessment.adjustedQuantity,
       algorithm,
       urgency,
-      maxSlippage: 0.005, // 0.5%
+      maxSlippage: 0.01, // 1% max slippage
       timeLimit: prediction.timeHorizon || 300000, // 5 minutes default
     };
   }
   
   /**
-   * Execute trade
+   * Execute trade using ExecutionService
    */
   private async executeTrade(plan: ExecutionPlan): Promise<ExecutionResult> {
-    // Stub implementation
-    // In production, this would call the execution engine
+    return await this.executionEngine.execute(plan);
+  }
+  
+  /**
+   * Update portfolio state after execution
+   */
+  private updatePortfolioAfterExecution(result: ExecutionResult): void {
+    if (!result.success) {
+      return;
+    }
     
-    const startTime = Date.now();
+    // Update cash
+    this.portfolioState.cash -= result.totalCost;
     
-    // Simulate execution delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Update positions
+    // In production, would update actual positions
     
-    // Simulate execution result
-    const slippage = Math.random() * 0.003; // 0-0.3% slippage
-    const averagePrice = plan.side === 'BUY' ? 100 * (1 + slippage) : 100 * (1 - slippage);
+    // Update PnL tracking
+    // In production, would calculate actual PnL
     
-    return {
-      success: true,
-      executedQuantity: plan.quantity,
-      averagePrice,
-      totalCost: averagePrice * plan.quantity,
-      slippage,
-      duration: Date.now() - startTime,
-      fills: [],
-    };
+    console.log('[Orchestrator] Portfolio updated');
+    console.log(`  Cash: $${this.portfolioState.cash.toFixed(2)}`);
+    console.log(`  Total Value: $${this.portfolioState.totalValue.toFixed(2)}`);
   }
   
   /**
@@ -478,12 +494,42 @@ export class AutonomousExecutionOrchestrator extends EventEmitter {
   }
   
   /**
-   * Start ML prediction loop
+   * Get portfolio state
    */
-  private startMLPredictionLoop(): void {
-    // Stub implementation
-    // In production, this would poll the ML service for new predictions
-    console.log('ML prediction loop started (stub)');
+  getPortfolioState(): PortfolioState {
+    return { ...this.portfolioState };
+  }
+  
+  /**
+   * Update portfolio state
+   */
+  updatePortfolioState(updates: Partial<PortfolioState>): void {
+    this.portfolioState = {
+      ...this.portfolioState,
+      ...updates
+    };
+    console.log('[Orchestrator] Portfolio state updated');
+  }
+  
+  /**
+   * Get ML service
+   */
+  getMLService(): MLSignalService {
+    return this.mlService;
+  }
+  
+  /**
+   * Get risk engine
+   */
+  getRiskEngine(): RiskCheckService {
+    return this.riskEngine;
+  }
+  
+  /**
+   * Get execution engine
+   */
+  getExecutionEngine(): ExecutionService {
+    return this.executionEngine;
   }
   
   /**

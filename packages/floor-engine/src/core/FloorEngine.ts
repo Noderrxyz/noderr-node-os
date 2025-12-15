@@ -86,6 +86,9 @@ export class FloorEngine extends EventEmitter {
     }
     console.log(`[FloorEngine] Connected to ${this.config.networkName} (${network.chainId})`);
 
+    // Initialize ML risk assessment
+    await this.riskManager.initialize();
+
     this.isInitialized = true;
     this.emit('initialized');
 
@@ -143,7 +146,168 @@ export class FloorEngine extends EventEmitter {
   }
 
   /**
-   * Rebalance positions to match target allocations
+   * Allocate capital using ML-driven recommendations
+   * 
+   * @param amount Total amount to allocate
+   * @returns Allocation result
+   */
+  async allocateCapitalML(amount: bigint): Promise<void> {
+    if (!this.isInitialized) {
+      throw new Error('Floor Engine not initialized');
+    }
+
+    console.log(`[FloorEngine] Allocating ${ethers.formatEther(amount)} ETH using ML optimization`);
+
+    // Get ML-driven allocation recommendations
+    const recommendations = await this.riskManager.getMLAllocationRecommendations(
+      amount,
+      this.positions
+    );
+
+    console.log(`[FloorEngine] ML generated ${recommendations.length} allocation recommendations`);
+
+    // Execute allocations based on ML recommendations
+    for (const rec of recommendations) {
+      if (rec.recommendedAllocation > 0n) {
+        console.log(
+          `[FloorEngine] ML recommends ${ethers.formatEther(rec.recommendedAllocation)} to ${rec.adapterName} ` +
+          `(confidence: ${(rec.confidence * 100).toFixed(0)}%, risk: ${rec.riskScore.toFixed(0)}/100)`
+        );
+
+        // Validate allocation (will use ML risk assessment)
+        const validation = await this.riskManager.validateAllocation(
+          rec.adapterId,
+          rec.recommendedAllocation,
+          this.positions
+        );
+
+        if (validation.valid) {
+          // Execute allocation
+          await this.allocateToAdapter(rec.adapterId, rec.recommendedAllocation);
+        } else {
+          console.warn(
+            `[FloorEngine] ML allocation rejected for ${rec.adapterName}: ${validation.reason}`
+          );
+        }
+      }
+    }
+
+    // Update total deposited
+    this.totalDeposited += amount;
+
+    // Emit event
+    this.emit('capital_allocated_ml', { amount, recommendations });
+
+    console.log(`[FloorEngine] ML-driven capital allocation complete`);
+  }
+
+  /**
+   * Rebalance positions using ML recommendations
+   * 
+   * @returns Rebalance result
+   */
+  async rebalanceML(): Promise<RebalanceResult> {
+    if (!this.isInitialized) {
+      throw new Error('Floor Engine not initialized');
+    }
+
+    console.log('[FloorEngine] Starting ML-driven rebalance...');
+
+    const actions: RebalanceAction[] = [];
+    let totalGasUsed = 0n;
+
+    try {
+      // Update all positions
+      await this.updatePositions();
+
+      // Calculate total value
+      const totalValue = this.positions.reduce((sum, p) => sum + p.value, 0n);
+
+      if (totalValue === 0n) {
+        console.warn('[FloorEngine] No positions to rebalance');
+        return {
+          success: true,
+          actions: [],
+          gasUsed: 0n,
+          timestamp: Date.now(),
+        };
+      }
+
+      // Get ML recommendations
+      const recommendations = await this.riskManager.getMLAllocationRecommendations(
+        totalValue,
+        this.positions
+      );
+
+      console.log(`[FloorEngine] ML generated ${recommendations.length} rebalance recommendations`);
+
+      // Execute rebalancing based on ML recommendations
+      for (const rec of recommendations) {
+        const difference = rec.allocationChange;
+
+        // Only rebalance if change is significant (>5% of total value)
+        if (Math.abs(Number(difference)) > Number(totalValue) * 0.05) {
+          if (difference > 0n) {
+            // Need to increase allocation
+            const action: RebalanceAction = {
+              adapterId: rec.adapterId,
+              action: 'deposit',
+              amount: difference,
+              reason: `ML rebalance: ${rec.reason} (confidence: ${(rec.confidence * 100).toFixed(0)}%)`,
+            };
+            actions.push(action);
+
+            console.log(
+              `[FloorEngine] ML recommends deposit ${ethers.formatEther(difference)} to ${rec.adapterName}`
+            );
+          } else {
+            // Need to decrease allocation
+            const action: RebalanceAction = {
+              adapterId: rec.adapterId,
+              action: 'withdraw',
+              amount: -difference,
+              reason: `ML rebalance: ${rec.reason} (confidence: ${(rec.confidence * 100).toFixed(0)}%)`,
+            };
+            actions.push(action);
+
+            console.log(
+              `[FloorEngine] ML recommends withdraw ${ethers.formatEther(-difference)} from ${rec.adapterName}`
+            );
+          }
+        }
+      }
+
+      // Execute actions
+      // TODO: Implement actual execution logic
+
+      this.lastRebalance = Date.now();
+
+      // Emit event
+      this.emit('rebalance_ml_completed', { actions, gasUsed: totalGasUsed });
+
+      console.log(`[FloorEngine] ML-driven rebalance complete: ${actions.length} actions`);
+
+      return {
+        success: true,
+        actions,
+        gasUsed: totalGasUsed,
+        timestamp: this.lastRebalance,
+      };
+    } catch (error) {
+      console.error('[FloorEngine] ML rebalance failed:', error);
+
+      return {
+        success: false,
+        actions,
+        gasUsed: totalGasUsed,
+        timestamp: Date.now(),
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
+  /**
+   * Rebalance positions to match target allocations (rule-based)
    * 
    * @returns Rebalance result
    */
@@ -387,7 +551,70 @@ export class FloorEngine extends EventEmitter {
   }
 
   /**
-   * Allocate capital to a category of adapters
+   * Enable or disable ML-driven allocation
+   * 
+   * @param enabled Whether to enable ML
+   */
+  setMLEnabled(enabled: boolean): void {
+    this.riskManager.setMLEnabled(enabled);
+    console.log(`[FloorEngine] ML-driven allocation ${enabled ? 'enabled' : 'disabled'}`);
+  }
+
+  /**
+   * Check if ML is enabled
+   * 
+   * @returns Whether ML is enabled
+   */
+  isMLEnabled(): boolean {
+    return this.riskManager.isMLEnabled();
+  }
+
+  /**
+   * Get ML risk score for an adapter
+   * 
+   * @param adapterId Adapter identifier
+   * @returns ML risk score
+   */
+  async getMLRiskScore(adapterId: string): Promise<any> {
+    return await this.riskManager.getMLRiskScore(adapterId, this.positions);
+  }
+
+  /**
+   * Allocate capital to a specific adapter
+   * 
+   * @param adapterId Adapter identifier
+   * @param amount Amount to allocate
+   */
+  private async allocateToAdapter(adapterId: string, amount: bigint): Promise<void> {
+    // TODO: Execute allocation to adapter
+    console.log(
+      `[FloorEngine] Allocating ${ethers.formatEther(amount)} to ${adapterId}`
+    );
+
+    // Update positions
+    const existingPosition = this.positions.find((p) => p.adapterId === adapterId);
+    if (existingPosition) {
+      existingPosition.value += amount;
+      existingPosition.lastUpdate = Date.now();
+    } else {
+      const metadata = this.adapterRegistry.getMetadata(adapterId);
+      this.positions.push({
+        adapterId,
+        protocol: metadata.protocol,
+        category: metadata.category,
+        value: amount,
+        apy: 0, // Will be updated on next position update
+        lastUpdate: Date.now(),
+        metadata: {},
+      });
+    }
+
+    // Emit event
+    this.emit('capital_allocated', { adapterId, amount });
+  }
+
+  /**
+   * Allocate capital to a category of adapters (rule-based)
    * 
    * @param category Adapter category
    * @param amount Total amount to allocate
@@ -416,31 +643,8 @@ export class FloorEngine extends EventEmitter {
         continue;
       }
 
-      // TODO: Execute allocation to adapter
-      console.log(
-        `[FloorEngine] Allocating ${ethers.formatEther(amountPerAdapter)} to ${adapterId}`
-      );
-
-      // Update positions
-      const existingPosition = this.positions.find((p) => p.adapterId === adapterId);
-      if (existingPosition) {
-        existingPosition.value += amountPerAdapter;
-        existingPosition.lastUpdate = Date.now();
-      } else {
-        const metadata = this.adapterRegistry.getMetadata(adapterId);
-        this.positions.push({
-          adapterId,
-          protocol: metadata.protocol,
-          category: metadata.category,
-          value: amountPerAdapter,
-          apy: 0, // Will be updated on next position update
-          lastUpdate: Date.now(),
-          metadata: {},
-        });
-      }
-
-      // Emit event
-      this.emit('capital_allocated', { adapterId, amount: amountPerAdapter });
+      // Allocate to adapter
+      await this.allocateToAdapter(adapterId, amountPerAdapter);
     }
   }
 

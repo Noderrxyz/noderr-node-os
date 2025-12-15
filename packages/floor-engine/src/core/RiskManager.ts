@@ -13,6 +13,7 @@ import {
   AdapterMetadata,
 } from '../types';
 import { AdapterRegistry } from './AdapterRegistry';
+import { MLRiskAdapter, MLRiskScore, MLAllocationRecommendation, MLEmergencyAction } from './MLRiskAdapter';
 
 /**
  * Risk Manager
@@ -23,6 +24,8 @@ import { AdapterRegistry } from './AdapterRegistry';
 export class RiskManager extends EventEmitter {
   private riskParameters: RiskParameters;
   private adapterRegistry: AdapterRegistry;
+  private mlRiskAdapter: MLRiskAdapter;
+  private mlEnabled: boolean = true;
   private isPaused: boolean = false;
   private pauseReason: string = '';
   private historicalDrawdowns: number[] = [];
@@ -32,10 +35,66 @@ export class RiskManager extends EventEmitter {
     super();
     this.riskParameters = riskParameters;
     this.adapterRegistry = adapterRegistry;
+    this.mlRiskAdapter = new MLRiskAdapter();
+    
+    // Set up ML event listeners
+    this.setupMLEventListeners();
+  }
+
+  /**
+   * Initialize ML risk adapter
+   */
+  async initialize(): Promise<void> {
+    console.log('[RiskManager] Initializing ML risk assessment...');
+    await this.mlRiskAdapter.initialize();
+    console.log('[RiskManager] ML risk assessment initialized');
+  }
+
+  /**
+   * Set up event listeners for ML risk adapter
+   */
+  private setupMLEventListeners(): void {
+    // Listen for ML emergency actions
+    this.mlRiskAdapter.on('ml-emergency-action', (action: MLEmergencyAction) => {
+      this.handleMLEmergencyAction(action);
+    });
+
+    // Listen for risk limit breaches
+    this.mlRiskAdapter.on('risk-limit-breach', (breach: any) => {
+      console.warn('[RiskManager] ML detected risk limit breach:', breach);
+      this.emit('ml_risk_breach', breach);
+    });
+
+    // Listen for allocation updates
+    this.mlRiskAdapter.on('ml-allocation-updated', (allocation: any) => {
+      console.log('[RiskManager] ML allocation updated');
+      this.emit('ml_allocation_updated', allocation);
+    });
+  }
+
+  /**
+   * Handle ML emergency action
+   */
+  private handleMLEmergencyAction(action: MLEmergencyAction): void {
+    console.error('[RiskManager] 🚨 ML EMERGENCY ACTION 🚨');
+    console.error('[RiskManager] Type:', action.type);
+    console.error('[RiskManager] Severity:', action.severity);
+    console.error('[RiskManager] Reason:', action.reason);
+    console.error('[RiskManager] Affected adapters:', action.affectedAdapters);
+
+    // Auto-execute critical actions
+    if (action.autoExecute && action.severity === 'CRITICAL') {
+      this.emergencyPause(`ML Emergency: ${action.reason}`);
+    }
+
+    // Emit event for Floor Engine to handle
+    this.emit('ml_emergency_action', action);
   }
 
   /**
    * Validate capital allocation to an adapter
+   * 
+   * Performs both rule-based and ML-based validation.
    * 
    * @param adapterId Adapter identifier
    * @param amount Amount to allocate
@@ -46,7 +105,7 @@ export class RiskManager extends EventEmitter {
     adapterId: string,
     amount: bigint,
     currentPositions: FloorPosition[]
-  ): Promise<{ valid: boolean; reason?: string }> {
+  ): Promise<{ valid: boolean; reason?: string; mlRiskScore?: MLRiskScore }> {
     // Check if system is paused
     if (this.isPaused) {
       return {
@@ -119,7 +178,56 @@ export class RiskManager extends EventEmitter {
       };
     }
 
-    // All checks passed
+    // Rule-based checks passed, now check ML risk assessment
+    if (this.mlEnabled) {
+      try {
+        const mlRiskScore = await this.mlRiskAdapter.getRiskScore(
+          adapterId,
+          metadata,
+          currentPositions
+        );
+
+        // Check if ML model recommends FREEZE
+        if (mlRiskScore.recommendation === 'FREEZE') {
+          return {
+            valid: false,
+            reason: `ML risk model recommends freezing ${adapterId} (risk score: ${mlRiskScore.riskScore.toFixed(0)}/100). ${mlRiskScore.reasoning}`,
+            mlRiskScore
+          };
+        }
+
+        // Check if ML model recommends DECREASE and we're trying to increase
+        if (mlRiskScore.recommendation === 'DECREASE' && amount > 0n) {
+          return {
+            valid: false,
+            reason: `ML risk model recommends decreasing ${adapterId} allocation (risk score: ${mlRiskScore.riskScore.toFixed(0)}/100). ${mlRiskScore.reasoning}`,
+            mlRiskScore
+          };
+        }
+
+        // Check if risk score exceeds maximum threshold
+        const maxMLRiskScore = this.riskParameters.maxMLRiskScore || 80;
+        if (mlRiskScore.riskScore > maxMLRiskScore) {
+          return {
+            valid: false,
+            reason: `ML risk score too high: ${mlRiskScore.riskScore.toFixed(0)} > ${maxMLRiskScore}. ${mlRiskScore.reasoning}`,
+            mlRiskScore
+          };
+        }
+
+        // ML checks passed
+        console.log(`[RiskManager] ML validation passed for ${adapterId} (risk score: ${mlRiskScore.riskScore.toFixed(0)}/100)`);
+        return { valid: true, mlRiskScore };
+
+      } catch (error) {
+        console.error('[RiskManager] ML validation error:', error);
+        // On ML error, fall back to rule-based validation only
+        console.warn('[RiskManager] Falling back to rule-based validation only');
+        return { valid: true };
+      }
+    }
+
+    // ML disabled, rule-based checks passed
     return { valid: true };
   }
 
@@ -300,6 +408,94 @@ export class RiskManager extends EventEmitter {
       sharpeRatio,
       volatility,
     };
+  }
+
+  /**
+   * Get ML-driven allocation recommendations
+   * 
+   * @param totalCapital Total capital to allocate
+   * @param currentPositions Current positions
+   * @returns Array of ML allocation recommendations
+   */
+  async getMLAllocationRecommendations(
+    totalCapital: bigint,
+    currentPositions: FloorPosition[]
+  ): Promise<MLAllocationRecommendation[]> {
+    if (!this.mlEnabled) {
+      throw new Error('ML risk assessment is disabled');
+    }
+
+    const adapters = this.adapterRegistry.getAllAdapters();
+    return await this.mlRiskAdapter.getAllocationRecommendations(
+      adapters,
+      totalCapital,
+      currentPositions
+    );
+  }
+
+  /**
+   * Get ML risk score for an adapter
+   * 
+   * @param adapterId Adapter identifier
+   * @param currentPositions Current positions
+   * @returns ML risk score
+   */
+  async getMLRiskScore(
+    adapterId: string,
+    currentPositions: FloorPosition[]
+  ): Promise<MLRiskScore> {
+    if (!this.mlEnabled) {
+      throw new Error('ML risk assessment is disabled');
+    }
+
+    const metadata = this.adapterRegistry.getMetadata(adapterId);
+    return await this.mlRiskAdapter.getRiskScore(adapterId, metadata, currentPositions);
+  }
+
+  /**
+   * Monitor portfolio using ML
+   * 
+   * @param positions Current positions
+   * @param totalValue Total portfolio value
+   */
+  async monitorPortfolioML(
+    positions: FloorPosition[],
+    totalValue: bigint
+  ): Promise<void> {
+    if (!this.mlEnabled) {
+      return;
+    }
+
+    await this.mlRiskAdapter.monitorPortfolio(positions, totalValue);
+  }
+
+  /**
+   * Enable or disable ML risk assessment
+   * 
+   * @param enabled Whether to enable ML
+   */
+  setMLEnabled(enabled: boolean): void {
+    this.mlEnabled = enabled;
+    console.log(`[RiskManager] ML risk assessment ${enabled ? 'enabled' : 'disabled'}`);
+    this.emit('ml_enabled_changed', { enabled });
+  }
+
+  /**
+   * Check if ML is enabled
+   * 
+   * @returns Whether ML is enabled
+   */
+  isMLEnabled(): boolean {
+    return this.mlEnabled;
+  }
+
+  /**
+   * Get ML emergency actions history
+   * 
+   * @returns Array of emergency actions
+   */
+  getMLEmergencyActionsHistory(): MLEmergencyAction[] {
+    return this.mlRiskAdapter.getEmergencyActionsHistory();
   }
 
   /**
