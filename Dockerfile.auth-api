@@ -6,8 +6,8 @@ RUN npm install -g pnpm
 # Set working directory
 WORKDIR /app
 
-# Copy root package files for pnpm workspace
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# Copy root config files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 
 # Copy all packages (needed for workspace dependencies)
 COPY packages/ ./packages/
@@ -18,7 +18,7 @@ COPY auth-api/ ./auth-api/
 # Install dependencies using pnpm
 RUN pnpm install --frozen-lockfile || pnpm install
 
-# Build packages that auth-api depends on
+# Build packages that auth-api depends on (with composite: true)
 RUN cd packages/types && pnpm build || true
 RUN cd packages/utils && pnpm build || true
 RUN cd packages/protocol-config && pnpm build || true
