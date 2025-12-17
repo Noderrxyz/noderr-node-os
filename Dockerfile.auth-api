@@ -6,33 +6,24 @@ RUN npm install -g pnpm
 # Set working directory
 WORKDIR /app
 
-# Copy root config files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+# Copy package files
+COPY auth-api/package.json ./package.json
 
-# Copy all packages (needed for workspace dependencies)
-COPY packages/ ./packages/
+# Copy source code
+COPY auth-api/src ./src
+COPY auth-api/tsconfig.json ./tsconfig.json
 
-# Copy auth-api
-COPY auth-api/ ./auth-api/
+# Install dependencies (skip workspace protocol)
+RUN pnpm install --ignore-workspace
 
-# Install dependencies using pnpm
-RUN pnpm install --frozen-lockfile || pnpm install
-
-# Build packages that auth-api depends on (with composite: true)
-RUN cd packages/types && pnpm build || true
-RUN cd packages/utils && pnpm build || true
-RUN cd packages/protocol-config && pnpm build || true
-RUN cd packages/attestation-mvs && pnpm build || true
-RUN cd packages/gpu-service-mvs && pnpm build || true
-
-# Build auth-api
-RUN cd auth-api && pnpm build
-
-# Set working directory to auth-api
-WORKDIR /app/auth-api
+# Build TypeScript
+RUN pnpm build
 
 # Expose port
 EXPOSE 3000
+
+# Set environment
+ENV NODE_ENV=production
 
 # Start the server
 CMD ["node", "dist/index.js"]

@@ -9,7 +9,7 @@
  */
 
 import { ethers } from 'ethers';
-import { getStakingRequirement, formatStakingRequirement, hasSufficientStake } from '@noderr/protocol-config';
+import { getStakingRequirement, formatStakingRequirement, hasSufficientStake } from '../config/protocol-config';
 
 const logger = {
   warn: (msg: string, data?: any) => console.warn('⚠️ ', msg, data),
