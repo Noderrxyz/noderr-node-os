@@ -1,13 +1,12 @@
 name: Mirror to GitLab
-
 on:
   push:
     branches:
-      - '**'  # Mirror all branches
+      - '**'
   delete:
     branches:
-      - '**'  # Sync branch deletions
-
+      - '**'
+  workflow_dispatch:
 jobs:
   mirror:
     runs-on: ubuntu-latest
@@ -15,63 +14,53 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for proper mirroring
+          fetch-depth: 0
+          lfs: true
           
       - name: Mirror to GitLab
         env:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         run: |
-          # Add random delay (0-10 seconds) to prevent simultaneous pushes across repos
           sleep $((RANDOM % 10))
-          
-          # Extract repository name
           REPO_NAME="${GITHUB_REPOSITORY#*/}"
-          
-          # Configure git
           git config --global user.name "GitHub Mirror Bot"
           git config --global user.email "bot@noderr.xyz"
-          
-          # Add GitLab remote with token authentication
+          git lfs install || true
           git remote add gitlab "https://oauth2:${GITLAB_TOKEN}@gitlab.com/Noderrxyz/${REPO_NAME}.git" || \
           git remote set-url gitlab "https://oauth2:${GITLAB_TOKEN}@gitlab.com/Noderrxyz/${REPO_NAME}.git"
           
-          # Push with retry logic (3 attempts)
           MAX_RETRIES=3
           RETRY_DELAY=5
           
           for attempt in $(seq 1 $MAX_RETRIES); do
-            echo "🔄 Attempt $attempt of $MAX_RETRIES"
+            echo "Attempt $attempt of $MAX_RETRIES"
             
-            # Push all branches
             if git push gitlab --all --force; then
-              echo "✅ Successfully pushed branches"
+              echo "Successfully pushed branches"
               BRANCHES_SUCCESS=true
             else
-              echo "⚠️  Failed to push branches"
+              echo "Failed to push branches"
               BRANCHES_SUCCESS=false
             fi
             
-            # Push all tags
             if git push gitlab --tags --force; then
-              echo "✅ Successfully pushed tags"
+              echo "Successfully pushed tags"
               TAGS_SUCCESS=true
             else
-              echo "⚠️  Failed to push tags"
+              echo "Failed to push tags"
               TAGS_SUCCESS=false
             fi
             
-            # Check if both succeeded
             if [ "$BRANCHES_SUCCESS" = true ] && [ "$TAGS_SUCCESS" = true ]; then
-              echo "✅ Successfully mirrored ${REPO_NAME} to GitLab"
+              echo "Successfully mirrored ${REPO_NAME} to GitLab"
               exit 0
             fi
             
-            # If not last attempt, wait before retry
             if [ $attempt -lt $MAX_RETRIES ]; then
-              echo "⏳ Waiting ${RETRY_DELAY} seconds before retry..."
+              echo "Waiting ${RETRY_DELAY} seconds before retry..."
               sleep $RETRY_DELAY
             fi
           done
           
-          echo "❌ Failed to mirror after $MAX_RETRIES attempts"
+          echo "Failed to mirror after $MAX_RETRIES attempts"
           exit 1
