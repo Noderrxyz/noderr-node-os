@@ -5,6 +5,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { authService } from '../services/auth.service';
+import { verifyStaking } from '../services/staking-verification.service';
 import {
   InstallConfigRequest,
   RegisterNodeRequest,
@@ -33,6 +34,7 @@ const SystemInfoSchema = z.object({
   diskGB: z.number().min(1),
   osVersion: z.string().optional(),
   kernelVersion: z.string().optional(),
+  gpuHardwareId: z.string().optional(), // For Oracle nodes
 });
 
 const RegisterNodeRequestSchema = z.object({
@@ -40,6 +42,8 @@ const RegisterNodeRequestSchema = z.object({
   publicKey: z.string().min(1),
   attestation: AttestationDataSchema,
   systemInfo: SystemInfoSchema,
+  walletAddress: z.string().min(1),
+  nodeTier: z.enum(['micro', 'validator', 'guardian', 'oracle']),
 });
 
 const VerifyNodeRequestSchema = z.object({
@@ -105,13 +109,42 @@ export async function registerApiRoutes(fastify: FastifyInstance) {
     Body: RegisterNodeRequest;
   }>(
     '/api/v1/auth/register',
+
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         // Validate request
         const validatedRequest = RegisterNodeRequestSchema.parse(request.body);
 
+        // Verify GPU requirement for Oracle nodes
+        if (validatedRequest.nodeTier === 'oracle') {
+          if (!validatedRequest.systemInfo.gpuHardwareId) {
+            return reply.code(400).send({
+              error: 'Missing GPU',
+              message: 'Oracle nodes require a GPU. No GPU hardware ID provided.',
+            });
+          }
+        }
+
+        // Verify staking requirements
+        const stakingResult = await verifyStaking(
+          validatedRequest.walletAddress,
+          'temp-node-id', // Will be replaced with actual nodeId after registration
+          validatedRequest.nodeTier,
+          process.env.RPC_URL || '',
+          process.env.NODR_TOKEN_ADDRESS || ''
+        );
+
+        if (!stakingResult.isValid) {
+          return reply.code(403).send({
+            error: 'Insufficient Stake',
+            message: stakingResult.message,
+            requiredStake: stakingResult.requiredStake,
+            currentStake: stakingResult.currentStake,
+          });
+        }
+
         // Register node
-        const response = await authService.registerNode(validatedRequest);
+        const response = await authService.registerNode(validatedRequest as any);
 
         fastify.log.info({
           nodeId: response.nodeId,

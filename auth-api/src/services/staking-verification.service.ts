@@ -1,17 +1,15 @@
 /**
  * Staking Verification Service
  * 
- * Validates that node operators have sufficient stake before allowing node startup.
- * Enforces minimum stake requirements per node tier:
- * - Validator: 250 NODR tokens
- * - Guardian: 500 NODR tokens
- * - Oracle: 1000 NODR tokens
+ * Verifies that a wallet address meets the minimum staking requirements
+ * for a specific node tier by checking on-chain NODR token balance.
  * 
- * Integration: Production-ready
- * Quality: PhD-Level
+ * Uses @noderr/protocol-config for unified staking requirements that match
+ * the on-chain NodeRegistry.sol contract exactly.
  */
 
 import { ethers } from 'ethers';
+import { getStakingRequirement, formatStakingRequirement, hasSufficientStake } from '@noderr/protocol-config';
 
 const logger = {
   warn: (msg: string, data?: any) => console.warn('⚠️ ', msg, data),
@@ -20,18 +18,9 @@ const logger = {
 };
 
 /**
- * Staking requirements per node tier
+ * Node tier type (string-based for API compatibility)
  */
-export const STAKING_REQUIREMENTS = {
-  validator: ethers.parseUnits('250', 18),
-  guardian: ethers.parseUnits('500', 18),
-  oracle: ethers.parseUnits('1000', 18),
-} as const;
-
-/**
- * Node tier type
- */
-export type NodeTier = 'validator' | 'guardian' | 'oracle';
+export type NodeTier = 'micro' | 'validator' | 'guardian' | 'oracle';
 
 /**
  * Staking verification result
@@ -53,7 +42,7 @@ export interface StakingVerificationResult {
  * 
  * @param walletAddress - Ethereum address of node operator
  * @param nodeId - Node ID
- * @param nodeTier - Node tier (validator, guardian, oracle)
+ * @param nodeTier - Node tier (micro, validator, guardian, oracle)
  * @param rpcUrl - RPC endpoint URL
  * @param tokenAddress - NODR token contract address
  * @returns Staking verification result
@@ -82,7 +71,7 @@ export async function verifyStaking(
         walletAddress,
         nodeId,
         nodeTier,
-        requiredStake: STAKING_REQUIREMENTS[nodeTier].toString(),
+        requiredStake: getStakingRequirement(nodeTier).toString(),
         currentStake: '0',
         stakingStatus: 'error',
         message: `Invalid wallet address: ${walletAddress}`,
@@ -90,7 +79,7 @@ export async function verifyStaking(
       };
     }
 
-    if (!['validator', 'guardian', 'oracle'].includes(nodeTier)) {
+    if (!['micro', 'validator', 'guardian', 'oracle'].includes(nodeTier)) {
       logger.error('❌ Invalid node tier:', nodeTier);
       return {
         isValid: false,
@@ -105,9 +94,9 @@ export async function verifyStaking(
       };
     }
 
-    // Get required stake for tier
-    const requiredStake = STAKING_REQUIREMENTS[nodeTier];
-    logger.info(`📊 Required stake for ${nodeTier}: ${ethers.formatUnits(requiredStake, 18)} NODR`);
+    // Get required stake for tier (from unified protocol config)
+    const requiredStake = getStakingRequirement(nodeTier);
+    logger.info(`📊 Required stake for ${nodeTier}: ${formatStakingRequirement(nodeTier)}`);
 
     // Initialize provider
     const provider = new ethers.JsonRpcProvider(rpcUrl);
@@ -121,13 +110,13 @@ export async function verifyStaking(
     const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
 
     // Get wallet balance
-    const balance = await tokenContract.balanceOf(walletAddress);
+    const balance: bigint = await tokenContract.balanceOf(walletAddress);
     logger.info(`💰 Wallet balance: ${ethers.formatUnits(balance, 18)} NODR`);
 
-    // Verify sufficient stake
-    const hasSufficientStake = balance >= requiredStake;
+    // Verify sufficient stake using protocol config
+    const hasStake = hasSufficientStake(balance, nodeTier);
 
-    if (hasSufficientStake) {
+    if (hasStake) {
       logger.info(`✅ Wallet has sufficient stake for ${nodeTier} node`);
       return {
         isValid: true,
@@ -137,13 +126,13 @@ export async function verifyStaking(
         requiredStake: ethers.formatUnits(requiredStake, 18),
         currentStake: ethers.formatUnits(balance, 18),
         stakingStatus: 'sufficient',
-        message: `Wallet has sufficient stake (${ethers.formatUnits(balance, 18)} NODR >= ${ethers.formatUnits(requiredStake, 18)} NODR)`,
+        message: `Wallet has sufficient stake (${ethers.formatUnits(balance, 18)} NODR >= ${formatStakingRequirement(nodeTier)})`,
         timestamp,
       };
     } else {
       const shortfall = requiredStake - balance;
       logger.warn(`⚠️ Insufficient stake for ${nodeTier} node`, {
-        required: ethers.formatUnits(requiredStake, 18),
+        required: formatStakingRequirement(nodeTier),
         current: ethers.formatUnits(balance, 18),
         shortfall: ethers.formatUnits(shortfall, 18),
       });
@@ -156,7 +145,7 @@ export async function verifyStaking(
         requiredStake: ethers.formatUnits(requiredStake, 18),
         currentStake: ethers.formatUnits(balance, 18),
         stakingStatus: 'insufficient',
-        message: `Insufficient stake. Required: ${ethers.formatUnits(requiredStake, 18)} NODR, Current: ${ethers.formatUnits(balance, 18)} NODR, Shortfall: ${ethers.formatUnits(shortfall, 18)} NODR. Visit the faucet to get more tokens.`,
+        message: `Insufficient stake. Required: ${formatStakingRequirement(nodeTier)}, Current: ${ethers.formatUnits(balance, 18)} NODR, Shortfall: ${ethers.formatUnits(shortfall, 18)} NODR.`,
         timestamp,
       };
     }
@@ -167,7 +156,7 @@ export async function verifyStaking(
       walletAddress,
       nodeId,
       nodeTier,
-      requiredStake: STAKING_REQUIREMENTS[nodeTier].toString(),
+      requiredStake: getStakingRequirement(nodeTier).toString(),
       currentStake: '0',
       stakingStatus: 'error',
       message: `Staking verification error: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -177,35 +166,15 @@ export async function verifyStaking(
 }
 
 /**
- * Get staking requirements for a node tier
- * 
- * @param nodeTier - Node tier
- * @returns Required stake in wei
- */
-export function getStakingRequirement(nodeTier: NodeTier): bigint {
-  return STAKING_REQUIREMENTS[nodeTier];
-}
-
-/**
- * Get all staking requirements
+ * Get all staking requirements (formatted for display)
  * 
  * @returns Object with staking requirements for all tiers
  */
 export function getAllStakingRequirements(): Record<NodeTier, string> {
   return {
-    validator: ethers.formatUnits(STAKING_REQUIREMENTS.validator, 18),
-    guardian: ethers.formatUnits(STAKING_REQUIREMENTS.guardian, 18),
-    oracle: ethers.formatUnits(STAKING_REQUIREMENTS.oracle, 18),
+    micro: formatStakingRequirement('micro'),
+    validator: formatStakingRequirement('validator'),
+    guardian: formatStakingRequirement('guardian'),
+    oracle: formatStakingRequirement('oracle'),
   };
-}
-
-/**
- * Check if wallet has sufficient stake
- * 
- * @param balance - Wallet balance in wei
- * @param nodeTier - Node tier
- * @returns True if wallet has sufficient stake
- */
-export function hasSufficientStake(balance: bigint, nodeTier: NodeTier): boolean {
-  return balance >= STAKING_REQUIREMENTS[nodeTier];
 }

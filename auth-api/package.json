@@ -25,25 +25,35 @@
   "author": "Noderr",
   "license": "MIT",
   "dependencies": {
-
+    "@fastify/cors": "^8.4.0",
+    "@fastify/helmet": "^11.1.1",
+    "@fastify/jwt": "^7.2.3",
+    "@fastify/rate-limit": "^9.0.0",
+    "@noderr/attestation-mvs": "workspace:*",
+    "@noderr/gpu-service-mvs": "workspace:*",
+    "@noderr/protocol-config": "workspace:*",
+    "@noderr/types": "workspace:*",
+    "@noderr/utils": "workspace:*",
     "@supabase/supabase-js": "^2.46.2",
-    
-
+    "bcrypt": "^5.1.1",
+    "ethers": "^6.9.0",
+    "fastify": "^4.25.0",
+    "ioredis": "^5.3.2",
+    "nanoid": "^5.0.9",
     "pino": "^9.5.0",
     "pino-pretty": "^13.0.0",
-    "zod": "^3.24.1",
-    "nanoid": "^5.0.9",
-    "bcrypt": "^5.1.1",
-    "@noderr/types": "workspace:*",
-    "@noderr/utils": "workspace:*"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/express": "^4.17.25",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^8.18.2",
     "@typescript-eslint/parser": "^8.18.2",
     "eslint": "^9.17.0",
+    "express": "^4.22.1",
+    "fastify-plugin": "^5.1.0",
     "jest": "^29.7.0",
     "prettier": "^3.4.2",
     "ts-jest": "^29.2.5",

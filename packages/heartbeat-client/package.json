@@ -1,0 +1,20 @@
+{
+  "name": "@noderr/heartbeat-client",
+  "version": "1.0.0",
+  "description": "Heartbeat client for Noderr nodes - sends periodic heartbeats to auth-API",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/node-fetch": "^2.6.11",
+    "typescript": "^5.0.0"
+  }
+}

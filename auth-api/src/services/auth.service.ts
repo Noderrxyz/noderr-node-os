@@ -14,6 +14,7 @@ import {
   NodeStatus,
 } from '../models/types';
 import { FastifyInstance } from 'fastify';
+import '@fastify/jwt';
 
 const SALT_ROUNDS = 14; // Increased salt rounds
 const API_KEY_PREFIX = 'ndr_live_';
@@ -210,7 +211,7 @@ export class AuthService {
 
     // Verify JWT
     try {
-      await this.fastify.jwt.verify(jwtToken);
+      await (this.fastify as any).jwt.verify(jwtToken);
     } catch (err) {
       throw new Error('Invalid JWT');
     }
@@ -241,7 +242,7 @@ export class AuthService {
    * Generate JWT token
    */
   private generateJWT(nodeId: string): string {
-    return this.fastify.jwt.sign({ nodeId });
+    return (this.fastify as any).jwt.sign({ nodeId });
   }
 }
 

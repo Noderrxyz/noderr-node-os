@@ -1,0 +1,21 @@
+{
+  "name": "@noderr/attestation-mvs",
+  "version": "1.0.0",
+  "description": "Basic TPM attestation service for Noderr Protocol (signature + nonce + timestamp)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "keywords": ["noderr", "attestation", "tpm", "security"],
+  "author": "Noderr",
+  "license": "MIT",
+  "dependencies": {
+    "ioredis": "^5.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

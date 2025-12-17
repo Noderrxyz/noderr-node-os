@@ -22,7 +22,8 @@
     "@tensorflow/tfjs-node": "^4.11.0",
     "@supabase/supabase-js": "^2.38.4",
     "node-fetch": "^2.7.0",
-    "tar": "^6.2.0"
+    "tar": "^6.2.0",
+    "@noderr/gpu-service-mvs": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

@@ -248,6 +248,29 @@ module.exports = {
         NODE_ENV: 'production',
         SERVICE_NAME: 'compliance'
       }
+    },
+    
+    // Heartbeat Client - Maintains node active status with auth-API
+    {
+      name: 'heartbeat-client',
+      script: 'packages/heartbeat-client/dist/index.js',
+      instances: 1,
+      exec_mode: 'fork',
+      restart_delay: 5000,
+      max_restarts: 10,
+      min_uptime: 10000,
+      max_memory_restart: '256M',
+      error_file: '/app/logs/heartbeat-error.log',
+      out_file: '/app/logs/heartbeat-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      merge_logs: true,
+      autorestart: true,
+      watch: false,
+      env: {
+        NODE_ENV: 'production',
+        SERVICE_NAME: 'heartbeat-client',
+        HEARTBEAT_INTERVAL: '60000'
+      }
     }
   ],
   

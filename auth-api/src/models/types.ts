@@ -68,6 +68,7 @@ export interface SystemInfo {
   diskGB: number;
   osVersion?: string;
   kernelVersion?: string;
+  gpuHardwareId?: string; // SHA-256 hash of GPU identifier (for Oracle nodes)
 }
 
 export interface InstallConfigRequest {
@@ -91,6 +92,8 @@ export interface RegisterNodeRequest {
   publicKey: string;
   attestation: AttestationData;
   systemInfo: SystemInfo;
+  walletAddress: string;
+  nodeTier: 'micro' | 'validator' | 'guardian' | 'oracle';
 }
 
 export interface RegisterNodeResponse {

@@ -8,6 +8,7 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import jwt from '@fastify/jwt';
+import '@fastify/jwt';
 import { registerApiRoutes } from './routes/api.routes';
 import { initializeDatabaseService } from './services/database.service';
 import { initializeAuthService } from './services/auth.service';
@@ -43,20 +44,23 @@ async function main() {
   });
 
   // Register plugins
-  await fastify.register(cors, {
+  await fastify.register(cors as any, {
     origin: true, // Allow all origins (configure for production)
   });
 
-  await fastify.register(helmet, {
+  await fastify.register(helmet as any, {
     contentSecurityPolicy: false, // Disable for API
   });
 
-  await fastify.register(rateLimit, {
-    max: 100, // Max 100 requests
-    timeWindow: '1 minute', // Per minute
+  // Register rate limiter (Fastify built-in)
+  await fastify.register(rateLimit as any, {
+    max: 60,                    // 60 requests
+    timeWindow: '1 minute',     // per minute
+    redis: process.env.REDIS_URL ? new (await import('ioredis')).default(process.env.REDIS_URL) : undefined,
+    skipOnError: true,          // fail open
   });
 
-  await fastify.register(jwt, {
+  await fastify.register(jwt as any, {
     secret: process.env.JWT_SECRET || 'a-very-secret-jwt-secret',
   });
 
