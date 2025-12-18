@@ -1,66 +1,23 @@
 name: Mirror to GitLab
 on:
   push:
-    branches:
-      - '**'
-  delete:
-    branches:
-      - '**'
+    branches: ['**']
   workflow_dispatch:
 jobs:
   mirror:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          lfs: true
-          
       - name: Mirror to GitLab
         env:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         run: |
-          sleep $((RANDOM % 10))
           REPO_NAME="${GITHUB_REPOSITORY#*/}"
           git config --global user.name "GitHub Mirror Bot"
           git config --global user.email "bot@noderr.xyz"
-          git lfs install || true
           git remote add gitlab "https://oauth2:${GITLAB_TOKEN}@gitlab.com/Noderrxyz/${REPO_NAME}.git" || \
           git remote set-url gitlab "https://oauth2:${GITLAB_TOKEN}@gitlab.com/Noderrxyz/${REPO_NAME}.git"
-          
-          MAX_RETRIES=3
-          RETRY_DELAY=5
-          
-          for attempt in $(seq 1 $MAX_RETRIES); do
-            echo "Attempt $attempt of $MAX_RETRIES"
-            
-            if git push gitlab --all --force; then
-              echo "Successfully pushed branches"
-              BRANCHES_SUCCESS=true
-            else
-              echo "Failed to push branches"
-              BRANCHES_SUCCESS=false
-            fi
-            
-            if git push gitlab --tags --force; then
-              echo "Successfully pushed tags"
-              TAGS_SUCCESS=true
-            else
-              echo "Failed to push tags"
-              TAGS_SUCCESS=false
-            fi
-            
-            if [ "$BRANCHES_SUCCESS" = true ] && [ "$TAGS_SUCCESS" = true ]; then
-              echo "Successfully mirrored ${REPO_NAME} to GitLab"
-              exit 0
-            fi
-            
-            if [ $attempt -lt $MAX_RETRIES ]; then
-              echo "Waiting ${RETRY_DELAY} seconds before retry..."
-              sleep $RETRY_DELAY
-            fi
-          done
-          
-          echo "Failed to mirror after $MAX_RETRIES attempts"
-          exit 1
+          git push gitlab --all --force || true
+          git push gitlab --tags --force || true
