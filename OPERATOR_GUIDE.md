@@ -1,25 +1,27 @@
 # NODERR Node Operator Guide
 ## Complete Guide for Running a NODERR Node
 
-**Version:** 1.0.0  
-**Last Updated:** November 28, 2025  
+**Version:** 2.0.0  
+**Last Updated:** December 20, 2025  
 **Network:** Base Mainnet  
-**Minimum Stake:** 1,000 NODERR
+**Minimum Stake:** Varies by tier
 
 ---
 
 ## Table of Contents
 
 1. [Introduction](#1-introduction)
-2. [System Requirements](#2-system-requirements)
-3. [Getting Started](#3-getting-started)
-4. [Node Installation](#4-node-installation)
-5. [Staking NODERR Tokens](#5-staking-noderr-tokens)
-6. [Node Operations](#6-node-operations)
-7. [Monitoring & Maintenance](#7-monitoring--maintenance)
-8. [Rewards & Economics](#8-rewards--economics)
-9. [Troubleshooting](#9-troubleshooting)
-10. [FAQ](#10-faq)
+2. [Node Tier Architecture](#2-node-tier-architecture)
+3. [System Requirements](#3-system-requirements)
+4. [Getting Started](#4-getting-started)
+5. [Node Installation](#5-node-installation)
+6. [Staking NODERR Tokens](#6-staking-noderr-tokens)
+7. [Node Operations](#7-node-operations)
+8. [Monitoring & Maintenance](#8-monitoring--maintenance)
+9. [Rewards & Economics](#9-rewards--economics)
+10. [Slashing & Penalties](#10-slashing--penalties)
+11. [Troubleshooting](#11-troubleshooting)
+12. [FAQ](#12-faq)
 
 ---
 
@@ -29,91 +31,219 @@
 
 A NODERR node is a decentralized infrastructure component that provides reliable, high-performance services to the NODERR network. Node operators stake NODERR tokens and earn rewards based on their node's performance, uptime, and tier.
 
-### Node Tiers
+The NODERR network operates as a three-tier decentralized trading intelligence system:
+- **Validators** provide network consensus and on-chain validation
+- **Guardians** handle risk management and trade execution
+- **Oracles** generate alpha signals through ML/AI analysis
 
-**ALL (All-Purpose)**
-- **Stake Required:** 1,000 NODERR
-- **Reward Multiplier:** 1.0x
-- **Services:** General-purpose node operations
-- **Recommended For:** New operators, testing
+### Network Architecture
 
-**ORACLE (Oracle Node)**
-- **Stake Required:** 5,000 NODERR
-- **Reward Multiplier:** 2.0x
-- **Services:** Price feeds, external data, metrics reporting
-- **Recommended For:** Experienced operators with reliable infrastructure
-
-**GUARDIAN (Guardian Node)**
-- **Stake Required:** 10,000 NODERR
-- **Reward Multiplier:** 5.0x
-- **Services:** Network security, slashing enforcement, governance
-- **Recommended For:** Trusted operators with high-availability setups
-
-### Rewards
-
-Rewards are distributed **daily** based on:
-- **Base Reward:** Epoch rewards divided by active nodes
-- **Tier Multiplier:** 1.0x (ALL), 2.0x (ORACLE), 5.0x (GUARDIAN)
-- **Uptime Multiplier:** 0.0x to 1.0x based on uptime percentage
-- **Error Penalty:** -0.1x per 1% error rate (max -1.0x)
-
-**Example Daily Reward (Epoch = 1 day):**
-- Epoch Rewards: 10,000 NODERR
-- Active Nodes: 100
-- Base Reward: 100 NODERR
-- Tier: ORACLE (2.0x)
-- Uptime: 99% (0.99x)
-- Errors: 0.5% (-0.05x)
-- **Total:** 100 × 2.0 × 0.99 × 0.95 = **188.1 NODERR/day**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    NODERR NETWORK ARCHITECTURE                   │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐        │
+│   │   ORACLE    │───▶│  GUARDIAN   │───▶│  VALIDATOR  │        │
+│   │   (Tier 4)  │    │   (Tier 3)  │    │   (Tier 2)  │        │
+│   └─────────────┘    └─────────────┘    └─────────────┘        │
+│         │                  │                  │                 │
+│    ML/AI Alpha        Risk & Trade       On-Chain              │
+│    Generation         Execution          Validation            │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## 2. System Requirements
+## 2. Node Tier Architecture
 
-### Minimum Requirements
+### Tier Overview
 
-**Hardware:**
-- **CPU:** 2 cores (4 recommended)
-- **RAM:** 4GB (8GB recommended)
-- **Storage:** 50GB SSD (100GB recommended)
-- **Network:** 100 Mbps up/down (1 Gbps recommended)
+| Tier | Node Type | Role | Stake Required | Reward Multiplier |
+|------|-----------|------|----------------|-------------------|
+| **2** | **Validator** | On-chain validation & network consensus | 1,000 NODERR | 1.0x |
+| **3** | **Guardian** | Risk management & trade execution | 5,000 NODERR | 2.5x |
+| **4** | **Oracle** | ML/AI alpha generation & data science | 15,000 NODERR | 5.0x |
 
-**Software:**
-- **OS:** Ubuntu 22.04 LTS (recommended) or macOS
-- **Docker:** 24.0+ with Docker Compose
-- **Node.js:** 22.x (if running without Docker)
-- **Git:** 2.x
+### Validator Node (Tier 2) - Entry Level
 
-**Network:**
-- **Static IP:** Recommended (dynamic IP with DDNS acceptable)
-- **Open Ports:** 3000 (HTTP), 9090 (metrics)
-- **Firewall:** Allow inbound on required ports
+**Role:** Lightweight network participation and on-chain validation
 
-### Recommended Requirements (Production)
+**Responsibilities:**
+- Participate in validator consensus
+- Attest to data validity from Guardian and Oracle nodes
+- Submit attestations on-chain
+- Relay market data to the network
+- Maintain network heartbeat
 
-**Hardware:**
-- **CPU:** 4 cores (8 for GUARDIAN)
-- **RAM:** 8GB (16GB for GUARDIAN)
-- **Storage:** 100GB NVMe SSD
-- **Network:** 1 Gbps up/down, <20ms latency
+**Services Running:**
+- `validator-consensus` - Consensus participation
+- `on-chain-service` - On-chain validation
+- `market-data` - Market data relay (reduced scope)
+- `data-connectors` - Basic data connectors
+- `telemetry` - Performance monitoring
+- `heartbeat-client` - Network heartbeat
 
-**Hosting:**
-- **Cloud Provider:** AWS, GCP, DigitalOcean, or Hetzner
-- **Instance Type:** 
-  - AWS: t3.medium (ALL), t3.large (ORACLE), t3.xlarge (GUARDIAN)
-  - GCP: n2-standard-2 (ALL), n2-standard-4 (ORACLE), n2-standard-8 (GUARDIAN)
-  - DigitalOcean: $24/mo (ALL), $48/mo (ORACLE), $96/mo (GUARDIAN)
+**Best For:** New operators, those with limited hardware, entry into the network
 
-**Uptime:**
-- **Target:** 99.9% (8.76 hours downtime/year)
-- **Monitoring:** 24/7 monitoring with alerts
-- **Redundancy:** Backup power, internet connection
+### Guardian Node (Tier 3) - Execution Layer
+
+**Role:** Risk management, compliance, and trade execution
+
+**Responsibilities:**
+- Risk analysis and monitoring
+- Compliance checking
+- Trade execution and order routing
+- Autonomous execution management
+- Floor engine operations
+- System orchestration
+- Guardian consensus participation
+
+**Services Running:**
+- `risk-engine` - Risk analysis & monitoring
+- `compliance` - Compliance checking
+- `guardian-consensus` - Guardian consensus
+- `execution` - Trade execution
+- `autonomous-execution` - Autonomous trading
+- `floor-engine` - Floor engine operations
+- `integration-layer` - System integration
+- `system-orchestrator` - System orchestration
+- `market-data` - Market data feeds
+- `exchanges` - Exchange connectivity
+- `data-connectors` - Data source connectors
+- `telemetry` - Performance monitoring
+- `heartbeat-client` - Network heartbeat
+
+**Best For:** Experienced operators with reliable infrastructure
+
+### Oracle Node (Tier 4) - Intelligence Layer
+
+**Role:** ML/AI-powered alpha generation and market intelligence
+
+**Responsibilities:**
+- Machine learning model inference
+- Alpha signal generation
+- Market intelligence analysis
+- Quantitative research
+- Strategy development
+- Capital AI optimization
+- Oracle consensus coordination
+
+**Services Running:**
+- `ml-service` - Machine learning inference (GPU-accelerated)
+- `market-intel` - Market intelligence
+- `quant-research` - Quantitative research
+- `strategy` - Strategy development
+- `capital-ai` - Capital optimization
+- `alpha-exploitation` - Alpha signal generation
+- `oracle-consensus` - Oracle consensus coordination
+- `market-data` - Market data feeds
+- `exchanges` - Exchange connectivity
+- `data-connectors` - Data source connectors
+- `telemetry` - Performance monitoring
+- `heartbeat-client` - Network heartbeat
+
+**Best For:** Professional operators with high-end GPU hardware
 
 ---
 
-## 3. Getting Started
+## 3. System Requirements
 
-### Step 1: Acquire NODERR Tokens
+### Validator Node (Tier 2) - Lightest
+
+**Minimum Requirements:**
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| **CPU** | 4 cores | 8 cores |
+| **RAM** | 8 GB | 16 GB |
+| **Storage** | 100 GB SSD | 250 GB NVMe SSD |
+| **Network** | 100 Mbps | 500 Mbps |
+| **GPU** | Not required | Not required |
+| **Uptime** | 95%+ | 99%+ |
+
+**Estimated Monthly Cost:** $20-50 (cloud) or existing hardware
+
+**Cloud Instance Recommendations:**
+- AWS: t3.medium
+- GCP: e2-medium
+- DigitalOcean: $24/mo Droplet
+- Hetzner: CX21
+
+### Guardian Node (Tier 3) - Medium
+
+**Minimum Requirements:**
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| **CPU** | 12 cores | 16 cores |
+| **RAM** | 32 GB | 64 GB |
+| **Storage** | 500 GB NVMe SSD | 1 TB NVMe SSD |
+| **Network** | 500 Mbps | 1 Gbps |
+| **GPU** | Not required | Not required |
+| **Uptime** | 98%+ | 99.5%+ |
+
+**Estimated Monthly Cost:** $100-200 (cloud) or dedicated hardware
+
+**Cloud Instance Recommendations:**
+- AWS: c6i.2xlarge
+- GCP: c2-standard-8
+- DigitalOcean: $96/mo Droplet
+- Hetzner: CCX23
+
+### Oracle Node (Tier 4) - Heaviest
+
+**Minimum Requirements:**
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| **CPU** | 16 cores | 32 cores |
+| **RAM** | 64 GB | 128 GB |
+| **Storage** | 1 TB NVMe SSD | 2 TB NVMe SSD |
+| **Network** | 1 Gbps | 1 Gbps+ |
+| **GPU** | 12 GB VRAM (NVIDIA) | 24 GB+ VRAM (NVIDIA) |
+| **Uptime** | 99%+ | 99.9%+ |
+
+**GPU Requirements:**
+- **Minimum:** NVIDIA RTX 4060 Ti 16GB, RTX 3080, or equivalent
+- **Recommended:** NVIDIA RTX 4080, RTX 4090, A4000, or A6000
+- **CUDA:** 11.8+ required
+- **Driver:** 525.0+ required
+
+**Estimated Monthly Cost:** $300-500 (cloud with GPU) or dedicated hardware
+
+**Cloud Instance Recommendations:**
+- AWS: g5.2xlarge (A10G GPU)
+- GCP: a2-highgpu-1g (A100 GPU)
+- Lambda Labs: GPU Cloud
+- Vast.ai: Community GPU rentals
+
+### Software Requirements (All Tiers)
+
+| Software | Version | Notes |
+|----------|---------|-------|
+| **OS** | Ubuntu 22.04 LTS | Recommended |
+| **Docker** | 24.0+ | With Docker Compose |
+| **Node.js** | 22.x | If running without Docker |
+| **NVIDIA Driver** | 525.0+ | Oracle nodes only |
+| **CUDA** | 11.8+ | Oracle nodes only |
+
+---
+
+## 4. Getting Started
+
+### Step 1: Choose Your Tier
+
+Consider the following when choosing your tier:
+
+| Factor | Validator | Guardian | Oracle |
+|--------|-----------|----------|--------|
+| **Hardware Cost** | Low | Medium | High |
+| **Technical Skill** | Basic | Intermediate | Advanced |
+| **Stake Required** | 1,000 NODERR | 5,000 NODERR | 15,000 NODERR |
+| **Reward Potential** | Base | 2.5x Base | 5x Base |
+| **Responsibility** | Low | Medium | High |
+| **Slashing Risk** | Low | Medium | High |
+
+### Step 2: Acquire NODERR Tokens
 
 **Option 1: Purchase on DEX**
 ```bash
@@ -122,7 +252,7 @@ Rewards are distributed **daily** based on:
 # 2. Connect wallet
 # 3. Select Base network
 # 4. Swap ETH for NODERR
-# 5. Token address: 0x... (check official docs)
+# 5. Token address: (check official docs)
 ```
 
 **Option 2: Bridge from Ethereum**
@@ -135,7 +265,7 @@ Rewards are distributed **daily** based on:
 # 5. Confirm transaction
 ```
 
-### Step 2: Set Up Wallet
+### Step 3: Set Up Wallet
 
 **Recommended:** MetaMask or Rabby Wallet
 
@@ -148,44 +278,13 @@ Currency Symbol: ETH
 Block Explorer: https://basescan.org
 ```
 
-### Step 3: Prepare Infrastructure
+### Step 4: Prepare Infrastructure
 
-**Option 1: Cloud Provider (Recommended)**
-
-```bash
-# AWS EC2
-# 1. Launch instance
-# 2. Choose Ubuntu 22.04 LTS
-# 3. Select instance type (t3.medium minimum)
-# 4. Configure security group (allow 22, 3000, 9090)
-# 5. Launch and connect via SSH
-
-# DigitalOcean Droplet
-# 1. Create droplet
-# 2. Choose Ubuntu 22.04
-# 3. Select plan ($24/mo minimum)
-# 4. Add SSH key
-# 5. Create and connect
-```
-
-**Option 2: Home Server**
-
-```bash
-# Requirements:
-# - Static IP or DDNS
-# - Port forwarding configured
-# - UPS for power backup
-# - Reliable internet connection
-
-# Configure router:
-# - Forward port 3000 to server IP
-# - Forward port 9090 to server IP
-# - Enable UPnP (optional)
-```
+See [System Requirements](#3-system-requirements) for your chosen tier.
 
 ---
 
-## 4. Node Installation
+## 5. Node Installation
 
 ### Method 1: Docker (Recommended)
 
@@ -201,24 +300,30 @@ git clone https://github.com/Noderrxyz/noderr-node-os.git
 cd noderr-node-os
 
 # 3. Configure environment
-cp .env.example .env
+cp .env.template .env
 nano .env
 
 # Edit:
 # - OPERATOR_ADDRESS=0xYourWalletAddress
-# - NODE_TIER=ALL  # or ORACLE, GUARDIAN
+# - NODE_TIER=VALIDATOR  # or GUARDIAN, ORACLE
 # - RPC_URL=https://mainnet.base.org
-# - STAKING_CONTRACT=0x... (from official docs)
+# - VALIDATOR_PRIVATE_KEY=your_private_key (for signing attestations)
 
-# 4. Start node
-docker-compose up -d
+# 4. Start node (choose your tier)
+# Validator:
+docker-compose -f docker/validator/docker-compose.yml up -d
+
+# Guardian:
+docker-compose -f docker/guardian/docker-compose.yml up -d
+
+# Oracle:
+docker-compose -f docker/oracle/docker-compose.yml up -d
 
 # 5. Check logs
 docker-compose logs -f
 
 # 6. Verify node is running
 curl http://localhost:3000/health
-# Expected: {"status": "healthy", "uptime": ...}
 ```
 
 ### Method 2: Manual Installation
@@ -228,41 +333,56 @@ curl http://localhost:3000/health
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
-# 2. Clone repository
+# 2. Install pnpm
+npm install -g pnpm@8
+
+# 3. Clone repository
 git clone https://github.com/Noderrxyz/noderr-node-os.git
 cd noderr-node-os
 
-# 3. Install dependencies
-npm install
+# 4. Install dependencies
+pnpm install
 
-# 4. Build
-npm run build
+# 5. Build
+pnpm build
 
-# 5. Configure environment
-cp .env.example .env
+# 6. Configure environment
+cp .env.template .env
 nano .env
-# (Edit as above)
 
-# 6. Start node
-npm start
-
-# Or with PM2 (recommended):
+# 7. Start with PM2
 npm install -g pm2
-pm2 start dist/index.js --name noderr-node
+pm2 start ecosystem.config.js
 pm2 save
 pm2 startup
 ```
 
-### Method 3: One-Line Installer (Coming Soon)
+### Oracle Node: GPU Setup
 
 ```bash
-# Automated installer (future release)
-curl -fsSL https://install.noderr.network | bash
+# 1. Install NVIDIA drivers
+sudo apt update
+sudo apt install -y nvidia-driver-525
+
+# 2. Install CUDA
+wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run
+sudo sh cuda_11.8.0_520.61.05_linux.run
+
+# 3. Install NVIDIA Container Toolkit
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+sudo apt update
+sudo apt install -y nvidia-container-toolkit
+sudo systemctl restart docker
+
+# 4. Verify GPU access
+docker run --rm --gpus all nvidia/cuda:11.8.0-base-ubuntu22.04 nvidia-smi
 ```
 
 ---
 
-## 5. Staking NODERR Tokens
+## 6. Staking NODERR Tokens
 
 ### Step 1: Approve Token Spending
 
@@ -279,33 +399,33 @@ curl -fsSL https://install.noderr.network | bash
 
 ### Step 2: Stake Tokens
 
+| Tier | Minimum Stake |
+|------|---------------|
+| Validator | 1,000 NODERR |
+| Guardian | 5,000 NODERR |
+| Oracle | 15,000 NODERR |
+
 ```bash
 # In dApp:
-# 1. Enter stake amount (minimum 1,000 NODERR)
-# 2. Select node tier (ALL, ORACLE, GUARDIAN)
-# 3. Enter node ID (your node's unique identifier)
+# 1. Enter stake amount
+# 2. Select node tier
+# 3. Enter node ID (from your node's config)
 # 4. Click "Stake"
 # 5. Confirm transaction
-# 6. Wait for confirmation
-
-# Verify stake:
-# - Check "My Stakes" section
-# - Should show your stake amount and tier
 ```
 
 ### Step 3: Register Node
 
-```bash
-# Your node will automatically register once staked
-# Verify registration:
+Your node will automatically register once staked. Verify:
 
+```bash
 curl http://localhost:3000/api/status
 
 # Expected:
 # {
 #   "nodeId": "your-node-id",
 #   "operator": "0xYourAddress",
-#   "tier": "ALL",
+#   "tier": "VALIDATOR",
 #   "staked": 1000,
 #   "active": true
 # }
@@ -313,19 +433,22 @@ curl http://localhost:3000/api/status
 
 ---
 
-## 6. Node Operations
+## 7. Node Operations
 
 ### Starting the Node
 
 ```bash
-# Docker
-docker-compose up -d
+# Docker (Validator)
+docker-compose -f docker/validator/docker-compose.yml up -d
+
+# Docker (Guardian)
+docker-compose -f docker/guardian/docker-compose.yml up -d
+
+# Docker (Oracle)
+docker-compose -f docker/oracle/docker-compose.yml up -d
 
 # PM2
-pm2 start noderr-node
-
-# Manual
-npm start
+pm2 start ecosystem.config.js
 ```
 
 ### Stopping the Node
@@ -335,20 +458,7 @@ npm start
 docker-compose down
 
 # PM2
-pm2 stop noderr-node
-
-# Manual
-# Press Ctrl+C
-```
-
-### Restarting the Node
-
-```bash
-# Docker
-docker-compose restart
-
-# PM2
-pm2 restart noderr-node
+pm2 stop all
 ```
 
 ### Viewing Logs
@@ -358,10 +468,7 @@ pm2 restart noderr-node
 docker-compose logs -f
 
 # PM2
-pm2 logs noderr-node
-
-# Manual
-# Logs are printed to console
+pm2 logs
 ```
 
 ### Updating the Node
@@ -370,25 +477,18 @@ pm2 logs noderr-node
 # 1. Pull latest code
 git pull origin main
 
-# 2. Rebuild
-# Docker:
+# 2. Rebuild and restart
 docker-compose down
 docker-compose build
 docker-compose up -d
 
-# PM2:
-npm install
-npm run build
-pm2 restart noderr-node
-
 # 3. Verify update
 curl http://localhost:3000/version
-# Expected: {"version": "1.x.x"}
 ```
 
 ---
 
-## 7. Monitoring & Maintenance
+## 8. Monitoring & Maintenance
 
 ### Health Checks
 
@@ -396,461 +496,170 @@ curl http://localhost:3000/version
 # Check node health
 curl http://localhost:3000/health
 
-# Expected:
-# {
-#   "status": "healthy",
-#   "uptime": 86400,
-#   "lastHeartbeat": "2025-11-28T12:00:00Z"
-# }
-
 # Check metrics
 curl http://localhost:9090/metrics
-
-# Expected: Prometheus-format metrics
 ```
 
-### Performance Metrics
+### Key Metrics by Tier
 
-**Key Metrics to Monitor:**
-- **Uptime:** Should be >99%
-- **Error Rate:** Should be <1%
-- **Response Time:** Should be <100ms
-- **CPU Usage:** Should be <80%
-- **Memory Usage:** Should be <80%
-- **Disk Usage:** Should be <80%
+**Validator:**
+- Uptime: >95%
+- Attestation success rate: >98%
+- Response time: <200ms
 
-### Setting Up Monitoring
+**Guardian:**
+- Uptime: >98%
+- Execution success rate: >99%
+- Risk check latency: <50ms
 
-**Option 1: Grafana Cloud (Free Tier)**
-
-```bash
-# 1. Sign up at https://grafana.com
-# 2. Create new stack
-# 3. Get API key
-# 4. Configure Prometheus remote write
-
-# In prometheus.yml:
-remote_write:
-  - url: https://prometheus-us-central1.grafana.net/api/prom/push
-    basic_auth:
-      username: YOUR_USERNAME
-      password: YOUR_API_KEY
-```
-
-**Option 2: Self-Hosted Grafana**
-
-```bash
-# Use monitoring stack from repository
-cd monitoring
-docker-compose up -d
-
-# Access Grafana
-# http://your-server-ip:3001
-# Default: admin/admin
-```
+**Oracle:**
+- Uptime: >99%
+- Model inference time: <500ms
+- GPU utilization: 40-80%
+- Alpha signal accuracy: tracked
 
 ### Alerts
 
-**Configure alerts for:**
+Configure alerts for:
 - Node offline >5 minutes
 - Error rate >5%
-- CPU usage >90%
-- Memory usage >90%
-- Disk usage >90%
-
-```bash
-# Example: Email alert via Alertmanager
-# Edit monitoring/config/alertmanager.yml
-
-receivers:
-  - name: 'email'
-    email_configs:
-      - to: 'your-email@example.com'
-        from: 'alerts@noderr.network'
-        smarthost: 'smtp.gmail.com:587'
-        auth_username: 'your-email@gmail.com'
-        auth_password: 'your-app-password'
-```
-
-### Maintenance Schedule
-
-**Daily:**
-- Check node health
-- Review error logs
-- Verify heartbeat
-
-**Weekly:**
-- Check disk space
-- Review performance metrics
-- Update dependencies (if needed)
-
-**Monthly:**
-- Security updates
-- Backup configuration
-- Review rewards
+- CPU/Memory/Disk >90%
+- GPU temperature >85°C (Oracle)
 
 ---
 
-## 8. Rewards & Economics
+## 9. Rewards & Economics
 
 ### Reward Calculation
 
 ```
 Daily Reward = Base Reward × Tier Multiplier × Uptime Multiplier × (1 - Error Penalty)
-
-Where:
-- Base Reward = Epoch Rewards / Active Nodes
-- Tier Multiplier = 1.0x (ALL), 2.0x (ORACLE), 5.0x (GUARDIAN)
-- Uptime Multiplier = Uptime % / 100
-- Error Penalty = Error Rate % × 0.1 (max 1.0)
 ```
 
-### Example Scenarios
+### Tier Multipliers
 
-**Scenario 1: ALL Node, Perfect Performance**
-- Epoch Rewards: 10,000 NODERR
-- Active Nodes: 100
-- Base Reward: 100 NODERR
-- Tier: ALL (1.0x)
-- Uptime: 100% (1.0x)
-- Errors: 0% (0.0x penalty)
-- **Daily Reward:** 100 × 1.0 × 1.0 × 1.0 = **100 NODERR**
+| Tier | Multiplier |
+|------|------------|
+| Validator | 1.0x |
+| Guardian | 2.5x |
+| Oracle | 5.0x |
 
-**Scenario 2: ORACLE Node, Good Performance**
-- Epoch Rewards: 10,000 NODERR
-- Active Nodes: 100
-- Base Reward: 100 NODERR
-- Tier: ORACLE (2.0x)
-- Uptime: 99.5% (0.995x)
-- Errors: 0.2% (-0.02x)
-- **Daily Reward:** 100 × 2.0 × 0.995 × 0.98 = **195.02 NODERR**
+### Example Calculations
 
-**Scenario 3: GUARDIAN Node, Excellent Performance**
-- Epoch Rewards: 10,000 NODERR
-- Active Nodes: 100
-- Base Reward: 100 NODERR
-- Tier: GUARDIAN (5.0x)
-- Uptime: 99.9% (0.999x)
-- Errors: 0.1% (-0.01x)
-- **Daily Reward:** 100 × 5.0 × 0.999 × 0.99 = **494.505 NODERR**
-
-### Claiming Rewards
-
-```bash
-# Go to NODERR dApp
-# https://app.noderr.network
-
-# 1. Connect wallet
-# 2. Go to "Rewards" tab
-# 3. Click "Claim Rewards"
-# 4. Confirm transaction
-# 5. Rewards sent to your wallet
-
-# Or via CLI (advanced):
-cast send 0xREWARD_DISTRIBUTOR_ADDRESS \
-  "claimReward(bytes32,uint256)" \
-  YOUR_NODE_ID \
-  EPOCH_NUMBER \
-  --private-key $PRIVATE_KEY \
-  --rpc-url https://mainnet.base.org
+**Validator (1,000 NODERR staked, 99% uptime):**
+```
+Base: 10 NODERR/day
+Multiplier: 1.0x
+Uptime: 0.99
+Daily: 10 × 1.0 × 0.99 = 9.9 NODERR
 ```
 
-### ROI Calculation
+**Guardian (5,000 NODERR staked, 99.5% uptime):**
+```
+Base: 10 NODERR/day
+Multiplier: 2.5x
+Uptime: 0.995
+Daily: 10 × 2.5 × 0.995 = 24.875 NODERR
+```
 
-**ALL Node (1,000 NODERR stake):**
-- Daily Reward: ~100 NODERR
-- Monthly Reward: ~3,000 NODERR
-- Annual Reward: ~36,500 NODERR
-- **ROI:** 3,650% APY (assuming perfect performance)
-
-**ORACLE Node (5,000 NODERR stake):**
-- Daily Reward: ~200 NODERR
-- Monthly Reward: ~6,000 NODERR
-- Annual Reward: ~73,000 NODERR
-- **ROI:** 1,460% APY
-
-**GUARDIAN Node (10,000 NODERR stake):**
-- Daily Reward: ~500 NODERR
-- Monthly Reward: ~15,000 NODERR
-- Annual Reward: ~182,500 NODERR
-- **ROI:** 1,825% APY
-
-**Note:** Actual rewards depend on network conditions, number of active nodes, and your node's performance.
+**Oracle (15,000 NODERR staked, 99.9% uptime):**
+```
+Base: 10 NODERR/day
+Multiplier: 5.0x
+Uptime: 0.999
+Daily: 10 × 5.0 × 0.999 = 49.95 NODERR
+```
 
 ---
 
-## 9. Troubleshooting
+## 10. Slashing & Penalties
 
-### Node Won't Start
+### Slashing Conditions
 
-**Problem:** Node fails to start
+| Condition | Validator | Guardian | Oracle |
+|-----------|-----------|----------|--------|
+| **Extended Downtime** | 1% (48h+) | 2% (24h+) | 3% (12h+) |
+| **Malicious Behavior** | 25% | 50% | 75% |
+| **Poor Performance** | 0.5% | 1% | 1.5% |
+| **Consensus Violation** | 15% | 30% | 50% |
 
-**Solutions:**
+### Cooldown Periods
+
+- Validator: 7 days between slashes
+- Guardian: 3 days between slashes
+- Oracle: 1 day between slashes
+
+### Appeals
+
+- Appeal window: 48 hours
+- Submit evidence via dApp
+- Resolution by governance
+
+---
+
+## 11. Troubleshooting
+
+### Common Issues
+
+**Node not starting:**
 ```bash
-# Check logs
+# Check Docker logs
 docker-compose logs
 
-# Common issues:
-# 1. Port already in use
-sudo lsof -i :3000
-# Kill process using port
-sudo kill -9 PID
-
-# 2. Environment variables missing
-cat .env
-# Verify all required variables are set
-
-# 3. Docker not running
-sudo systemctl status docker
-sudo systemctl start docker
-
-# 4. Insufficient permissions
-sudo chown -R $USER:$USER .
-```
-
-### Node Offline
-
-**Problem:** Node shows as offline in dashboard
-
-**Solutions:**
-```bash
-# 1. Check if node is running
-curl http://localhost:3000/health
-
-# 2. Check firewall
-sudo ufw status
-sudo ufw allow 3000
-
-# 3. Check network connectivity
-ping 8.8.8.8
-
-# 4. Restart node
-docker-compose restart
-```
-
-### High Error Rate
-
-**Problem:** Error rate >5%
-
-**Solutions:**
-```bash
-# 1. Check logs for errors
-docker-compose logs | grep ERROR
-
-# 2. Check system resources
-htop
+# Check disk space
 df -h
 
-# 3. Check RPC connection
-curl https://mainnet.base.org \
-  -X POST \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}'
-
-# 4. Update node
-git pull
-docker-compose down
-docker-compose build
-docker-compose up -d
+# Check memory
+free -m
 ```
 
-### Low Rewards
-
-**Problem:** Rewards lower than expected
-
-**Solutions:**
+**GPU not detected (Oracle):**
 ```bash
-# 1. Check uptime
-curl http://localhost:3000/metrics | grep uptime
+# Verify NVIDIA driver
+nvidia-smi
 
-# 2. Check error rate
-curl http://localhost:3000/metrics | grep error_rate
-
-# 3. Verify stake amount
-# Go to dApp -> My Stakes
-
-# 4. Check network conditions
-# More nodes = lower base reward
+# Check Docker GPU access
+docker run --rm --gpus all nvidia/cuda:11.8.0-base-ubuntu22.04 nvidia-smi
 ```
 
-### Slashed
-
-**Problem:** Node was slashed
-
-**Solutions:**
+**Connection issues:**
 ```bash
-# 1. Check slashing reason
-# Go to dApp -> Slashing Events
-# Find your node ID
+# Check firewall
+sudo ufw status
 
-# 2. Fix underlying issue
-# - Excessive errors: Update node, check RPC
-# - Downtime: Improve infrastructure, add monitoring
-# - Missed heartbeats: Check network connectivity
-
-# 3. Restake if needed
-# If stake fell below minimum, add more tokens
+# Test RPC connection
+curl -X POST -H "Content-Type: application/json" \
+  --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
+  https://mainnet.base.org
 ```
 
 ---
 
-## 10. FAQ
-
-### General
-
-**Q: How much can I earn running a node?**
-A: Depends on your stake, tier, and performance. ALL nodes earn ~100 NODERR/day, ORACLE ~200, GUARDIAN ~500 (assuming 100 active nodes and perfect performance).
+## 12. FAQ
 
 **Q: Can I run multiple nodes?**
-A: Yes, you can run multiple nodes with separate stakes. Each node requires its own stake and infrastructure.
+A: Yes, but each node requires a separate stake and unique node ID.
 
-**Q: Can I unstake anytime?**
-A: You can request withdrawal anytime, but there's a 7-day cooldown period before you can withdraw your tokens.
+**Q: Can I upgrade my tier?**
+A: Yes, stake additional tokens and update your node configuration.
 
 **Q: What happens if my node goes offline?**
-A: Your uptime multiplier decreases, reducing rewards. If offline >24 hours, you may be slashed.
+A: Brief outages (<24h for Validator, <12h for Guardian, <6h for Oracle) result in reduced rewards. Extended outages trigger slashing.
 
-**Q: Can I upgrade my node tier?**
-A: Yes, stake additional tokens to reach the next tier's minimum. Tier is automatically updated.
+**Q: How are rewards distributed?**
+A: Rewards are distributed daily based on uptime and performance metrics.
 
-### Technical
-
-**Q: What OS should I use?**
-A: Ubuntu 22.04 LTS is recommended. macOS also works. Windows is not officially supported.
-
-**Q: Can I run a node on a Raspberry Pi?**
-A: Not recommended. Insufficient resources for reliable operation.
-
-**Q: Do I need a static IP?**
-A: Recommended but not required. Dynamic IP with DDNS works.
-
-**Q: How much bandwidth does a node use?**
-A: ~1-5 GB/day depending on tier and traffic.
-
-**Q: Can I run a node behind a VPN?**
-A: Yes, but ensure VPN doesn't block required ports.
-
-### Economics
-
-**Q: When are rewards distributed?**
-A: Rewards are calculated daily (per epoch) and can be claimed anytime.
-
-**Q: Are rewards automatically compounded?**
-A: No, you must manually claim and restake to compound.
-
-**Q: What's the minimum stake?**
-A: 1,000 NODERR for ALL tier.
-
-**Q: Can I add to my stake?**
-A: Yes, stake additional tokens anytime. No cooldown for adding.
-
-**Q: What happens to my stake if I'm slashed?**
-A: Slashed amount is deducted from your stake. If stake falls below minimum, you must add more to continue operating.
-
-### Security
-
-**Q: Is my private key safe?**
-A: Your private key never leaves your wallet. Node only uses your address for identification.
-
-**Q: Can someone steal my stake?**
-A: No, stake is locked in smart contract. Only you can withdraw after cooldown.
-
-**Q: What if the smart contract is hacked?**
-A: Contracts are audited and have emergency pause functionality. Insurance may be available (check official docs).
-
-**Q: Should I use a hardware wallet?**
-A: Recommended for large stakes (>10,000 NODERR).
+**Q: Can I run a node from home?**
+A: Yes, but ensure reliable internet, static IP or DDNS, and appropriate hardware for your tier.
 
 ---
 
-## Appendix A: Commands Reference
+## Support
 
-### Docker Commands
-
-```bash
-# Start node
-docker-compose up -d
-
-# Stop node
-docker-compose down
-
-# Restart node
-docker-compose restart
-
-# View logs
-docker-compose logs -f
-
-# Update node
-git pull && docker-compose down && docker-compose build && docker-compose up -d
-
-# Check status
-docker-compose ps
-```
-
-### PM2 Commands
-
-```bash
-# Start node
-pm2 start noderr-node
-
-# Stop node
-pm2 stop noderr-node
-
-# Restart node
-pm2 restart noderr-node
-
-# View logs
-pm2 logs noderr-node
-
-# Check status
-pm2 status
-
-# Monitor
-pm2 monit
-```
-
-### Health Check Commands
-
-```bash
-# Node health
-curl http://localhost:3000/health
-
-# Metrics
-curl http://localhost:9090/metrics
-
-# Version
-curl http://localhost:3000/version
-
-# Status
-curl http://localhost:3000/api/status
-```
+- **Documentation:** https://docs.noderr.network
+- **Discord:** https://discord.gg/noderr
+- **GitHub Issues:** https://github.com/Noderrxyz/noderr-node-os/issues
 
 ---
 
-## Appendix B: Support Resources
-
-**Official Documentation:**
-- Website: https://noderr.network
-- Docs: https://docs.noderr.network
-- GitHub: https://github.com/Noderrxyz
-
-**Community:**
-- Discord: https://discord.gg/noderr
-- Telegram: https://t.me/noderr
-- Twitter: https://twitter.com/noderrxyz
-
-**Support:**
-- Email: support@noderr.network
-- Forum: https://forum.noderr.network
-
-**Emergency:**
-- Security: security@noderr.network
-- Critical Issues: emergency@noderr.network
-
----
-
-**Document Version:** 1.0.0  
-**Last Updated:** November 28, 2025  
-**Next Review:** December 28, 2025
-
-**Happy Node Operating! 🚀**
+*This guide is maintained by the NODERR team. Last updated: December 20, 2025*

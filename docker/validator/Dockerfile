@@ -1,5 +1,16 @@
 # Noderr Node OS - VALIDATOR Tier Dockerfile
-# Execution-focused node with order routing and MEV protection
+# RESTRUCTURED: Lightest tier (Tier 2) - On-chain validation and network participation
+#
+# Services:
+# - on-chain-service: On-chain validation and transaction submission
+# - validator-consensus: Validator consensus participation
+# - market-data: Market data relay (reduced scope)
+# - data-connectors: Basic data connectors (reduced scope)
+# - telemetry: Performance monitoring
+# - heartbeat-client: Network heartbeat
+#
+# Total Memory: ~5.3 GB
+# Total CPU: ~4 cores
 
 FROM node:20-alpine AS builder
 
@@ -20,54 +31,36 @@ COPY tsconfig.base.json ./
 # Install pnpm
 RUN npm install -g pnpm@8
 
-# Copy VALIDATOR-specific packages
+# Copy VALIDATOR-specific packages (REDUCED SET)
 COPY packages/types ./packages/types
 COPY packages/utils ./packages/utils
 COPY packages/telemetry ./packages/telemetry
 COPY packages/market-data ./packages/market-data
-COPY packages/exchanges ./packages/exchanges
 COPY packages/data-connectors ./packages/data-connectors
-COPY packages/execution ./packages/execution
-COPY packages/autonomous-execution ./packages/autonomous-execution
-COPY packages/floor-engine ./packages/floor-engine
-COPY packages/integration-layer ./packages/integration-layer
-COPY packages/system-orchestrator ./packages/system-orchestrator
 COPY packages/on-chain-service ./packages/on-chain-service
-COPY packages/compliance ./packages/compliance
-COPY packages/testing ./packages/testing
+COPY packages/validator-consensus ./packages/validator-consensus
+COPY packages/heartbeat-client ./packages/heartbeat-client
 
-# Install dependencies for all packages
+# Install dependencies for VALIDATOR packages only
 RUN pnpm install --frozen-lockfile \
     --filter "@noderr/types" \
     --filter "@noderr/utils" \
     --filter "@noderr/telemetry" \
     --filter "@noderr/market-data" \
-    --filter "@noderr/exchanges" \
     --filter "@noderr/data-connectors" \
-    --filter "@noderr/execution" \
-    --filter "@noderr/autonomous-execution" \
-    --filter "@noderr/floor-engine" \
-    --filter "@noderr/integration-layer" \
-    --filter "@noderr/system-orchestrator" \
     --filter "@noderr/on-chain-service" \
-    --filter "@noderr/compliance" \
-    --filter "@noderr/testing"
+    --filter "@noderr/validator-consensus" \
+    --filter "@noderr/heartbeat-client"
 
 # Build packages in dependency order
 RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/utils" build && \
     pnpm --filter "@noderr/telemetry" build && \
     pnpm --filter "@noderr/market-data" build && \
-    pnpm --filter "@noderr/exchanges" build && \
     pnpm --filter "@noderr/data-connectors" build && \
-    pnpm --filter "@noderr/execution" build && \
-    pnpm --filter "@noderr/autonomous-execution" build && \
-    pnpm --filter "@noderr/floor-engine" build && \
-    pnpm --filter "@noderr/integration-layer" build && \
-    pnpm --filter "@noderr/system-orchestrator" build && \
     pnpm --filter "@noderr/on-chain-service" build && \
-    pnpm --filter "@noderr/compliance" build && \
-    pnpm --filter "@noderr/testing" build
+    pnpm --filter "@noderr/validator-consensus" build && \
+    pnpm --filter "@noderr/heartbeat-client" build
 
 # Remove dev dependencies
 RUN pnpm install --frozen-lockfile --prod \
@@ -75,16 +68,10 @@ RUN pnpm install --frozen-lockfile --prod \
     --filter "@noderr/utils" \
     --filter "@noderr/telemetry" \
     --filter "@noderr/market-data" \
-    --filter "@noderr/exchanges" \
     --filter "@noderr/data-connectors" \
-    --filter "@noderr/execution" \
-    --filter "@noderr/autonomous-execution" \
-    --filter "@noderr/floor-engine" \
-    --filter "@noderr/integration-layer" \
-    --filter "@noderr/system-orchestrator" \
     --filter "@noderr/on-chain-service" \
-    --filter "@noderr/compliance" \
-    --filter "@noderr/testing"
+    --filter "@noderr/validator-consensus" \
+    --filter "@noderr/heartbeat-client"
 
 # ============================================================================
 # Production Stage
@@ -109,37 +96,31 @@ RUN npm install -g pnpm@8 pm2@5
 # Copy workspace configuration
 COPY --chown=noderr:noderr package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Copy built packages from builder
+# Copy built packages from builder (REDUCED SET)
 COPY --from=builder --chown=noderr:noderr /build/node_modules ./node_modules
 COPY --from=builder --chown=noderr:noderr /build/packages/types ./packages/types
 COPY --from=builder --chown=noderr:noderr /build/packages/utils ./packages/utils
 COPY --from=builder --chown=noderr:noderr /build/packages/telemetry ./packages/telemetry
 COPY --from=builder --chown=noderr:noderr /build/packages/market-data ./packages/market-data
-COPY --from=builder --chown=noderr:noderr /build/packages/exchanges ./packages/exchanges
 COPY --from=builder --chown=noderr:noderr /build/packages/data-connectors ./packages/data-connectors
-COPY --from=builder --chown=noderr:noderr /build/packages/execution ./packages/execution
-COPY --from=builder --chown=noderr:noderr /build/packages/autonomous-execution ./packages/autonomous-execution
-COPY --from=builder --chown=noderr:noderr /build/packages/floor-engine ./packages/floor-engine
-COPY --from=builder --chown=noderr:noderr /build/packages/integration-layer ./packages/integration-layer
-COPY --from=builder --chown=noderr:noderr /build/packages/system-orchestrator ./packages/system-orchestrator
 COPY --from=builder --chown=noderr:noderr /build/packages/on-chain-service ./packages/on-chain-service
-COPY --from=builder --chown=noderr:noderr /build/packages/compliance ./packages/compliance
-COPY --from=builder --chown=noderr:noderr /build/packages/testing ./packages/testing
+COPY --from=builder --chown=noderr:noderr /build/packages/validator-consensus ./packages/validator-consensus
+COPY --from=builder --chown=noderr:noderr /build/packages/heartbeat-client ./packages/heartbeat-client
 
 # Copy PM2 ecosystem configuration
 COPY --chown=noderr:noderr docker/validator/ecosystem.config.js /app/ecosystem.config.js
 
-# Create startup script
+# Copy startup script
 COPY --chown=noderr:noderr docker/validator/start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
 # Create directories for logs and data
 RUN mkdir -p /app/logs /app/data && chown -R noderr:noderr /app/logs /app/data
 
-# Set environment variables
+# Set environment variables (REDUCED MEMORY for lightweight tier)
 ENV NODE_ENV=production \
     NODE_TIER=VALIDATOR \
-    NODE_OPTIONS="--max-old-space-size=6144" \
+    NODE_OPTIONS="--max-old-space-size=4096" \
     PNPM_HOME="/pnpm" \
     PATH="$PNPM_HOME:$PATH"
 

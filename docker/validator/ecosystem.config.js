@@ -1,213 +1,34 @@
 /**
  * PM2 Ecosystem Configuration - Validator Node
  * 
- * Process supervision and automatic restart configuration
- * for all Validator node services.
+ * RESTRUCTURED: Validator is now the LIGHTEST tier (Tier 2)
  * 
- * Features:
- * - Automatic restart on crash
- * - Configurable restart delays
- * - Max restart attempts per minute
- * - Minimum uptime validation
- * - Memory limits
- * - Log management
+ * Services running on Validator:
+ * - on-chain-service: On-chain validation and transaction submission
+ * - validator-consensus: Validator consensus participation
+ * - market-data: Market data relay (reduced scope)
+ * - data-connectors: Basic data connectors (reduced scope)
+ * - telemetry: Performance monitoring
+ * - heartbeat-client: Network heartbeat
+ * 
+ * Total Memory: ~5.3 GB
+ * Total CPU: ~4 cores
+ * 
+ * REMOVED (migrated to Guardian):
+ * - execution
+ * - autonomous-execution
+ * - floor-engine
+ * - integration-layer
+ * - system-orchestrator
+ * - exchanges (full version)
+ * - compliance
  * 
  * Quality: PhD-Level + Production-Grade
  */
 
 module.exports = {
   apps: [
-    // Core Infrastructure Services
-    {
-      name: 'telemetry',
-      script: 'packages/telemetry/dist/index.js',
-      instances: 1,
-      exec_mode: 'fork',
-      restart_delay: 5000,
-      max_restarts: 10,
-      min_uptime: 10000,
-      max_memory_restart: '1G',
-      error_file: '/app/logs/telemetry-error.log',
-      out_file: '/app/logs/telemetry-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      merge_logs: true,
-      autorestart: true,
-      watch: false,
-      env: {
-        NODE_ENV: 'production',
-        SERVICE_NAME: 'telemetry'
-      }
-    },
-    
-    {
-      name: 'market-data',
-      script: 'packages/market-data/dist/index.js',
-      instances: 1,
-      exec_mode: 'fork',
-      restart_delay: 5000,
-      max_restarts: 10,
-      min_uptime: 10000,
-      max_memory_restart: '2G',
-      error_file: '/app/logs/market-data-error.log',
-      out_file: '/app/logs/market-data-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      merge_logs: true,
-      autorestart: true,
-      watch: false,
-      env: {
-        NODE_ENV: 'production',
-        SERVICE_NAME: 'market-data'
-      }
-    },
-    
-    {
-      name: 'exchanges',
-      script: 'packages/exchanges/dist/index.js',
-      instances: 1,
-      exec_mode: 'fork',
-      restart_delay: 5000,
-      max_restarts: 10,
-      min_uptime: 10000,
-      max_memory_restart: '1G',
-      error_file: '/app/logs/exchanges-error.log',
-      out_file: '/app/logs/exchanges-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      merge_logs: true,
-      autorestart: true,
-      watch: false,
-      env: {
-        NODE_ENV: 'production',
-        SERVICE_NAME: 'exchanges'
-      }
-    },
-    
-    {
-      name: 'data-connectors',
-      script: 'packages/data-connectors/dist/index.js',
-      instances: 1,
-      exec_mode: 'fork',
-      restart_delay: 5000,
-      max_restarts: 10,
-      min_uptime: 10000,
-      max_memory_restart: '1G',
-      error_file: '/app/logs/data-connectors-error.log',
-      out_file: '/app/logs/data-connectors-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      merge_logs: true,
-      autorestart: true,
-      watch: false,
-      env: {
-        NODE_ENV: 'production',
-        SERVICE_NAME: 'data-connectors'
-      }
-    },
-    
-    // Validator-Specific Services
-    {
-      name: 'execution',
-      script: 'packages/execution/dist/index.js',
-      instances: 1,
-      exec_mode: 'fork',
-      restart_delay: 5000,
-      max_restarts: 10,
-      min_uptime: 10000,
-      max_memory_restart: '4G',
-      error_file: '/app/logs/execution-error.log',
-      out_file: '/app/logs/execution-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      merge_logs: true,
-      autorestart: true,
-      watch: false,
-      env: {
-        NODE_ENV: 'production',
-        SERVICE_NAME: 'execution'
-      }
-    },
-    
-    {
-      name: 'autonomous-execution',
-      script: 'packages/autonomous-execution/dist/index.js',
-      instances: 1,
-      exec_mode: 'fork',
-      restart_delay: 5000,
-      max_restarts: 10,
-      min_uptime: 10000,
-      max_memory_restart: '2G',
-      error_file: '/app/logs/autonomous-execution-error.log',
-      out_file: '/app/logs/autonomous-execution-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      merge_logs: true,
-      autorestart: true,
-      watch: false,
-      env: {
-        NODE_ENV: 'production',
-        SERVICE_NAME: 'autonomous-execution'
-      }
-    },
-    
-    {
-      name: 'floor-engine',
-      script: 'packages/floor-engine/dist/index.js',
-      instances: 1,
-      exec_mode: 'fork',
-      restart_delay: 5000,
-      max_restarts: 10,
-      min_uptime: 10000,
-      max_memory_restart: '2G',
-      error_file: '/app/logs/floor-engine-error.log',
-      out_file: '/app/logs/floor-engine-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      merge_logs: true,
-      autorestart: true,
-      watch: false,
-      env: {
-        NODE_ENV: 'production',
-        SERVICE_NAME: 'floor-engine'
-      }
-    },
-    
-    {
-      name: 'integration-layer',
-      script: 'packages/integration-layer/dist/index.js',
-      instances: 1,
-      exec_mode: 'fork',
-      restart_delay: 5000,
-      max_restarts: 10,
-      min_uptime: 10000,
-      max_memory_restart: '2G',
-      error_file: '/app/logs/integration-layer-error.log',
-      out_file: '/app/logs/integration-layer-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      merge_logs: true,
-      autorestart: true,
-      watch: false,
-      env: {
-        NODE_ENV: 'production',
-        SERVICE_NAME: 'integration-layer'
-      }
-    },
-    
-    {
-      name: 'system-orchestrator',
-      script: 'packages/system-orchestrator/dist/index.js',
-      instances: 1,
-      exec_mode: 'fork',
-      restart_delay: 5000,
-      max_restarts: 10,
-      min_uptime: 10000,
-      max_memory_restart: '2G',
-      error_file: '/app/logs/system-orchestrator-error.log',
-      out_file: '/app/logs/system-orchestrator-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      merge_logs: true,
-      autorestart: true,
-      watch: false,
-      env: {
-        NODE_ENV: 'production',
-        SERVICE_NAME: 'system-orchestrator'
-      }
-    },
-    
+    // Core Validator Service - On-Chain Operations
     {
       name: 'on-chain-service',
       script: 'packages/on-chain-service/dist/index.js',
@@ -216,7 +37,7 @@ module.exports = {
       restart_delay: 5000,
       max_restarts: 10,
       min_uptime: 10000,
-      max_memory_restart: '1G',
+      max_memory_restart: '2G',
       error_file: '/app/logs/on-chain-service-error.log',
       out_file: '/app/logs/on-chain-service-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
@@ -229,28 +50,99 @@ module.exports = {
       }
     },
     
+    // Validator Consensus - Network Consensus Participation
     {
-      name: 'compliance',
-      script: 'packages/compliance/dist/index.js',
+      name: 'validator-consensus',
+      script: 'packages/validator-consensus/dist/index.js',
       instances: 1,
       exec_mode: 'fork',
       restart_delay: 5000,
       max_restarts: 10,
       min_uptime: 10000,
       max_memory_restart: '1G',
-      error_file: '/app/logs/compliance-error.log',
-      out_file: '/app/logs/compliance-out.log',
+      error_file: '/app/logs/validator-consensus-error.log',
+      out_file: '/app/logs/validator-consensus-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       merge_logs: true,
       autorestart: true,
       watch: false,
       env: {
         NODE_ENV: 'production',
-        SERVICE_NAME: 'compliance'
+        SERVICE_NAME: 'validator-consensus'
       }
     },
     
-    // Heartbeat Client - Maintains node active status with auth-API
+    // Market Data - Reduced Scope for Relay Only
+    {
+      name: 'market-data',
+      script: 'packages/market-data/dist/index.js',
+      instances: 1,
+      exec_mode: 'fork',
+      restart_delay: 5000,
+      max_restarts: 10,
+      min_uptime: 10000,
+      max_memory_restart: '1G',
+      error_file: '/app/logs/market-data-error.log',
+      out_file: '/app/logs/market-data-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      merge_logs: true,
+      autorestart: true,
+      watch: false,
+      env: {
+        NODE_ENV: 'production',
+        SERVICE_NAME: 'market-data',
+        VALIDATOR_MODE: 'true',
+        REDUCED_SCOPE: 'true'
+      }
+    },
+    
+    // Data Connectors - Basic Connectors Only
+    {
+      name: 'data-connectors',
+      script: 'packages/data-connectors/dist/index.js',
+      instances: 1,
+      exec_mode: 'fork',
+      restart_delay: 5000,
+      max_restarts: 10,
+      min_uptime: 10000,
+      max_memory_restart: '512M',
+      error_file: '/app/logs/data-connectors-error.log',
+      out_file: '/app/logs/data-connectors-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      merge_logs: true,
+      autorestart: true,
+      watch: false,
+      env: {
+        NODE_ENV: 'production',
+        SERVICE_NAME: 'data-connectors',
+        VALIDATOR_MODE: 'true',
+        REDUCED_SCOPE: 'true'
+      }
+    },
+    
+    // Telemetry - Performance Monitoring
+    {
+      name: 'telemetry',
+      script: 'packages/telemetry/dist/index.js',
+      instances: 1,
+      exec_mode: 'fork',
+      restart_delay: 5000,
+      max_restarts: 10,
+      min_uptime: 10000,
+      max_memory_restart: '512M',
+      error_file: '/app/logs/telemetry-error.log',
+      out_file: '/app/logs/telemetry-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      merge_logs: true,
+      autorestart: true,
+      watch: false,
+      env: {
+        NODE_ENV: 'production',
+        SERVICE_NAME: 'telemetry'
+      }
+    },
+    
+    // Heartbeat Client - Network Presence
     {
       name: 'heartbeat-client',
       script: 'packages/heartbeat-client/dist/index.js',
@@ -274,7 +166,7 @@ module.exports = {
     }
   ],
   
-  // PM2 Deploy Configuration (optional, for future use)
+  // PM2 Deploy Configuration
   deploy: {
     production: {
       user: 'noderr',
