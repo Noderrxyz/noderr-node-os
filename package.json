@@ -36,5 +36,10 @@
     "pino": "^8.21.0",
     "pino-pretty": "^10.3.1",
     "zod": "^3.25.76"
+  },
+  "pnpm": {
+    "overrides": {
+      "node-forge": "1.3.1"
+    }
   }
 }
