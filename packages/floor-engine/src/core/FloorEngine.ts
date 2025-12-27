@@ -115,11 +115,13 @@ export class FloorEngine extends EventEmitter {
     const lendingAmount = (amount * BigInt(allocationStrategy.lending)) / 100n;
     const stakingAmount = (amount * BigInt(allocationStrategy.staking)) / 100n;
     const yieldAmount = (amount * BigInt(allocationStrategy.yield)) / 100n;
+    const restakingAmount = (amount * BigInt(allocationStrategy.restaking || 0)) / 100n;
 
     // Get enabled adapters by category
     const lendingAdapters = this.adapterRegistry.getAllAdapters(AdapterCategory.LENDING, true);
     const stakingAdapters = this.adapterRegistry.getAllAdapters(AdapterCategory.STAKING, true);
     const yieldAdapters = this.adapterRegistry.getAllAdapters(AdapterCategory.YIELD, true);
+    const restakingAdapters = this.adapterRegistry.getAllAdapters(AdapterCategory.RESTAKING, true);
 
     // Allocate to lending adapters
     if (lendingAmount > 0n && lendingAdapters.length > 0) {
@@ -134,6 +136,11 @@ export class FloorEngine extends EventEmitter {
     // Allocate to yield adapters
     if (yieldAmount > 0n && yieldAdapters.length > 0) {
       await this.allocateToCategory('yield', yieldAmount, yieldAdapters);
+    }
+
+    // Allocate to restaking adapters
+    if (restakingAmount > 0n && restakingAdapters.length > 0) {
+      await this.allocateToCategory('restaking', restakingAmount, restakingAdapters);
     }
 
     // Update total deposited

@@ -16,7 +16,8 @@ import { BigNumberish } from 'ethers';
 export enum AdapterCategory {
   LENDING = 'lending',
   STAKING = 'staking',
-  YIELD = 'yield'
+  YIELD = 'yield',
+  RESTAKING = 'restaking'
 }
 
 /**
@@ -131,6 +132,38 @@ export interface IYieldAdapter {
 }
 
 // ============================================================================
+// RESTAKING ADAPTER TYPES
+// ============================================================================
+
+/**
+ * Restaking position details
+ */
+export interface RestakingPosition {
+  staked: bigint;
+  rewards: bigint;
+  shares: bigint; // Protocol-specific shares (e.g., EigenLayer shares)
+  liquidTokenBalance: bigint; // Liquid restaking token balance (e.g., eETH, weETH)
+  apy: number;
+  unbondingPeriod: number; // seconds
+  delegatedTo?: string; // Operator address (if applicable)
+}
+
+/**
+ * Restaking adapter interface
+ */
+export interface IRestakingAdapter {
+  stake(amount: BigNumberish): Promise<TransactionResult>;
+  unstake(shares: BigNumberish): Promise<TransactionResult>;
+  claimRewards(): Promise<TransactionResult>;
+  delegate?(operator: string): Promise<TransactionResult>; // Optional delegation
+  undelegate?(): Promise<TransactionResult>; // Optional undelegation
+  getAPY(): Promise<number>;
+  getPosition(): Promise<RestakingPosition>;
+  getShares(): Promise<bigint>;
+  getLiquidTokenBalance(): Promise<bigint>;
+}
+
+// ============================================================================
 // POSITION TYPES
 // ============================================================================
 
@@ -158,6 +191,7 @@ export interface AllocationStrategy {
   lending: number; // percentage (0-100)
   staking: number; // percentage (0-100)
   yield: number; // percentage (0-100)
+  restaking?: number; // percentage (0-100) - optional for backward compatibility
 }
 
 /**
