@@ -10,6 +10,7 @@ import rateLimit from '@fastify/rate-limit';
 import jwt from '@fastify/jwt';
 import '@fastify/jwt';
 import { registerApiRoutes } from './routes/api.routes';
+import { registerStrategyRoutes } from './routes/strategy.routes';
 import { initializeDatabaseService } from './services/database.service';
 import { initializeAuthService } from './services/auth.service';
 
@@ -72,6 +73,9 @@ async function main() {
 
   // Register API routes
   await registerApiRoutes(fastify);
+  
+  // Register Strategy routes
+  await registerStrategyRoutes(fastify);
 
   // Start server
   try {
