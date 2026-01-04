@@ -62,9 +62,9 @@ The NODERR network operates as a three-tier decentralized trading intelligence s
 
 | Tier | Node Type | Role | Stake Required | Reward Multiplier |
 |------|-----------|------|----------------|-------------------|
-| **2** | **Validator** | On-chain validation & network consensus | 1,000 NODERR | 1.0x |
-| **3** | **Guardian** | Risk management & trade execution | 5,000 NODERR | 2.5x |
-| **4** | **Oracle** | ML/AI alpha generation & data science | 15,000 NODERR | 5.0x |
+| **2** | **Validator** | On-chain validation & network consensus | 50,000 NODERR | 1.0x |
+| **3** | **Guardian** | Risk management & trade execution | 100,000 NODERR | 2.5x |
+| **4** | **Oracle** | ML/AI alpha generation & data science | 500,000 NODERR | 5.0x |
 
 ### Validator Node (Tier 2) - Entry Level
 
@@ -238,7 +238,7 @@ Consider the following when choosing your tier:
 |--------|-----------|----------|--------|
 | **Hardware Cost** | Low | Medium | High |
 | **Technical Skill** | Basic | Intermediate | Advanced |
-| **Stake Required** | 1,000 NODERR | 5,000 NODERR | 15,000 NODERR |
+| **Stake Required** | 50,000 NODERR | 100,000 NODERR | 500,000 NODERR |
 | **Reward Potential** | Base | 2.5x Base | 5x Base |
 | **Responsibility** | Low | Medium | High |
 | **Slashing Risk** | Low | Medium | High |
@@ -401,9 +401,9 @@ docker run --rm --gpus all nvidia/cuda:11.8.0-base-ubuntu22.04 nvidia-smi
 
 | Tier | Minimum Stake |
 |------|---------------|
-| Validator | 1,000 NODERR |
-| Guardian | 5,000 NODERR |
-| Oracle | 15,000 NODERR |
+| Validator | 50,000 NODERR |
+| Guardian | 100,000 NODERR |
+| Oracle | 500,000 NODERR |
 
 ```bash
 # In dApp:
@@ -546,7 +546,7 @@ Daily Reward = Base Reward × Tier Multiplier × Uptime Multiplier × (1 - Error
 
 ### Example Calculations
 
-**Validator (1,000 NODERR staked, 99% uptime):**
+**Validator (50,000 NODERR staked, 99% uptime):**
 ```
 Base: 10 NODERR/day
 Multiplier: 1.0x
@@ -554,7 +554,7 @@ Uptime: 0.99
 Daily: 10 × 1.0 × 0.99 = 9.9 NODERR
 ```
 
-**Guardian (5,000 NODERR staked, 99.5% uptime):**
+**Guardian (100,000 NODERR staked, 99.5% uptime):**
 ```
 Base: 10 NODERR/day
 Multiplier: 2.5x
@@ -562,7 +562,7 @@ Uptime: 0.995
 Daily: 10 × 2.5 × 0.995 = 24.875 NODERR
 ```
 
-**Oracle (15,000 NODERR staked, 99.9% uptime):**
+**Oracle (500,000 NODERR staked, 99.9% uptime):**
 ```
 Base: 10 NODERR/day
 Multiplier: 5.0x
