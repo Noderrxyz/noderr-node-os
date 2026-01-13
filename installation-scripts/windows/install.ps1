@@ -37,7 +37,7 @@ $Script:MIN_CPU_CORES = 4
 $Script:MIN_RAM_GB = 8
 $Script:MIN_DISK_GB = 100
 
-$Script:AUTH_API_URL = if ($env:AUTH_API_URL) { $env:AUTH_API_URL } else { "https://auth.noderr.xyz" }
+$Script:AUTH_API_URL = if ($env:AUTH_API_URL) { $env:AUTH_API_URL } else { "https://noderrauth-api-production-cca0.up.railway.app" }
 $Script:INSTALL_DIR = "C:\Program Files\Noderr"
 $Script:CONFIG_DIR = "C:\ProgramData\Noderr"
 $Script:LOG_FILE = "$Script:CONFIG_DIR\install.log"

@@ -17,7 +17,7 @@ readonly MIN_CPU_CORES=4
 readonly MIN_RAM_GB=8
 readonly MIN_DISK_GB=100
 
-readonly AUTH_API_URL="${AUTH_API_URL:-https://auth.noderr.xyz}"
+readonly AUTH_API_URL="${AUTH_API_URL:-https://noderrauth-api-production-cca0.up.railway.app}"
 readonly INSTALL_DIR="/opt/noderr"
 readonly CONFIG_DIR="/etc/noderr"
 readonly LOG_FILE="/var/log/noderr-install.log"
