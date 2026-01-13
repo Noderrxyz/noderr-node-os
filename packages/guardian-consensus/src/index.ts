@@ -8,8 +8,6 @@
  * - Risk assessment aggregation
  * - Weighted voting by stake
  * - Fast consensus (< 5 seconds)
- * 
- * Quality: PhD-Level + Production-Grade
  */
 
 import { Logger } from '@noderr/utils';

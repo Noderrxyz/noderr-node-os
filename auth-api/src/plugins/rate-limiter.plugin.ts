@@ -3,7 +3,6 @@ import fp from 'fastify-plugin';
 import { Redis } from 'ioredis';
 
 /**
- * Production-Grade Rate Limiting Plugin for Fastify
  * 
  * Implements multiple rate limiting strategies to prevent abuse:
  * 1. Global rate limit (requests per second across all IPs)

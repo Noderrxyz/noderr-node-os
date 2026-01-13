@@ -11,8 +11,6 @@
  * - Uncaught exception handling
  * - Unhandled rejection handling
  * - Graceful connection closing
- *
- * Quality: PhD-Level + Production-Grade
  */
 export interface ShutdownHandler {
     name: string;

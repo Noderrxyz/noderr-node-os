@@ -9,8 +9,6 @@
  * - Reddit data collection
  * - On-chain analytics
  * - Alternative data sources
- * 
- * Quality: PhD-Level + Production-Grade
  */
 
 import { Logger } from '@noderr/utils';

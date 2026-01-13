@@ -12,8 +12,6 @@
  * - Connection pooling
  * - Rate limiting
  * - Automatic reconnection
- * 
- * Quality: PhD-Level + Production-Grade
  */
 
 import { Logger } from '@noderr/utils';

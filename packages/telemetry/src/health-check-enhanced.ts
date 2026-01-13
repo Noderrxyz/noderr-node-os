@@ -10,8 +10,6 @@
  * - Custom health check functions
  * - Aggregated health status
  * - Detailed error reporting
- * 
- * Quality: PhD-Level + Production-Grade
  */
 
 export interface HealthCheckResult {

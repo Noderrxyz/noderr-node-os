@@ -9,8 +9,6 @@
  * - Wallet address validation
  * - Graceful error handling
  * - Retry logic for network issues
- * 
- * Quality: PhD-Level + Production-Grade
  */
 
 import { ethers } from 'ethers';

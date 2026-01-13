@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import { Redis } from 'ioredis';
 
 /**
- * Production-Grade Rate Limiting Middleware
  * 
  * Implements multiple rate limiting strategies to prevent abuse:
  * 1. Global rate limit (requests per second across all IPs)

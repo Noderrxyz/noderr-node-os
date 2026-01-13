@@ -8,8 +8,6 @@
  * - Signal aggregation
  * - Strategy performance tracking
  * - Risk-adjusted position sizing
- * 
- * Quality: PhD-Level + Production-Grade
  */
 
 import { Logger } from '@noderr/utils';

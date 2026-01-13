@@ -8,7 +8,6 @@
  * 4. Telemetry and rewards
  * 
  * Integration Testing - Phase 8
- * Quality: PhD-Level
  */
 
 import { createClient } from '@supabase/supabase-js';

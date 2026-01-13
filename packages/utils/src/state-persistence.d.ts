@@ -10,8 +10,6 @@
  * - State versioning
  * - Corruption detection
  * - Automatic recovery
- *
- * Quality: PhD-Level + Production-Grade
  */
 export interface StateMetadata {
     version: string;

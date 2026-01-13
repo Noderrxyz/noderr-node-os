@@ -10,8 +10,6 @@
  * - Trade stream processing
  * - Ticker updates
  * - OHLCV candles
- * 
- * Quality: PhD-Level + Production-Grade
  */
 
 import { Logger } from '@noderr/utils';
