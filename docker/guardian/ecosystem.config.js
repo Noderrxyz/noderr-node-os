@@ -20,8 +20,6 @@
  * 
  * Total Memory: ~22.8 GB
  * Total CPU: ~16 cores
- * 
- * Quality: PhD-Level + Production-Grade
  */
 
 module.exports = {

@@ -1,7 +1,7 @@
 /**
  * Cross-Exchange & Multi-Chain Arbitrage Engine
  * 
- * World-class implementation for detecting and executing arbitrage
+
  * opportunities across CEXs, DEXs, and multiple blockchain networks.
  */
 

@@ -22,8 +22,6 @@
  * - system-orchestrator
  * - exchanges (full version)
  * - compliance
- * 
- * Quality: PhD-Level + Production-Grade
  */
 
 module.exports = {

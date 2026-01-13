@@ -1,7 +1,7 @@
 /**
  * Advanced Market Microstructure Analyzer
  * 
- * World-class implementation for analyzing order book dynamics,
+
  * detecting real liquidity, and generating alpha signals from
  * market microstructure patterns.
  */

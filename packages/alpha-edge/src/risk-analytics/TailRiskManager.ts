@@ -1,7 +1,7 @@
 /**
  * Advanced Tail Risk Management System
  * 
- * World-class implementation for managing extreme market events,
+
  * black swan scenarios, and sophisticated portfolio risk analytics.
  */
 

@@ -12,8 +12,6 @@
  * - Uncaught exception handling
  * - Unhandled rejection handling
  * - Graceful connection closing
- *
- * Quality: PhD-Level + Production-Grade
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GracefulShutdown = void 0;

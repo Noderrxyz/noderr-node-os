@@ -11,8 +11,6 @@
  * - Minimum uptime validation
  * - Memory limits
  * - Log management
- * 
- * Quality: PhD-Level + Production-Grade
  */
 
 module.exports = {

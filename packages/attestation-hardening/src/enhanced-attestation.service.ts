@@ -4,7 +4,7 @@ import { PCRBaselineService, PCRValues, HardwareProfile } from './pcr-baseline.s
 /**
  * Enhanced Attestation Service
  * 
- * Production-grade TPM attestation with PCR baseline verification.
+
  * This service prevents attestation spoofing and ensures hardware integrity.
  * 
  * Security Features:
