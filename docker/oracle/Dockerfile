@@ -18,7 +18,7 @@ COPY .npmrc* ./
 COPY tsconfig.base.json ./
 
 # Install pnpm
-RUN npm install -g pnpm@8
+RUN npm install -g pnpm@9
 
 # Copy ALL tier packages (ORACLE includes ALL)
 COPY packages/types ./packages/types
@@ -107,7 +107,7 @@ RUN addgroup -g 1001 noderr && \
 WORKDIR /app
 
 # Install pnpm and PM2 for process management
-RUN npm install -g pnpm@8 pm2@5
+RUN npm install -g pnpm@9 pm2@5
 
 # Copy workspace configuration
 COPY --chown=noderr:noderr package.json pnpm-lock.yaml pnpm-workspace.yaml ./
