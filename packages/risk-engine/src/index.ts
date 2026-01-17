@@ -138,10 +138,10 @@ export async function startRiskEngineService(): Promise<void> {
     await riskEngineService.start();
     
     logger.info('Risk Engine Service configuration:');
-    logger.info('- VaR Confidence Level:', defaultRiskEngineConfig.varConfig.confidenceLevel);
-    logger.info('- Target Volatility:', defaultRiskEngineConfig.positionSizerConfig.targetVolatility);
-    logger.info('- Liquidation Threshold:', defaultRiskEngineConfig.liquidationConfig.liquidationThreshold);
-    logger.info('- Drawdown Threshold:', defaultRiskEngineConfig.alertThresholds.drawdownThreshold);
+    logger.info('- VaR Confidence Level:', defaultRiskEngineConfig.var.confidenceLevel);
+    logger.info('- Target Volatility:', defaultRiskEngineConfig.positionSizing.targetVolatility);
+    logger.info('- Liquidation Threshold:', defaultRiskEngineConfig.liquidation.liquidationThreshold);
+    logger.info('- Circuit Breaker Daily Loss Limit:', defaultRiskEngineConfig.capitalProtection.circuitBreaker.dailyLossLimit);
     
     onShutdown('risk-engine-service', async () => {
       logger.info('Shutting down risk engine service...');
