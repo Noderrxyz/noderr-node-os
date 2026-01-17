@@ -17,6 +17,8 @@
     "**/*.spec.ts"
   ],
   "references": [
+    { "path": "../types" },
+    { "path": "../utils" },
     { "path": "../market-intel" }
   ]
 }

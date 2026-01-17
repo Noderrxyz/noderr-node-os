@@ -13,7 +13,6 @@ import {
   SimulationPath,
   DistributionType,
   ConfidenceInterval,
-  TailRisk,
   StrategyPerformance
 } from '../types';
 
@@ -76,7 +75,6 @@ export class MonteCarloSimulator extends EventEmitter {
     const confidenceInterval = this.calculateConfidenceIntervals(paths);
     
     // Analyze tail risks
-    const tailRisk = this.analyzeTailRisk(paths, config);
     
     // Calculate probability of outcomes
     const probabilities = this.calculateProbabilities(paths, config);
@@ -361,7 +359,6 @@ export class MonteCarloSimulator extends EventEmitter {
   /**
    * Analyze tail risk
    */
-  private analyzeTailRisk(paths: SimulationPath[], config: MonteCarloConfig): TailRisk {
     const returns = paths.map(p => p.totalReturn);
     const sortedReturns = [...returns].sort((a, b) => a - b);
     
