@@ -81,9 +81,19 @@ else
     ((BUILDS_FAILED++))
 fi
 
+# Build validator image
+echo "========================================="
+echo "4/5 Building Validator Image"
+echo "========================================="
+if build_image "validator" "docker/validator/Dockerfile"; then
+    ((BUILDS_SUCCEEDED++))
+else
+    ((BUILDS_FAILED++))
+fi
+
 # Build all-in-one image
 echo "========================================="
-echo "4/4 Building All-in-One Image"
+echo "5/5 Building All-in-One Image"
 echo "========================================="
 if build_image "all" "docker/all/Dockerfile"; then
     ((BUILDS_SUCCEEDED++))
@@ -96,8 +106,8 @@ echo ""
 echo "========================================="
 echo "BUILD SUMMARY"
 echo "========================================="
-echo -e "Succeeded: ${GREEN}${BUILDS_SUCCEEDED}/4${NC}"
-echo -e "Failed:    ${RED}${BUILDS_FAILED}/4${NC}"
+echo -e "Succeeded: ${GREEN}${BUILDS_SUCCEEDED}/5${NC}"
+echo -e "Failed:    ${RED}${BUILDS_FAILED}/5${NC}"
 echo ""
 
 # List built images
@@ -116,6 +126,7 @@ cat > docker/build-info.json << EOF
     "noderr-base:${VERSION}",
     "noderr-oracle:${VERSION}",
     "noderr-guardian:${VERSION}",
+    "noderr-validator:${VERSION}",
     "noderr-all:${VERSION}"
   ]
 }
@@ -139,6 +150,10 @@ if [ $BUILDS_FAILED -eq 0 ]; then
     echo "Exporting guardian image..."
     sudo docker save noderr-guardian:${VERSION} | gzip > docker/exports/guardian-${VERSION}.tar.gz
     echo -e "${GREEN}✅ Exported guardian-${VERSION}.tar.gz${NC}"
+    
+    echo "Exporting validator image..."
+    sudo docker save noderr-validator:${VERSION} | gzip > docker/exports/validator-${VERSION}.tar.gz
+    echo -e "${GREEN}✅ Exported validator-${VERSION}.tar.gz${NC}"
     
     echo "Exporting all-in-one image..."
     sudo docker save noderr-all:${VERSION} | gzip > docker/exports/all-${VERSION}.tar.gz
