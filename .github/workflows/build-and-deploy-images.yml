@@ -79,14 +79,11 @@ jobs:
           }
           EOF
 
-      - name: Configure AWS credentials for R2
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
       - name: Upload ${{ matrix.tier }} to R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
         run: |
           aws s3 cp release-artifacts/${{ matrix.tier }}/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz \
             s3://${{ env.R2_BUCKET }}/${{ matrix.tier }}/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz \
@@ -184,4 +181,4 @@ jobs:
           echo "### Download URLs" >> $GITHUB_STEP_SUMMARY
           echo "- Oracle: ${{ env.R2_PUBLIC_URL }}/oracle/oracle-latest.tar.gz" >> $GITHUB_STEP_SUMMARY
           echo "- Guardian: ${{ env.R2_PUBLIC_URL }}/guardian/guardian-latest.tar.gz" >> $GITHUB_STEP_SUMMARY
-          echo "- Validator: ${{ env.R2_PUBLIC_URL }}/validator/validator-latest.tar.gz" >> $GITHUB_STEP_SUMMARY
+          echo "- Validator: ${{ env.R2_PUBLIC_URL }}/validator/validator.tar.gz" >> $GITHUB_STEP_SUMMARY
