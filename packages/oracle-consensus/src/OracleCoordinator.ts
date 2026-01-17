@@ -268,4 +268,18 @@ export class OracleCoordinator extends EventEmitter {
     
     this.emit('shutdown');
   }
+
+  /**
+   * Start (alias for initialize)
+   */
+  async start(): Promise<void> {
+    return this.initialize();
+  }
+
+  /**
+   * Stop (alias for shutdown)
+   */
+  async stop(): Promise<void> {
+    return this.shutdown();
+  }
 }
