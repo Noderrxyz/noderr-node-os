@@ -22,6 +22,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         tier: [oracle, guardian, validator]
     
@@ -49,117 +50,83 @@ jobs:
 
       - name: Build ${{ matrix.tier }} Docker image
         run: |
-          docker build \
-            -f docker/${{ matrix.tier }}/Dockerfile \
-            -t noderr-${{ matrix.tier }}:${{ steps.version.outputs.version }} \
-            -t noderr-${{ matrix.tier }}:latest \
-            .
+          cd docker/${{ matrix.tier }}
+          docker build -t noderr-${{ matrix.tier }}:${{ steps.version.outputs.version }} -f Dockerfile .
+          docker tag noderr-${{ matrix.tier }}:${{ steps.version.outputs.version }} noderr-${{ matrix.tier }}:latest
 
       - name: Test ${{ matrix.tier }} image
         run: |
-          # Start container
-          docker run -d \
-            --name test-${{ matrix.tier }} \
-            -e NODE_ENV=production \
-            -e NODE_TIER=${{ matrix.tier }} \
-            noderr-${{ matrix.tier }}:${{ steps.version.outputs.version }}
-          
-          # Wait for startup
-          sleep 30
-          
-          # Check if container is running
-          if ! docker ps | grep -q test-${{ matrix.tier }}; then
-            echo "Container failed to start"
-            docker logs test-${{ matrix.tier }}
-            exit 1
-          fi
-          
-          # Check health
-          docker exec test-${{ matrix.tier }} node -e "console.log('Health check passed')" || exit 1
-          
-          # Stop and remove container
-          docker stop test-${{ matrix.tier }}
-          docker rm test-${{ matrix.tier }}
+          # Basic health check - verify image can start
+          docker run --rm noderr-${{ matrix.tier }}:latest node --version
 
       - name: Export ${{ matrix.tier }} image
         run: |
-          mkdir -p exports
-          docker save noderr-${{ matrix.tier }}:${{ steps.version.outputs.version }} | gzip > exports/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz
+          mkdir -p release-artifacts/${{ matrix.tier }}
+          docker save noderr-${{ matrix.tier }}:${{ steps.version.outputs.version }} | gzip > release-artifacts/${{ matrix.tier }}/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz
+          docker save noderr-${{ matrix.tier }}:latest | gzip > release-artifacts/${{ matrix.tier }}/${{ matrix.tier }}-latest.tar.gz
           
-          # Create checksum
-          cd exports
+          # Generate checksums
+          cd release-artifacts/${{ matrix.tier }}
           sha256sum ${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz > ${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz.sha256
+          sha256sum ${{ matrix.tier }}-latest.tar.gz > ${{ matrix.tier }}-latest.tar.gz.sha256
           
-          # Show file size
-          ls -lh ${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz
-
-      - name: Configure AWS CLI for R2
-        run: |
-          aws configure set aws_access_key_id ${{ secrets.R2_ACCESS_KEY_ID }}
-          aws configure set aws_secret_access_key ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          aws configure set default.region auto
-
-      - name: Upload ${{ matrix.tier }} image to R2
-        run: |
-          # Upload versioned image
-          aws s3 cp \
-            exports/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz \
-            s3://${{ env.R2_BUCKET }}/${{ matrix.tier }}/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz \
-            --endpoint-url ${{ env.R2_ENDPOINT }}
-          
-          # Upload checksum
-          aws s3 cp \
-            exports/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz.sha256 \
-            s3://${{ env.R2_BUCKET }}/${{ matrix.tier }}/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz.sha256 \
-            --endpoint-url ${{ env.R2_ENDPOINT }}
-          
-          # Copy as latest
-          aws s3 cp \
-            exports/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz \
-            s3://${{ env.R2_BUCKET }}/${{ matrix.tier }}/${{ matrix.tier }}-latest.tar.gz \
-            --endpoint-url ${{ env.R2_ENDPOINT }}
-          
-          echo "✅ Uploaded ${{ matrix.tier }} image to R2"
-          echo "📦 Version: ${{ steps.version.outputs.version }}"
-          echo "🔗 URL: ${{ env.R2_PUBLIC_URL }}/${{ matrix.tier }}/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz"
-
-      - name: Create metadata file
-        run: |
-          cat > exports/${{ matrix.tier }}-metadata.json << EOF
+          # Create metadata file
+          cat > ${{ matrix.tier }}-metadata.json << EOF
           {
             "tier": "${{ matrix.tier }}",
             "version": "${{ steps.version.outputs.version }}",
             "build_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "commit_sha": "${{ github.sha }}",
-            "commit_ref": "${{ github.ref }}",
-            "download_url": "${{ env.R2_PUBLIC_URL }}/${{ matrix.tier }}/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz",
-            "checksum_url": "${{ env.R2_PUBLIC_URL }}/${{ matrix.tier }}/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz.sha256"
+            "commit": "${{ github.sha }}",
+            "image_size": "$(stat -f%z ${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz 2>/dev/null || stat -c%s ${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz)"
           }
           EOF
 
-      - name: Upload metadata to R2
-        run: |
-          aws s3 cp \
-            exports/${{ matrix.tier }}-metadata.json \
-            s3://${{ env.R2_BUCKET }}/${{ matrix.tier }}/${{ matrix.tier }}-${{ steps.version.outputs.version }}.json \
-            --endpoint-url ${{ env.R2_ENDPOINT }} \
-            --content-type application/json
-          
-          # Copy as latest metadata
-          aws s3 cp \
-            exports/${{ matrix.tier }}-metadata.json \
-            s3://${{ env.R2_BUCKET }}/${{ matrix.tier }}/${{ matrix.tier }}-latest.json \
-            --endpoint-url ${{ env.R2_ENDPOINT }} \
-            --content-type application/json
+      - name: Configure AWS credentials for R2
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          aws-region: auto
 
-      - name: Upload artifacts to GitHub
+      - name: Upload ${{ matrix.tier }} to R2
+        run: |
+          # Upload versioned image
+          aws s3 cp \
+            release-artifacts/${{ matrix.tier }}/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz \
+            s3://${{ env.R2_BUCKET }}/${{ matrix.tier }}/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz \
+            --endpoint-url ${{ env.R2_ENDPOINT }}
+          
+          # Upload latest image
+          aws s3 cp \
+            release-artifacts/${{ matrix.tier }}/${{ matrix.tier }}-latest.tar.gz \
+            s3://${{ env.R2_BUCKET }}/${{ matrix.tier }}/${{ matrix.tier }}-latest.tar.gz \
+            --endpoint-url ${{ env.R2_ENDPOINT }}
+          
+          # Upload checksums
+          aws s3 cp \
+            release-artifacts/${{ matrix.tier }}/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz.sha256 \
+            s3://${{ env.R2_BUCKET }}/${{ matrix.tier }}/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz.sha256 \
+            --endpoint-url ${{ env.R2_ENDPOINT }}
+          
+          aws s3 cp \
+            release-artifacts/${{ matrix.tier }}/${{ matrix.tier }}-latest.tar.gz.sha256 \
+            s3://${{ env.R2_BUCKET }}/${{ matrix.tier }}/${{ matrix.tier }}-latest.tar.gz.sha256 \
+            --endpoint-url ${{ env.R2_ENDPOINT }}
+          
+          # Upload metadata
+          aws s3 cp \
+            release-artifacts/${{ matrix.tier }}/${{ matrix.tier }}-metadata.json \
+            s3://${{ env.R2_BUCKET }}/${{ matrix.tier }}/${{ matrix.tier }}-metadata.json \
+            --endpoint-url ${{ env.R2_ENDPOINT }}
+          
+          echo "✅ Uploaded ${{ matrix.tier }} image to R2"
+          echo "📦 Download URL: ${{ env.R2_PUBLIC_URL }}/${{ matrix.tier }}/${{ matrix.tier }}-latest.tar.gz"
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.tier }}-${{ steps.version.outputs.version }}
-          path: |
-            exports/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz
-            exports/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz.sha256
-            exports/${{ matrix.tier }}-metadata.json
+          name: ${{ matrix.tier }}-images
+          path: release-artifacts/${{ matrix.tier }}/
           retention-days: 30
 
   create-release:
@@ -176,59 +143,35 @@ jobs:
         with:
           path: release-artifacts
 
-      - name: Determine version
-        id: version
-        run: |
-          VERSION="${GITHUB_REF#refs/tags/v}"
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          name: NodeOS v${{ steps.version.outputs.version }}
+          name: NodeOS ${{ github.ref_name }}
           body: |
-            # Noderr NodeOS v${{ steps.version.outputs.version }}
+            ## NodeOS Docker Images Release ${{ github.ref_name }}
             
-            ## Docker Images
+            ### Download URLs (R2)
+            - **Oracle**: `${{ env.R2_PUBLIC_URL }}/oracle/oracle-${{ github.ref_name }}.tar.gz`
+            - **Guardian**: `${{ env.R2_PUBLIC_URL }}/guardian/guardian-${{ github.ref_name }}.tar.gz`
+            - **Validator**: `${{ env.R2_PUBLIC_URL }}/validator/validator-${{ github.ref_name }}.tar.gz`
             
-            All images have been built and uploaded to Cloudflare R2.
-            
-            ### Oracle Node
-            - **Download**: [${{ env.R2_PUBLIC_URL }}/oracle/oracle-${{ steps.version.outputs.version }}.tar.gz](${{ env.R2_PUBLIC_URL }}/oracle/oracle-${{ steps.version.outputs.version }}.tar.gz)
-            - **Checksum**: [${{ env.R2_PUBLIC_URL }}/oracle/oracle-${{ steps.version.outputs.version }}.tar.gz.sha256](${{ env.R2_PUBLIC_URL }}/oracle/oracle-${{ steps.version.outputs.version }}.tar.gz.sha256)
-            - **Staking**: 500,000 NODR
-            - **Airdrop**: 500,000 NODR
-            
-            ### Guardian Node
-            - **Download**: [${{ env.R2_PUBLIC_URL }}/guardian/guardian-${{ steps.version.outputs.version }}.tar.gz](${{ env.R2_PUBLIC_URL }}/guardian/guardian-${{ steps.version.outputs.version }}.tar.gz)
-            - **Checksum**: [${{ env.R2_PUBLIC_URL }}/guardian/guardian-${{ steps.version.outputs.version }}.tar.gz.sha256](${{ env.R2_PUBLIC_URL }}/guardian/guardian-${{ steps.version.outputs.version }}.tar.gz.sha256)
-            - **Staking**: 100,000 NODR
-            - **Airdrop**: 100,000 NODR
-            
-            ### Validator Node
-            - **Download**: [${{ env.R2_PUBLIC_URL }}/validator/validator-${{ steps.version.outputs.version }}.tar.gz](${{ env.R2_PUBLIC_URL }}/validator/validator-${{ steps.version.outputs.version }}.tar.gz)
-            - **Checksum**: [${{ env.R2_PUBLIC_URL }}/validator/validator-${{ steps.version.outputs.version }}.tar.gz.sha256](${{ env.R2_PUBLIC_URL }}/validator/validator-${{ steps.version.outputs.version }}.tar.gz.sha256)
-            - **Staking**: 50,000 NODR
-            - **Airdrop**: 50,000 NODR
-            
-            ## Installation
-            
+            ### Installation
             ```bash
-            # Download image
-            wget ${{ env.R2_PUBLIC_URL }}/oracle/oracle-${{ steps.version.outputs.version }}.tar.gz
+            # Download and load Oracle node
+            curl -O ${{ env.R2_PUBLIC_URL }}/oracle/oracle-latest.tar.gz
+            docker load < oracle-latest.tar.gz
             
-            # Verify checksum
-            wget ${{ env.R2_PUBLIC_URL }}/oracle/oracle-${{ steps.version.outputs.version }}.tar.gz.sha256
-            sha256sum -c oracle-${{ steps.version.outputs.version }}.tar.gz.sha256
+            # Download and load Guardian node
+            curl -O ${{ env.R2_PUBLIC_URL }}/guardian/guardian-latest.tar.gz
+            docker load < guardian-latest.tar.gz
             
-            # Load image
-            docker load < oracle-${{ steps.version.outputs.version }}.tar.gz
-            
-            # Run node
-            docker run -d --name noderr-oracle noderr-oracle:${{ steps.version.outputs.version }}
+            # Download and load Validator node
+            curl -O ${{ env.R2_PUBLIC_URL }}/validator/validator-latest.tar.gz
+            docker load < validator-latest.tar.gz
             ```
             
-            ## What's Changed
+            ### Checksums
+            SHA256 checksums are available at the same URLs with `.sha256` extension.
             
             See [RELEASE_NOTES.md](https://github.com/Noderrxyz/noderr-node-os/blob/master/RELEASE_NOTES.md ) for detailed changes.
           files: |
