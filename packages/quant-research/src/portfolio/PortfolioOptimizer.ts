@@ -14,7 +14,7 @@ import {
   Asset,
   PortfolioMetrics,
   RiskModel
-} from '@noderr/types';
+} from '../types';
 
 interface OptimizationResult {
   weights: { [assetId: string]: number };

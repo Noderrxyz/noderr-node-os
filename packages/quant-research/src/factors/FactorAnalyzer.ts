@@ -14,7 +14,7 @@ import {
   FactorCorrelation,
   FactorExposure,
   FactorAnalysisResult
-} from '@noderr/types';
+} from '../types';
 
 interface FactorTimeSeries {
   factor: Factor;

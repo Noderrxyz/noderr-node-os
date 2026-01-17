@@ -10,7 +10,7 @@ import {
   BacktestResult,
   RiskMetrics,
   StrategyPerformance
-} from '@noderr/types';
+} from '../types';
 
 export class StatsEngine {
   private logger: Logger;

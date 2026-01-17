@@ -10,7 +10,7 @@ import {
   TimeSeriesModel,
   ModelMetrics,
   ForecastResult
-} from '@noderr/types';
+} from '../types';
 
 interface ARIMAParams {
   p: number; // Autoregressive order

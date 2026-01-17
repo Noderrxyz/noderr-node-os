@@ -15,7 +15,7 @@ import {
   ConfidenceInterval,
   TailRisk,
   StrategyPerformance
-} from '@noderr/types';
+} from '../types';
 
 interface RandomGenerator {
   normal(mean: number, std: number): number;

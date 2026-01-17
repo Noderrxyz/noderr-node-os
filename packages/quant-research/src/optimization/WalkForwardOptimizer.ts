@@ -16,7 +16,7 @@ import {
   WalkForwardConfig,
   BacktestConfig,
   StrategyPerformance
-} from '@noderr/types';
+} from '../types';
 import { Backtester } from '../backtesting/Backtester';
 
 interface OptimizationStep {

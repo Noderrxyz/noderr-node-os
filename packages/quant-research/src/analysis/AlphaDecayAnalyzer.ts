@@ -14,7 +14,7 @@ import {
   DecayMetrics,
   RegimeAnalysis,
   SignalStrength
-} from '@noderr/types';
+} from '../types';
 
 interface TimeWindow {
   start: Date;

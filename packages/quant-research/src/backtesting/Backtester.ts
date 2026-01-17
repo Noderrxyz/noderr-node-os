@@ -18,7 +18,7 @@ import {
   StrategyPerformance,
   SlippageModel,
   FeeStructure
-} from '@noderr/types';
+} from '../types';
 
 interface OrderBook {
   bids: [number, number][]; // [price, size]

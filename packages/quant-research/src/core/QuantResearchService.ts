@@ -25,7 +25,7 @@ import {
   TimeSeriesModel,
   ModelMetrics,
   StrategyType
-} from '@noderr/types';
+} from '../types';
 import { Backtester } from '../backtesting/Backtester';
 import { WalkForwardOptimizer } from '../optimization/WalkForwardOptimizer';
 import { MonteCarloSimulator } from '../simulation/MonteCarloSimulator';

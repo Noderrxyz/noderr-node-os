@@ -11,7 +11,7 @@ import {
   TradingStrategy,
   BacktestResult,
   StrategyPerformance
-} from '@noderr/types';
+} from '../types';
 
 interface ABTestConfig {
   strategies: TradingStrategy[];

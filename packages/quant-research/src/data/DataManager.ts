@@ -11,7 +11,7 @@ import {
   HistoricalData,
   AssetData,
   OHLCV
-} from '@noderr/types';
+} from '../types';
 
 interface DataLoadOptions {
   symbols: string[];
