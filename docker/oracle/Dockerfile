@@ -140,10 +140,10 @@ COPY --from=builder --chown=noderr:noderr /build/packages/compliance ./packages/
 COPY --from=builder --chown=noderr:noderr /build/packages/testing ./packages/testing
 
 # Copy PM2 ecosystem configuration
-COPY --chown=noderr:noderr ecosystem.config.js /app/ecosystem.config.js
+COPY --chown=noderr:noderr docker/oracle/ecosystem.config.js /app/ecosystem.config.js
 
 # Create startup script
-COPY --chown=noderr:noderr start.sh /app/start.sh
+COPY --chown=noderr:noderr docker/oracle/start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
 # Create directories for logs and data
