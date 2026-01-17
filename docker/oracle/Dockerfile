@@ -30,6 +30,8 @@ COPY packages/data-connectors ./packages/data-connectors
 
 # Copy ORACLE-specific packages
 COPY packages/ml ./packages/ml
+COPY packages/ml-client ./packages/ml-client
+COPY packages/ml-deployment ./packages/ml-deployment
 COPY packages/quant-research ./packages/quant-research
 COPY packages/market-intel ./packages/market-intel
 COPY packages/strategy ./packages/strategy
@@ -47,6 +49,8 @@ RUN pnpm install --frozen-lockfile \
     --filter "@noderr/exchanges" \
     --filter "@noderr/data-connectors" \
     --filter "@noderr/ml" \
+    --filter "@noderr/ml-client" \
+    --filter "@noderr/ml-deployment" \
     --filter "@noderr/quant-research" \
     --filter "@noderr/market-intel" \
     --filter "@noderr/strategy" \
@@ -62,6 +66,8 @@ RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/market-data" build && \
     pnpm --filter "@noderr/exchanges" build && \
     pnpm --filter "@noderr/data-connectors" build && \
+    pnpm --filter "@noderr/ml-client" build && \
+    pnpm --filter "@noderr/ml-deployment" build && \
     pnpm --filter "@noderr/ml" build && \
     pnpm --filter "@noderr/quant-research" build && \
     pnpm --filter "@noderr/market-intel" build && \
@@ -80,6 +86,8 @@ RUN pnpm install --frozen-lockfile --prod \
     --filter "@noderr/exchanges" \
     --filter "@noderr/data-connectors" \
     --filter "@noderr/ml" \
+    --filter "@noderr/ml-client" \
+    --filter "@noderr/ml-deployment" \
     --filter "@noderr/quant-research" \
     --filter "@noderr/market-intel" \
     --filter "@noderr/strategy" \
@@ -121,6 +129,8 @@ COPY --from=builder --chown=noderr:noderr /build/packages/market-data ./packages
 COPY --from=builder --chown=noderr:noderr /build/packages/exchanges ./packages/exchanges
 COPY --from=builder --chown=noderr:noderr /build/packages/data-connectors ./packages/data-connectors
 COPY --from=builder --chown=noderr:noderr /build/packages/ml ./packages/ml
+COPY --from=builder --chown=noderr:noderr /build/packages/ml-client ./packages/ml-client
+COPY --from=builder --chown=noderr:noderr /build/packages/ml-deployment ./packages/ml-deployment
 COPY --from=builder --chown=noderr:noderr /build/packages/quant-research ./packages/quant-research
 COPY --from=builder --chown=noderr:noderr /build/packages/market-intel ./packages/market-intel
 COPY --from=builder --chown=noderr:noderr /build/packages/strategy ./packages/strategy
