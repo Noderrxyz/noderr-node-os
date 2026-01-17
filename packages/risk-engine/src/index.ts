@@ -17,31 +17,77 @@ import { RiskEngineService } from './services/RiskEngineService';
 export default RiskEngineService;
 
 // Export default configuration
-export const defaultRiskEngineConfig = {
-  varConfig: {
+export const defaultRiskEngineConfig: RiskEngineConfig = {
+  var: {
     confidenceLevel: 0.99,
     lookbackPeriod: 252,
-    methodology: 'monteCarlo' as const,
+    method: 'monteCarlo' as const,
+    timeHorizon: 1,
     decayFactor: 0.94
   },
-  positionSizerConfig: {
+  positionSizing: {
     methodology: 'volatilityTarget' as const,
     targetVolatility: 0.15,
     maxPositionSize: 0.1,
+    minPositionSize: 0.001,
     correlationAdjustment: true,
     confidenceLevel: 0.25
   },
-  liquidationConfig: {
+  stressTesting: {
+    scenarios: [],
+    historicalEvents: [],
+    monteCarloConfig: {
+      iterations: 10000,
+      timeHorizon: 1,
+      returnModel: 'normal' as const,
+      volatilityModel: 'constant' as const,
+      correlationModel: 'static' as const
+    }
+  },
+  liquidation: {
     marginCallThreshold: 0.8,
     liquidationThreshold: 0.95,
+    maintenanceMarginRatio: 0.05,
     deleveragingStrategy: 'riskWeighted' as const,
-    gracePeriod: 60
+    gracePeriod: 60000,
+    partialLiquidationAllowed: true
   },
-  alertThresholds: {
-    varBreachThreshold: 0.05,
-    drawdownThreshold: 0.20,
-    correlationSpikeThreshold: 0.8,
-    liquidityThreshold: 0.3
+  capitalProtection: {
+    circuitBreaker: {
+      dailyLossLimit: 0.05,
+      weeklyLossLimit: 0.10,
+      monthlyLossLimit: 0.20,
+      consecutiveLossLimit: 3,
+      volatilityMultiplier: 3.0,
+      cooldownPeriod: 3600000,
+      autoResumeEnabled: true
+    },
+    emergencyExit: {
+      triggerConditions: [],
+      exitStrategy: 'optimal' as const,
+      priorityOrder: [],
+      maxSlippage: 0.05,
+      splitOrders: true,
+      notificationChannels: []
+    },
+    recoveryStrategy: {
+      type: 'adaptive' as const,
+      targetRecoveryTime: 30,
+      riskBudget: 0.02,
+      allowableStrategies: [],
+      reentryRules: []
+    }
+  },
+  reporting: {
+    frequency: 3600000,
+    recipients: [],
+    format: 'json' as const,
+    includeCharts: false
+  },
+  telemetry: {
+    enabled: true,
+    endpoint: process.env.TELEMETRY_ENDPOINT || 'http://localhost:9090',
+    sampleRate: 1.0
   }
 }; 
 
