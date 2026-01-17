@@ -51,7 +51,7 @@ export const defaultRiskEngineConfig = {
 
 import { Logger, createStatePersistence, StatePersistenceManager } from '@noderr/utils';
 import { getShutdownHandler, onShutdown } from '@noderr/utils';
-import { RiskEngineService } from './services/RiskEngineService';
+// RiskEngineService already imported above for default export
 
 let riskEngineService: RiskEngineService | null = null;
 let statePersistence: StatePersistenceManager<any> | null = null;
