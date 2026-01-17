@@ -63,7 +63,7 @@ export async function startRiskEngineService(): Promise<void> {
     logger.info('Starting Risk Engine Service...');
     
     // Initialize risk engine with default config
-    riskEngineService = new RiskEngineService(defaultRiskEngineConfig);
+    riskEngineService = new RiskEngineService(defaultRiskEngineConfig, logger);
     
     // Initialize state persistence
     statePersistence = createStatePersistence({
