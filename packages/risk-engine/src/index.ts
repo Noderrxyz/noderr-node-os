@@ -14,6 +14,7 @@ export { RiskEngineService } from './services/RiskEngineService';
 
 // Default export for convenience
 import { RiskEngineService } from './services/RiskEngineService';
+import { RiskEngineConfig } from './types';
 export default RiskEngineService;
 
 // Export default configuration
@@ -109,7 +110,7 @@ export async function startRiskEngineService(): Promise<void> {
     logger.info('Starting Risk Engine Service...');
     
     // Initialize risk engine with default config
-    riskEngineService = new RiskEngineService(defaultRiskEngineConfig, logger);
+    riskEngineService = new RiskEngineService(defaultRiskEngineConfig, logger.getWinstonLogger());
     
     // Initialize state persistence
     statePersistence = createStatePersistence({

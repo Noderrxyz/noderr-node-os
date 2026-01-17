@@ -53,6 +53,11 @@ export class Logger {
   child(name: string): Logger {
     return new Logger(`${this.logger.defaultMeta?.service}.${name}`);
   }
+
+  // Get the underlying winston logger instance for compatibility
+  getWinstonLogger(): winston.Logger {
+    return this.logger;
+  }
 }
 
 // Retry Manager
