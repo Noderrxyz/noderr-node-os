@@ -156,10 +156,10 @@ COPY --from=builder --chown=noderr:noderr /build/packages/system-orchestrator ./
 COPY --from=builder --chown=noderr:noderr /build/packages/heartbeat-client ./packages/heartbeat-client
 
 # Copy PM2 ecosystem configuration
-COPY --chown=noderr:noderr docker/guardian/ecosystem.config.js /app/ecosystem.config.js
+COPY --chown=noderr:noderr ecosystem.config.js /app/ecosystem.config.js
 
 # Copy startup script
-COPY --chown=noderr:noderr docker/guardian/start.sh /app/start.sh
+COPY --chown=noderr:noderr start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
 # Create directories for logs and data
