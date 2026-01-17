@@ -49,6 +49,7 @@ COPY packages/data-connectors ./packages/data-connectors
 COPY packages/risk-engine ./packages/risk-engine
 COPY packages/compliance ./packages/compliance
 COPY packages/guardian-consensus ./packages/guardian-consensus
+COPY packages/oracle-consensus ./packages/oracle-consensus
 COPY packages/execution ./packages/execution
 COPY packages/autonomous-execution ./packages/autonomous-execution
 COPY packages/floor-engine ./packages/floor-engine
@@ -67,6 +68,7 @@ RUN pnpm install --frozen-lockfile \
     --filter "@noderr/risk-engine" \
     --filter "@noderr/compliance" \
     --filter "@noderr/guardian-consensus" \
+    --filter "@noderr/oracle-consensus" \
     --filter "@noderr/execution" \
     --filter "@noderr/autonomous-execution" \
     --filter "@noderr/floor-engine" \
@@ -84,6 +86,7 @@ RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/risk-engine" build && \
     pnpm --filter "@noderr/compliance" build && \
     pnpm --filter "@noderr/guardian-consensus" build && \
+    pnpm --filter "@noderr/oracle-consensus" build && \
     pnpm --filter "@noderr/execution" build && \
     pnpm --filter "@noderr/autonomous-execution" build && \
     pnpm --filter "@noderr/floor-engine" build && \
@@ -102,6 +105,7 @@ RUN pnpm install --frozen-lockfile --prod \
     --filter "@noderr/risk-engine" \
     --filter "@noderr/compliance" \
     --filter "@noderr/guardian-consensus" \
+    --filter "@noderr/oracle-consensus" \
     --filter "@noderr/execution" \
     --filter "@noderr/autonomous-execution" \
     --filter "@noderr/floor-engine" \
@@ -143,6 +147,7 @@ COPY --from=builder --chown=noderr:noderr /build/packages/data-connectors ./pack
 COPY --from=builder --chown=noderr:noderr /build/packages/risk-engine ./packages/risk-engine
 COPY --from=builder --chown=noderr:noderr /build/packages/compliance ./packages/compliance
 COPY --from=builder --chown=noderr:noderr /build/packages/guardian-consensus ./packages/guardian-consensus
+COPY --from=builder --chown=noderr:noderr /build/packages/oracle-consensus ./packages/oracle-consensus
 COPY --from=builder --chown=noderr:noderr /build/packages/execution ./packages/execution
 COPY --from=builder --chown=noderr:noderr /build/packages/autonomous-execution ./packages/autonomous-execution
 COPY --from=builder --chown=noderr:noderr /build/packages/floor-engine ./packages/floor-engine
