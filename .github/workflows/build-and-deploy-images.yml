@@ -50,8 +50,7 @@ jobs:
 
       - name: Build ${{ matrix.tier }} Docker image
         run: |
-          cd docker/${{ matrix.tier }}
-          docker build -t noderr-${{ matrix.tier }}:${{ steps.version.outputs.version }} -f Dockerfile .
+          docker build -t noderr-${{ matrix.tier }}:${{ steps.version.outputs.version }} -f docker/${{ matrix.tier }}/Dockerfile .
           docker tag noderr-${{ matrix.tier }}:${{ steps.version.outputs.version }} noderr-${{ matrix.tier }}:latest
 
       - name: Test ${{ matrix.tier }} image
