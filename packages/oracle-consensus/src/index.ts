@@ -25,6 +25,7 @@ import { getShutdownHandler, onShutdown } from '@noderr/utils';
 import { BFTConsensusEngine } from './BFTConsensusEngine';
 import { OracleLotterySelector } from './OracleLotterySelector';
 import { OracleCoordinator } from './OracleCoordinator';
+import { ethers } from 'ethers';
 
 let consensusEngine: BFTConsensusEngine | null = null;
 let lotterySelector: OracleLotterySelector | null = null;
@@ -39,16 +40,27 @@ export async function startOracleConsensusService(): Promise<void> {
     
     // Initialize lottery selector
     lotterySelector = new OracleLotterySelector({
-      committeeSize: parseInt(process.env.COMMITTEE_SIZE || '10'),
-      cooldownRounds: parseInt(process.env.COOLDOWN_ROUNDS || '3'),
-      minStake: parseFloat(process.env.MIN_STAKE || '1000'),
+      targetCommitteeSize: parseInt(process.env.COMMITTEE_SIZE || '10'),
+      minCommitteeSize: parseInt(process.env.MIN_COMMITTEE_SIZE || '7'),
+      maxCommitteeSize: parseInt(process.env.MAX_COMMITTEE_SIZE || '15'),
+      stakeWeighting: true,
+      rotationEnabled: true,
+      cooldownPeriods: parseInt(process.env.COOLDOWN_ROUNDS || '3'),
     });
     
     // Initialize BFT consensus engine
+    // Note: BFTConsensusEngine requires oracleVerifierAddress, provider, and signer
+    // These should be initialized from environment variables in production
+    // For now, using placeholder values that will be set by the service initialization
     consensusEngine = new BFTConsensusEngine({
-      threshold: parseFloat(process.env.CONSENSUS_THRESHOLD || '0.67'),  // 2/3+
-      timeout: parseInt(process.env.CONSENSUS_TIMEOUT || '30000'),
-      maxRounds: parseInt(process.env.MAX_CONSENSUS_ROUNDS || '5'),
+      oracleVerifierAddress: process.env.ORACLE_VERIFIER_ADDRESS || ethers.ZeroAddress,
+      provider: new ethers.JsonRpcProvider(process.env.RPC_URL || 'http://localhost:8545'),
+      signer: new ethers.Wallet(process.env.ORACLE_PRIVATE_KEY || ethers.Wallet.createRandom().privateKey),
+      consensusThreshold: Math.floor(parseFloat(process.env.CONSENSUS_THRESHOLD || '0.67') * 10000),  // Convert to basis points
+      submissionWindow: parseInt(process.env.CONSENSUS_TIMEOUT || '300000'),
+      minOracles: parseInt(process.env.MIN_ORACLES || '4'),
+      enableLottery: true,
+      lotterySelector: lotterySelector || undefined,
     });
     
     // Initialize coordinator
