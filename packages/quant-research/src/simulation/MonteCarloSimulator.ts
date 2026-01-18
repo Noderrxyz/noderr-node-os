@@ -75,6 +75,7 @@ export class MonteCarloSimulator extends EventEmitter {
     const confidenceInterval = this.calculateConfidenceIntervals(paths);
     
     // Analyze tail risks
+    const tailRisk = this.analyzeTailRisk(paths, config);
     
     // Calculate probability of outcomes
     const probabilities = this.calculateProbabilities(paths, config);
