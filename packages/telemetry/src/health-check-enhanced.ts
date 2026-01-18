@@ -86,7 +86,7 @@ export class HealthCheckRegistry {
         if (checkResult.status === 'fail') {
           result.healthy = false;
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         result.checks[name] = {
           status: 'fail',
           message: error.message || 'Check threw an exception',
@@ -176,7 +176,7 @@ export function createDatabaseCheck(
         message: 'Database connected',
         latency,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         status: 'fail',
         message: `Database error: ${error.message}`,
@@ -213,7 +213,7 @@ export function createAPICheck(
         message: `${name} API available`,
         latency,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         status: 'fail',
         message: `${name} API error: ${error.message}`,
@@ -241,7 +241,7 @@ export function createRedisCheck(
         message: 'Redis connected',
         latency,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         status: 'fail',
         message: `Redis error: ${error.message}`,
@@ -278,7 +278,7 @@ export function createGRPCCheck(
         message: `${serviceName} gRPC service healthy`,
         latency,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         status: 'fail',
         message: `${serviceName} gRPC error: ${error.message}`,

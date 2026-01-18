@@ -125,7 +125,7 @@ export class OnChainSettlementManager extends EventEmitter {
       if (!isRegistered) {
         logger.warn('⚠️  WARNING: Wallet is not registered as an Oracle!');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.warn(`Could not check oracle registration: ${error.message}`);
     }
     
@@ -258,7 +258,7 @@ export class OnChainSettlementManager extends EventEmitter {
       
       return settlement.id;
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       settlement.status = 'FAILED';
       settlement.error = error.message;
       

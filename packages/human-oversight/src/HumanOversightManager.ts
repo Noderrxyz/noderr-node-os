@@ -123,7 +123,7 @@ export class HumanOversightManager extends EventEmitter {
       try {
         await this.sendTestNotification(channel);
         logger.info(`✅ ${channel} channel test successful`);
-      } catch (error: any) {
+      } catch (error: unknown) {
         logger.error(`❌ ${channel} channel test failed:`, error.message);
       }
     }
@@ -173,7 +173,7 @@ export class HumanOversightManager extends EventEmitter {
     for (const channel of channels) {
       try {
         await this.sendNotification(channel, alert);
-      } catch (error: any) {
+      } catch (error: unknown) {
         logger.error(`Failed to send ${channel} notification:`, error.message);
       }
     }

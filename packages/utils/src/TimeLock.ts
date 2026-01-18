@@ -245,7 +245,7 @@ export class TimeLock extends EventEmitter {
       
       this.emit('operation-executed', { operation, result });
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       operation.status = 'FAILED';
       operation.error = error.message;
       

@@ -289,7 +289,7 @@ export function Traced(spanName?: string) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       const telemetry = (this as any).telemetry;
       if (!telemetry) {
         return originalMethod.apply(this, args);
@@ -311,7 +311,7 @@ export function Metered(metricName: string, metricType: 'counter' | 'histogram' 
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       const telemetry = (this as any).telemetry;
       const startTime = Date.now();
       
@@ -349,7 +349,7 @@ export class TelemetryIntegration {
   static instrumentOrderManager(orderManager: any, telemetry: TelemetrySystem): void {
     // Instrument order submission
     const originalSubmit = orderManager.submitOrder;
-    orderManager.submitOrder = async function(...args: any[]) {
+    orderManager.submitOrder = async function(...args: unknown[]) {
       return telemetry.withSpan('OrderManager.submitOrder', async (span) => {
         span.setAttribute('order.symbol', args[0]?.symbol);
         span.setAttribute('order.side', args[0]?.side);

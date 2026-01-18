@@ -96,7 +96,7 @@ export class OnChainService {
           circuitBreaker: !this.circuitBreaker.isOpen(),
         },
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Health check failed', { error: error.message });
       return {
         healthy: false,

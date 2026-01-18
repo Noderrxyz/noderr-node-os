@@ -206,7 +206,7 @@ export class MultiSig extends EventEmitter {
       
       return result;
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`Failed to execute proposal ${proposalId}`, error);
       proposal.status = 'REJECTED';
       throw error;

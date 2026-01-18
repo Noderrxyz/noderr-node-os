@@ -326,7 +326,7 @@ export class DistributedStateManager extends EventEmitter {
     }
   }
 
-  private async executeRedisCommand(command: string, ...args: any[]): Promise<any> {
+  private async executeRedisCommand(command: string, ...args: unknown[]): Promise<any> {
     return (this.redis as any)[command](...args);
   }
 

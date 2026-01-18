@@ -119,7 +119,7 @@ async function handleCommand(): Promise<void> {
         console.log(`✅ Agent ${agentId} decommissioned`);
         console.log(`   Recalled capital: $${result.recalledCapital.toFixed(2)}`);
         console.log(`   Total P&L: $${result.totalPnL.toFixed(2)}`);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(`❌ Failed to decommission: ${error.message}`);
         process.exit(1);
       }
@@ -236,7 +236,7 @@ Examples:
   try {
     await handleCommand();
     process.exit(0);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Error:', error.message);
     process.exit(1);
   }

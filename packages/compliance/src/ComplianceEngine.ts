@@ -7,18 +7,18 @@ class CircuitBreaker {
   async execute<T>(fn: () => Promise<T>): Promise<T> { return fn(); }
 }
 class CircuitBreakerFactory {
-  constructor(...args: any[]) {}
+  constructor(...args: unknown[]) {}
   create(nameOrConfig: string | any): CircuitBreaker { return new CircuitBreaker(); }
 }
 class DistributedStateManager {
-  constructor(...args: any[]) {}
+  constructor(...args: unknown[]) {}
   async get(key: string): Promise<any> { return null; }
   async set(key: string, value: any): Promise<void> {}
   async delete(key: string): Promise<void> {}
   async getState<T = any>(key: string, options?: any): Promise<T | null> { return null; }
 }
 class VolumeTracker {
-  constructor(...args: any[]) {}
+  constructor(...args: unknown[]) {}
   async trackVolume(entity: string, amount: number): Promise<void> {}
   async getVolume(entity: string, period: string): Promise<number> { return 0; }
   async checkAndIncrementVolume(entity: string, amount: number, limit: number): Promise<{ allowed: boolean; currentVolume: number }> { 

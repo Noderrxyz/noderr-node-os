@@ -134,7 +134,7 @@ export class TrustUpdater {
         blockNumber: receipt.blockNumber,
         gasUsed: receipt.gasUsed,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('TrustFingerprint score update failed', {
         error: error.message,
         operator,
@@ -224,7 +224,7 @@ export class TrustUpdater {
         blockNumber: receipt.blockNumber,
         gasUsed: receipt.gasUsed,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Batch TrustFingerprint score update failed', {
         error: error.message,
         updateCount: updates.length,
@@ -250,7 +250,7 @@ export class TrustUpdater {
     try {
       const score = await this.contract.getScore(operator);
       return Number(score);
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Failed to get TrustFingerprint score', {
         error: error.message,
         operator,
@@ -276,7 +276,7 @@ export class TrustUpdater {
         peer: Number(components[4]),
         stake: Number(components[5]),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Failed to get score components', {
         error: error.message,
         operator,

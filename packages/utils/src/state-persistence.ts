@@ -76,7 +76,7 @@ export class StatePersistenceManager<T = any> {
   async initialize(): Promise<void> {
     try {
       await mkdir(this.config.stateDir, { recursive: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error.code !== 'EEXIST') {
         throw error;
       }
@@ -135,7 +135,7 @@ export class StatePersistenceManager<T = any> {
     try {
       await stat(this.stateFile);
       await this.rotateBackups();
-    } catch (error: any) {
+    } catch (error: unknown) {
       // File doesn't exist, no backup needed
     }
     
@@ -189,7 +189,7 @@ export class StatePersistenceManager<T = any> {
       
       this.currentState = persistedState.data;
       return persistedState.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error.code === 'ENOENT') {
         // File doesn't exist
         return null;

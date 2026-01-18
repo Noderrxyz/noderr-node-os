@@ -365,7 +365,7 @@ export class Tracer extends EventEmitter {
       const originalMethod = descriptor.value;
       const spanName = name || `${target.constructor.name}.${propertyKey}`;
       
-      descriptor.value = async function (...args: any[]) {
+      descriptor.value = async function (...args: unknown[]) {
         const tracer = (this as any).tracer || this;
         
         if (tracer instanceof Tracer) {

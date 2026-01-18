@@ -56,7 +56,7 @@ export class ApplicationService {
       ]);
 
       return result.rows[0];
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Check for duplicate
       if (error.code === '23505') {
         throw new Error('Application already exists for this Typeform response');

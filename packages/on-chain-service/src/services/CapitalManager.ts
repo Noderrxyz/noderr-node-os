@@ -129,7 +129,7 @@ export class CapitalManager {
         blockNumber: receipt.blockNumber,
         gasUsed: receipt.gasUsed,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Capital request failed', {
         error: error.message,
         amount: request.amount.toString(),
@@ -202,7 +202,7 @@ export class CapitalManager {
         blockNumber: receipt.blockNumber,
         gasUsed: receipt.gasUsed,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Profit deposit failed', {
         error: error.message,
         amount: amount.toString(),
@@ -272,7 +272,7 @@ export class CapitalManager {
         blockNumber: receipt.blockNumber,
         gasUsed: receipt.gasUsed,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Performance report failed', {
         error: error.message,
         strategyId: metrics.strategyId,

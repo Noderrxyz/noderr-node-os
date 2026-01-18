@@ -39,7 +39,7 @@ export class TypeformClient {
       });
 
       return response.data.items || [];
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw new Error(`Failed to fetch Typeform responses: ${error.message}`);
     }
   }
@@ -57,7 +57,7 @@ export class TypeformClient {
 
       const items = response.data.items || [];
       return items.length > 0 ? items[0] : null;
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw new Error(`Failed to fetch Typeform response: ${error.message}`);
     }
   }
@@ -126,7 +126,7 @@ export class TypeformClient {
       });
 
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw new Error(`Failed to setup webhook: ${error.message}`);
     }
   }
@@ -138,7 +138,7 @@ export class TypeformClient {
     try {
       const response = await this.client.get(`/forms/${this.formId}/webhooks/${tag}`);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error.response?.status === 404) {
         return null;
       }
@@ -152,7 +152,7 @@ export class TypeformClient {
   async deleteWebhook(tag: string = 'noderr'): Promise<void> {
     try {
       await this.client.delete(`/forms/${this.formId}/webhooks/${tag}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw new Error(`Failed to delete webhook: ${error.message}`);
     }
   }

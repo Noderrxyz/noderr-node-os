@@ -4,15 +4,15 @@ import { LoadTestingFramework } from './LoadTestingFramework';
 
 // Temporary stubs for external dependencies
 // TODO: Replace with actual @noderr/* imports when packages are available
-class PositionReconciliation { constructor(...args: any[]) {} async start(): Promise<void> {} }
-class OrderLifecycleManager { constructor(...args: any[]) {} }
-class BacktestingFramework { constructor(...args: any[]) {} }
-class DynamicRiskLimits { constructor(...args: any[]) {} async start(): Promise<void> {} }
-class ModelVersioningSystem { constructor(...args: any[]) {} }
-class NetworkPartitionSafety { constructor(...args: any[]) {} }
-class ComplianceEngine { constructor(...args: any[]) {} async start(): Promise<void> {} }
+class PositionReconciliation { constructor(...args: unknown[]) {} async start(): Promise<void> {} }
+class OrderLifecycleManager { constructor(...args: unknown[]) {} }
+class BacktestingFramework { constructor(...args: unknown[]) {} }
+class DynamicRiskLimits { constructor(...args: unknown[]) {} async start(): Promise<void> {} }
+class ModelVersioningSystem { constructor(...args: unknown[]) {} }
+class NetworkPartitionSafety { constructor(...args: unknown[]) {} }
+class ComplianceEngine { constructor(...args: unknown[]) {} async start(): Promise<void> {} }
 class MultiAssetManager { 
-  constructor(...args: any[]) {} 
+  constructor(...args: unknown[]) {} 
   async initialize(): Promise<void> {}
 }
 
