@@ -190,7 +190,27 @@ export class TimeSeriesForecaster {
       returns
     };
     
-    // Calculate conditional volatility    const volatility = this.calculateGARCHVolatility(returns, omega, alpha, beta);        // Calculate metrics    const mse = this.calculateMSE(returns.map(Math.abs), volatility);    const mae = this.calculateMAE(returns.map(Math.abs), volatility);    const r2 = this.calculateR2(returns.map(Math.abs), volatility);    const rmse = Math.sqrt(mse);    const mape = 0; // Simplified for now    const aic = this.calculateAIC(returns.length, params.p + params.q + 1, mse);    const bic = this.calculateBIC(returns.length, params.p + params.q + 1, mse);        const metrics: ModelMetrics = {      mse,      mae,      rmse,      mape,      r2,      aic,      bic    };
+    // Calculate conditional volatility
+    const volatility = this.calculateGARCHVolatility(returns, omega, alpha, beta);
+    
+    // Calculate metrics
+    const mse = this.calculateMSE(returns.map(Math.abs), volatility);
+    const mae = this.calculateMAE(returns.map(Math.abs), volatility);
+    const r2 = this.calculateR2(returns.map(Math.abs), volatility);
+    const rmse = Math.sqrt(mse);
+    const mape = 0; // Simplified for now
+    const aic = this.calculateAIC(returns.length, params.p + params.q + 1, mse);
+    const bic = this.calculateBIC(returns.length, params.p + params.q + 1, mse);
+    
+    const metrics: ModelMetrics = {
+      mse,
+      mae,
+      rmse,
+      mape,
+      r2,
+      aic,
+      bic
+    };
     
     this.models.set(model.id, model);
     
@@ -255,6 +275,9 @@ export class TimeSeriesForecaster {
    */
   private async forecastARIMA(model: TimeSeriesModel, steps: number): Promise<number[]> {
     const params = model.fittedParameters;
+    if (!params) {
+      throw new Error('Model not fitted');
+    }
     const data = params.data as number[];
     const ar = params.ar as number[];
     const ma = params.ma as number[];
@@ -288,6 +311,9 @@ export class TimeSeriesForecaster {
    */
   private async forecastGARCH(model: TimeSeriesModel, steps: number): Promise<number[]> {
     const params = model.fittedParameters;
+    if (!params) {
+      throw new Error('Model not fitted');
+    }
     const omega = params.omega as number;
     const alpha = params.alpha as number[];
     const beta = params.beta as number[];
@@ -553,6 +579,9 @@ export class TimeSeriesForecaster {
    */
   private predictARIMA(model: TimeSeriesModel, length: number): number[] {
     const params = model.fittedParameters;
+    if (!params) {
+      throw new Error('Model not fitted');
+    }
     const ar = params.ar as number[];
     const data = params.data as number[];
     

@@ -314,6 +314,7 @@ export interface ResearchDataset {
   description: string;
   symbols: string[];
   timeframe: string;
+  frequency?: string;
   startDate: Date;
   endDate: Date;
   features: Feature[];
@@ -356,6 +357,7 @@ export interface FactorModel {
   name: string;
   factors: Factor[];
   weights: number[];
+  correlationMatrix?: number[][];
   method: 'linear' | 'nonlinear' | 'ml';
   performance: FactorPerformance;
 }
@@ -375,6 +377,7 @@ export interface FactorPerformance {
   ic: number; // Information Coefficient
   icir: number; // IC Information Ratio
   factorReturns: number[];
+  returns?: number[];
   factorSharpe: number;
   sharpeRatio?: number;
   informationRatio?: number;
@@ -533,4 +536,17 @@ export interface RiskModel {
   covarianceMatrix?: number[][];
   expectedReturns?: number[];
   riskFactors?: Factor[];
+}
+
+// Additional exports for FactorAnalyzer
+export interface FactorExposure {
+  [factorId: string]: number;
+}
+
+export interface FactorResilience {
+  factor: Factor;
+  volatility: number;
+  maxDrawdown: number;
+  recoveryTime: number;
+  stability: number;
 }
