@@ -573,10 +573,17 @@ export interface FactorAnalysisResult {
 
 
 export interface ConfidenceInterval {
-  lower: number;
-  upper: number;
-  level: number;
+  lower?: number;
+  upper?: number;
+  level?: number;
   mean?: number;
+  median?: number;
+  p1?: number;
+  p5?: number;
+  p25?: number;
+  p75?: number;
+  p95?: number;
+  p99?: number;
 }
 
 

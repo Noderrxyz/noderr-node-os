@@ -120,8 +120,8 @@ export class MonteCarloSimulator extends EventEmitter {
       // Emit progress
       this.emit('progress', {
         current: i + batch,
-        total: config.simulations,
-        percentage: ((i + batch) / config.simulations) * 100
+        total: config.numSimulations,
+        percentage: ((i + batch) / config.numSimulations) * 100
       });
     }
     
@@ -436,7 +436,7 @@ export class MonteCarloSimulator extends EventEmitter {
       
       // Probability of exceeding max drawdown
       maxDrawdownBreach: config.maxDrawdown
-        ? paths.filter(p => p.maxDrawdown > config.maxDrawdown).length / totalPaths
+        ? paths.filter(p => p.maxDrawdown > (config.maxDrawdown || 0)).length / totalPaths
         : 0,
       
       // Probability of different return ranges
