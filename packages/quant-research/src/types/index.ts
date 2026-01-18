@@ -403,7 +403,7 @@ export interface Portfolio {
 }
 
 export interface Asset {
-  id?: string;
+  id: string;
   symbol: string;
   type: 'spot' | 'perpetual' | 'option' | 'defi';
   weight: number;
