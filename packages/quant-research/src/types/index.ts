@@ -398,11 +398,11 @@ export interface Portfolio {
   id: string;
   name: string;
   assets: Asset[];
-  weights: number[];
+  weights?: number[];
   totalValue?: number;
-  constraints: PortfolioConstraint[] | OptimizationConstraints;
-  objective: PortfolioObjective;
-  rebalanceFrequency: string;
+  constraints?: PortfolioConstraint[] | OptimizationConstraints;
+  objective?: PortfolioObjective;
+  rebalanceFrequency?: string;
   lastRebalance?: Date;
   performance?: PortfolioPerformance;
   metrics?: PortfolioMetrics;
@@ -582,6 +582,7 @@ export interface FactorAnalysisResult {
   exposures?: FactorExposure[];
   regression?: any;
   riskAttribution?: any;
+  recommendations?: string[];
   timestamp: Date;
   insights?: string[];
 }
@@ -637,6 +638,7 @@ export interface SimulationPath {
   path: number[];
   values?: number[];
   returns?: number[];
+  timestamps?: number[];
   finalValue: number;
   totalReturn: number;
   maxDrawdown: number;
@@ -664,6 +666,7 @@ export interface PortfolioMetrics {
   expectedRisk?: number;
   sharpeRatio: number;
   sortinoRatio?: number;
+  calmarRatio?: number;
   volatility: number;
   maxDrawdown: number;
   beta?: number;
@@ -701,6 +704,7 @@ export interface DecayMetrics {
   significantDecay?: boolean;
   decayByMetric?: { [key: string]: any };
   decayCoefficient?: number;
+  r2?: number;
 }
 
 export interface RegimeAnalysis {
@@ -710,6 +714,7 @@ export interface RegimeAnalysis {
   regimeStability?: number;
   currentRegime?: string;
   regimes?: any[];
+  transitionProbabilities?: any;
 }
 
 export interface SignalStrength {
@@ -717,4 +722,5 @@ export interface SignalStrength {
   confidence: number;
   stability: number;
   signal?: string;
+  initialStrength?: number;
 }

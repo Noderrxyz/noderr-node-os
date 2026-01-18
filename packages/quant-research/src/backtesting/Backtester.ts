@@ -49,6 +49,7 @@ interface MarketData {
 export class Backtester extends EventEmitter {
   private logger: Logger;
   private config?: BacktestConfig;
+  private initialCapital: number = 0;
   private data: Map<string, MarketData[]> = new Map();
   private positions: Map<string, Position> = new Map();
   private trades: Trade[] = [];
@@ -146,6 +147,7 @@ export class Backtester extends EventEmitter {
    */
   private reset(config: BacktestConfig): void {
     this.config = config;
+    this.initialCapital = config.initialCapital;
     this.cash = config.initialCapital;
     this.positions.clear();
     this.trades = [];
