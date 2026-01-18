@@ -2,7 +2,7 @@
 
 import { SafetyController } from './SafetyController';
 import { LiveTradingReactivationService } from './LiveTradingReactivationService';
-import { UnifiedCapitalManager } from '../../capital-management/src/UnifiedCapitalManager';
+// import { UnifiedCapitalManager } from '../../capital-management/src/UnifiedCapitalManager';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -12,7 +12,7 @@ const command = args[0];
 // Initialize services
 const safetyController = SafetyController.getInstance();
 const reactivationService = LiveTradingReactivationService.getInstance();
-const capitalManager = UnifiedCapitalManager.getInstance();
+// const capitalManager = UnifiedCapitalManager.getInstance();
 
 // Helper to print status
 function printStatus(): void {
@@ -22,6 +22,8 @@ function printStatus(): void {
 
 // Helper to print capital allocation
 function printCapitalAllocation(): void {
+  console.log('\nCapital allocation view not available (capital-management package not integrated yet)');
+  /*
   const allocation = capitalManager.getCapitalAllocationView();
   
   console.log('\n╔════════════════════════════════════════╗');
@@ -46,6 +48,7 @@ function printCapitalAllocation(): void {
       'Status': a.status
     })));
   }
+  */
 }
 
 // Command handlers
@@ -96,6 +99,9 @@ async function handleCommand(): Promise<void> {
       break;
       
     case 'decommission':
+      console.error('❌ Decommission command not available (capital-management package not integrated yet)');
+      process.exit(1);
+      /*
       const agentId = args[1];
       const strategy = args[2] || 'OPTIMAL';
       
@@ -117,6 +123,7 @@ async function handleCommand(): Promise<void> {
         console.error(`❌ Failed to decommission: ${error.message}`);
         process.exit(1);
       }
+      */
       break;
       
     case 'update-criteria':

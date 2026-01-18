@@ -7,6 +7,10 @@
 
 import { EventEmitter } from 'events';
 import { ethers } from 'ethers';
+import { Logger } from '@noderr/utils';
+
+// MEDIUM FIX #44: Use Logger instead of console
+const logger = new Logger('FloorEngine');
 import {
   FloorEngineConfig,
   AllocationStrategy,
@@ -47,6 +51,9 @@ export class FloorEngine extends EventEmitter {
 
     // Initialize provider and wallet
     this.provider = new ethers.JsonRpcProvider(config.rpcUrl);
+    // MEDIUM FIX #45: Private key security warning
+    // WARNING: Private key is stored in memory. Ensure config is never logged or serialized.
+    // For production, use a secure key management system (e.g., AWS KMS, HashiCorp Vault)
     this.wallet = new ethers.Wallet(config.privateKey, this.provider);
 
     // Initialize core components
@@ -66,16 +73,16 @@ export class FloorEngine extends EventEmitter {
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
-      console.warn('[FloorEngine] Already initialized');
+      // MEDIUM FIX #44: Use Logger instead of console
+      logger.warn('Already initialized');
       return;
     }
 
-    console.log('[FloorEngine] Initializing...');
+    logger.info('Initializing...');
 
     // Verify wallet connection
     const balance = await this.provider.getBalance(this.wallet.address);
-    console.log(`[FloorEngine] Wallet address: ${this.wallet.address}`);
-    console.log(`[FloorEngine] Wallet balance: ${ethers.formatEther(balance)} ETH`);
+    logger.info('Wallet connected', { address: this.wallet.address, balance: ethers.formatEther(balance) });
 
     // Verify network
     const network = await this.provider.getNetwork();
@@ -84,7 +91,7 @@ export class FloorEngine extends EventEmitter {
         `Network mismatch: expected ${this.config.chainId}, got ${network.chainId}`
       );
     }
-    console.log(`[FloorEngine] Connected to ${this.config.networkName} (${network.chainId})`);
+    logger.info('Connected to network', { networkName: this.config.networkName, chainId: network.chainId.toString() });
 
     // Initialize ML risk assessment
     await this.riskManager.initialize();
@@ -92,7 +99,7 @@ export class FloorEngine extends EventEmitter {
     this.isInitialized = true;
     this.emit('initialized');
 
-    console.log('[FloorEngine] Initialization complete');
+    logger.info('Initialization complete');
   }
 
   /**

@@ -902,7 +902,8 @@ export class ExecutionOptimizerService extends EventEmitter {
       // Would send to actual endpoint
       this.logger.debug('Telemetry collected', telemetry);
     } else {
-      console.log('Telemetry:', JSON.stringify(telemetry, null, 2));
+      // LOW FIX: Use logger instead of console.log
+      this.logger.info('Telemetry collected', telemetry);
     }
   }
 

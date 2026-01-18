@@ -1,0 +1,19 @@
+{
+  "name": "@noderr/reputation",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@noderr/decentralized-core": "workspace:*",
+    "@noderr/utils": "workspace:*",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.26",
+    "typescript": "^5.9.3"
+  }
+}

@@ -7,6 +7,7 @@
  */
 
 import { EventEmitter } from 'events';
+import { Logger } from '@noderr/utils';
 import {
   AdapterMetadata,
   AdapterCategory,
@@ -14,6 +15,9 @@ import {
   IStakingAdapter,
   IYieldAdapter,
 } from '../types';
+
+// LOW FIX: Use Logger instead of console.log
+const logger = new Logger('AdapterRegistry');
 
 /**
  * Base adapter interface that all adapters must implement
@@ -108,7 +112,7 @@ export class AdapterRegistry extends EventEmitter {
     // Emit event
     this.emit('adapter_registered', { adapterId, metadata });
 
-    console.log(`[AdapterRegistry] Registered adapter: ${adapterId} (${metadata.protocol})`);
+    logger.info('Registered adapter', { adapterId, protocol: metadata.protocol });
   }
 
   /**
@@ -134,7 +138,7 @@ export class AdapterRegistry extends EventEmitter {
     // Emit event
     this.emit('adapter_unregistered', { adapterId });
 
-    console.log(`[AdapterRegistry] Unregistered adapter: ${adapterId}`);
+    logger.info('Unregistered adapter', { adapterId });
   }
 
   /**
@@ -149,7 +153,7 @@ export class AdapterRegistry extends EventEmitter {
     }
 
     if (registered.metadata.enabled) {
-      console.warn(`[AdapterRegistry] Adapter ${adapterId} is already enabled`);
+      logger.warn('Adapter already enabled', { adapterId });
       return;
     }
 

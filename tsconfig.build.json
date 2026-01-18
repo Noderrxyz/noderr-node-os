@@ -4,6 +4,15 @@
     { "path": "./packages/types" },
     { "path": "./packages/utils" },
     { "path": "./packages/telemetry" },
+    { "path": "./packages/core" },
+    { "path": "./packages/execution" },
+    { "path": "./packages/strategy" },
+    { "path": "./packages/market-data" },
+    { "path": "./packages/performance" },
+    { "path": "./packages/reputation" },
+    { "path": "./packages/guardian-consensus" },
+    { "path": "./packages/safety-control" },
+    { "path": "./packages/testing" },
     { "path": "./auth-api" },
     { "path": "./deployment-engine" }
   ]

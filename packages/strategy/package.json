@@ -11,15 +11,25 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@noderr/utils": "workspace:*",
-    "@noderr/types": "workspace:*",
+    "@noderr/core": "workspace:*",
     "@noderr/telemetry": "workspace:*",
-    "@noderr/core": "workspace:*"
+    "@noderr/types": "workspace:*",
+    "@noderr/utils": "workspace:*",
+    "@types/body-parser": "^1.19.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/uuid": "^9.0.8",
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "simple-git": "^3.30.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "typescript": "^5.0.0",
-    "ts-node": "^10.9.0"
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0"

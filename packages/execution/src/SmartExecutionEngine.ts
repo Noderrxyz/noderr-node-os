@@ -1,7 +1,26 @@
 import { EventEmitter } from 'events';
-import * as winston from 'winston';
+import { TradingSignal, OrderExecutedEvent } from '@noderr/core';
+import { SignalToOrderTranslator } from './SignalToOrderTranslator';
+import { Logger } from '@noderr/utils';
+import { eventBus, EventTopics, SimulationEvent } from '@noderr/core';
 // RLOrderRouter temporarily disabled due to @tensorflow/tfjs-node-gpu dependency
 // import { RLOrderRouter, MarketState, RoutingAction, ExecutionResult as RLExecutionResult } from './RLOrderRouter';
+
+// LOW FIX #55: Extract magic numbers to named constants
+const SLICE_STAGGER_MS = 100; // Time between order slices
+const EXECUTION_DURATION_PER_SLICE_MS = 100; // Estimated duration per slice
+const BASIS_POINTS_MULTIPLIER = 10000; // Convert decimals to basis points
+const MOCK_VENUE_BID_ASK_SPREAD = 100; // Default spread for mock venues
+const MOCK_VENUE_DEPTH = 100000; // Default depth for mock venues
+const MOCK_VENUE_LATENCY_MS = 50; // Default latency for mock venues
+const MOCK_VENUE_FEE_RATE = 0.001; // Default fee rate (0.1%)
+const MOCK_VENUE_RELIABILITY = 0.99; // Default reliability (99%)
+const MOCK_VENUE_SUCCESS_RATE = 0.95; // Default success rate (95%)
+const MOCK_VENUE_BASE_PRICE = 50000; // Default base price for BTC
+const MOCK_EXECUTION_LATENCY_MIN_MS = 10; // Min execution latency
+const MOCK_EXECUTION_LATENCY_MAX_MS = 50; // Max execution latency
+const PLACEHOLDER_VOLUME = 1000000; // Placeholder volume for market state
+const PLACEHOLDER_VOLATILITY = 0.01; // Placeholder volatility
 
 /**
  * Execution configuration
@@ -77,6 +96,7 @@ export interface ExecutionResult {
   executionTimeMs: number;
   sliceResults: SliceResult[];
   errors: string[];
+  metadata?: Record<string, any>;
 }
 
 /**
@@ -94,34 +114,58 @@ export interface SliceResult {
 }
 
 /**
+ * RL Router interface (for when TensorFlow dependency is enabled)
+ */
+interface RLRouter {
+  selectAction(marketState: unknown): Promise<{ venueAllocations: number[] }>;
+  calculateReward(result: RLExecutionResult, benchmarkPrice: number, quantity: number): number;
+  storeExperience(state: unknown, action: unknown, reward: number, nextState: unknown): void;
+}
+
+/**
+ * RL execution result
+ */
+interface RLExecutionResult {
+  executedPrice: number;
+  executedQuantity: number;
+  fees: number;
+  slippage: number;
+  executionTimeMs: number;
+  venue: string;
+}
+
+/**
  * Smart execution engine
  */
 export class SmartExecutionEngine extends EventEmitter {
   private config: ExecutionConfig;
-  private logger: winston.Logger;
+  private logger: Logger;
   // RLOrderRouter temporarily disabled
-  private rlRouter: any | null = null;
+  private rlRouter: RLRouter | null = null;
   private activeOrders: Map<string, OrderRequest> = new Map();
   private executionPlans: Map<string, ExecutionPlan> = new Map();
   private venueConnections: Map<string, VenueConnection> = new Map();
   
-  constructor(config: ExecutionConfig, logger: winston.Logger) {
+  constructor(config: ExecutionConfig, logger?: Logger) {
     super();
     
     this.config = config;
-    this.logger = logger;
+    this.logger = logger || new Logger('SmartExecutionEngine');
   }
   
   /**
    * Initialize the execution engine
    */
-  async initialize(rlRouter?: any): Promise<void> {
+  async initialize(rlRouter?: RLRouter): Promise<void> {
+    // Subscribe to trading signals from the strategy service
+    eventBus.subscribe(EventTopics.STRATEGY_SIGNAL, this.handleTradingSignal.bind(this), 'SmartExecutionEngine');
+
     this.rlRouter = rlRouter || null;
     
     // Initialize venue connections
     await this.initializeVenueConnections();
     
-    this.logger.info('Smart execution engine initialized', {
+    this.logger.info('Smart Execution Engine initialized.', {
       enableSmartRouting: this.config.enableSmartRouting,
       enableOrderSlicing: this.config.enableOrderSlicing,
       venues: Array.from(this.venueConnections.keys())
@@ -129,9 +173,44 @@ export class SmartExecutionEngine extends EventEmitter {
   }
   
   /**
-   * Execute an order
+   * Handle incoming trading signal from the event bus
+   */
+  private async handleTradingSignal(event: SimulationEvent): Promise<void> {
+    const signal = event.payload as TradingSignal;
+    this.logger.info(`Received trading signal: ${signal.strategyId}`, { strategy: signal.strategyId, symbol: signal.symbol, side: signal.side, quantity: signal.quantity });
+    
+    try {
+      await this.executeSignal(signal);
+    } catch (error) {
+      // MEDIUM FIX #50: Publish execution failure event instead of just logging
+      this.logger.error(`Failed to execute signal from ${signal.strategyId}`, { error });
+      eventBus.publish('execution.signal.failed', {
+        strategyId: signal.strategyId,
+        symbol: signal.symbol,
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: Date.now(),
+      }, 'SmartExecutionEngine');
+    }
+  }
+
+  /**
+   * Execute an order from a raw TradingSignal
+   */
+  async executeSignal(signal: TradingSignal): Promise<ExecutionResult> {
+    const order = SignalToOrderTranslator.translate(signal);
+    return this.executeOrder(order);
+  }
+
+  /**
+   * Execute an order from a formal OrderRequest
    */
   async executeOrder(order: OrderRequest): Promise<ExecutionResult> {
+    // MEDIUM FIX #51: Prevent race condition - check if order is already being executed
+    if (this.activeOrders.has(order.id)) {
+      this.logger.warn('Order already being executed', { orderId: order.id });
+      throw new Error(`Order ${order.id} is already being executed`);
+    }
+    
     this.activeOrders.set(order.id, order);
     
     try {
@@ -151,6 +230,9 @@ export class SmartExecutionEngine extends EventEmitter {
       
       // Emit completion event
       this.emit('orderExecuted', result);
+
+      // Publish to SimulationEventBus for other services (e.g., Performance Tracker)
+      eventBus.publish(EventTopics.ORDER_EXECUTED, result, 'SmartExecutionEngine');
       
       return result;
       
@@ -200,7 +282,7 @@ export class SmartExecutionEngine extends EventEmitter {
           venue,
           quantity: sliceSize,
           orderType: order.orderType,
-          scheduledTime: Date.now() + (i * 100), // Stagger by 100ms
+          scheduledTime: Date.now() + (i * SLICE_STAGGER_MS), // Stagger by 100ms
           priority: numSlices - i // Higher priority for earlier slices
         });
       }
@@ -227,7 +309,7 @@ export class SmartExecutionEngine extends EventEmitter {
       slices,
       estimatedCost,
       estimatedSlippage,
-      estimatedDuration: slices.length * 100, // Rough estimate
+      estimatedDuration: slices.length * EXECUTION_DURATION_PER_SLICE_MS, // Rough estimate
       routingStrategy: this.config.enableSmartRouting ? 'smart' : 'priority'
     };
   }
@@ -311,7 +393,7 @@ export class SmartExecutionEngine extends EventEmitter {
     
     const expectedPrice = order.limitPrice || (await this.getMarketPrice(order.symbol));
     const slippageBps = expectedPrice > 0 ? 
-      Math.abs(avgExecutionPrice - expectedPrice) / expectedPrice * 10000 : 0;
+      Math.abs(avgExecutionPrice - expectedPrice) / expectedPrice * BASIS_POINTS_MULTIPLIER : 0;
     
     const status = totalExecutedQuantity === order.quantity ? 'completed' :
                    totalExecutedQuantity > 0 ? 'partial' : 'failed';
@@ -326,7 +408,8 @@ export class SmartExecutionEngine extends EventEmitter {
       slippageBps,
       executionTimeMs: Date.now() - startTime,
       sliceResults,
-      errors
+      errors,
+      metadata: order.metadata
     };
   }
   
@@ -356,18 +439,16 @@ export class SmartExecutionEngine extends EventEmitter {
         symbol: order.symbol,
         side: order.side,
         quantity: slice.quantity,
-        orderType: slice.orderType,
-        limitPrice: order.limitPrice,
-        timeInForce: order.timeInForce
+        limitPrice: order.limitPrice
       });
       
       // Update RL router if available
       if (this.rlRouter && this.config.enableSmartRouting) {
-        const rlResult: any = {
+        const rlResult: RLExecutionResult = {
           executedPrice: result.executionPrice,
           executedQuantity: result.executedQuantity,
           fees: result.fees,
-          slippage: result.slippageBps / 10000,
+          slippage: result.slippageBps / BASIS_POINTS_MULTIPLIER,
           executionTimeMs: Date.now() - startTime,
           venue: slice.venue
         };
@@ -432,15 +513,17 @@ export class SmartExecutionEngine extends EventEmitter {
     }
     
     const bidAskSpread = bestAsk - bestBid;
-    const orderBookImbalance = (totalBidDepth - totalAskDepth) / (totalBidDepth + totalAskDepth);
+    // MEDIUM FIX #52: Guard against division by zero
+    const totalDepth = totalBidDepth + totalAskDepth;
+    const orderBookImbalance = totalDepth > 0 ? (totalBidDepth - totalAskDepth) / totalDepth : 0;
     
     return {
       bidAskSpread,
       bidDepth: totalBidDepth,
       askDepth: totalAskDepth,
       orderBookImbalance,
-      volatility: 0.01, // Placeholder
-      volume: 1000000, // Placeholder
+      volatility: PLACEHOLDER_VOLATILITY, // Placeholder
+      volume: PLACEHOLDER_VOLUME, // Placeholder
       vwap: (bestBid + bestAsk) / 2, // Simplified
       venueLatency: venueLatencies,
       venueFees,
@@ -469,13 +552,17 @@ export class SmartExecutionEngine extends EventEmitter {
         const estimatedPrice = marketPrice * (order.side === 'buy' ? 1.0001 : 0.9999); // 1bp slippage estimate
         
         totalCost += slice.quantity * estimatedPrice * (1 + feeRate);
-        totalSlippage += Math.abs(estimatedPrice - marketPrice) / marketPrice;
+        // MEDIUM FIX #52: Guard against division by zero
+        if (marketPrice > 0) {
+          totalSlippage += Math.abs(estimatedPrice - marketPrice) / marketPrice;
+        }
       }
     }
     
     return {
       estimatedCost: totalCost,
-      estimatedSlippage: totalSlippage / slices.length * 10000 // Convert to bps
+      // MEDIUM FIX #52: Guard against division by zero
+      estimatedSlippage: slices.length > 0 ? (totalSlippage / slices.length * 10000) : 0 // Convert to bps
     };
   }
   
@@ -493,11 +580,18 @@ export class SmartExecutionEngine extends EventEmitter {
         totalPrice += (marketData.bidPrice + marketData.askPrice) / 2;
         count++;
       } catch (error) {
-        // Skip failed venues
+        // MEDIUM FIX #54: Log errors instead of silently swallowing
+        this.logger.warn('Failed to get market data from venue', { symbol, error });
       }
     }
     
-    return count > 0 ? totalPrice / count : 0;
+    // MEDIUM FIX #54: Fail fast if all venues fail
+    if (count === 0) {
+      this.logger.error('All venues failed to provide market data', { symbol });
+      throw new Error(`Unable to get market price for ${symbol} - all venues failed`);
+    }
+    
+    return totalPrice / count;
   }
   
   /**
@@ -552,38 +646,150 @@ export class SmartExecutionEngine extends EventEmitter {
   getActiveOrders(): OrderRequest[] {
     return Array.from(this.activeOrders.values());
   }
+  
+  /**
+   * QUICK WIN: Health check method for monitoring
+   */
+  async healthCheck(): Promise<{
+    status: 'healthy' | 'unhealthy';
+    timestamp: string;
+    checks: Record<string, string>;
+    activeOrders: number;
+    venues: number;
+  }> {
+    const checks: Record<string, string> = {};
+    let allHealthy = true;
+    
+    // Check if RL router is initialized
+    if (this.config.enableSmartRouting) {
+      checks.rlRouter = this.rlRouter ? 'ok' : 'not initialized';
+      if (!this.rlRouter) allHealthy = false;
+    } else {
+      checks.rlRouter = 'disabled';
+    }
+    
+    // Check venues
+    checks.venues = `${this.venueConnections.size} configured`;
+    if (this.venueConnections.size === 0) {
+      allHealthy = false;
+    }
+    
+    // Check active orders
+    checks.activeOrders = `${this.activeOrders.size} active`;
+    
+    return {
+      status: allHealthy ? 'healthy' : 'unhealthy',
+      timestamp: new Date().toISOString(),
+      checks,
+      activeOrders: this.activeOrders.size,
+      venues: this.venueConnections.size
+    };
+  }
+}
+
+/**
+ * Venue execution parameters
+ */
+interface VenueExecutionParams {
+  symbol: string;
+  side: 'buy' | 'sell';
+  quantity: number;
+  limitPrice?: number;
+}
+
+/**
+ * Venue execution result
+ */
+interface VenueExecutionResult {
+  success: boolean;
+  executedQuantity: number;
+  executionPrice: number;
+  fees: number;
+  slippageBps: number;
+  error?: string;
+}
+
+/**
+ * Market data from venue
+ */
+interface VenueMarketData {
+  bidPrice: number;
+  askPrice: number;
+  bidDepth: number;
+  askDepth: number;
 }
 
 /**
  * Venue connection interface
  */
 interface VenueConnection {
-  executeOrder(params: any): Promise<any>;
+  executeOrder(params: VenueExecutionParams): Promise<VenueExecutionResult>;
   cancelOrder(orderId: string): Promise<boolean>;
-  getMarketData(symbol: string): Promise<any>;
+  getMarketData(symbol: string): Promise<VenueMarketData>;
   getAverageLatency(): number;
   getFeeRate(): number;
   getReliability(): number;
 }
 
 /**
+ * Mock venue configuration
+ */
+interface MockVenueConfig {
+  basePrice?: number;
+  bidAskSpread?: number;
+  depth?: number;
+  latency?: number;
+  feeRate?: number;
+  reliability?: number;
+  successRate?: number;
+}
+
+/**
  * Mock venue connection for testing
  */
 class MockVenueConnection implements VenueConnection {
-  constructor(private name: string) {}
+  private config: Required<MockVenueConfig>;
+  // LOW FIX #56: Add seeded random generator for deterministic behavior
+  private seed: number;
   
-  async executeOrder(params: any): Promise<any> {
-    // Simulate execution
-    await this.wait(Math.random() * 50 + 10); // 10-60ms latency
+  constructor(
+    private name: string,
+    config: MockVenueConfig = {},
+    seed?: number
+  ) {
+    // Use venue name hash as seed for deterministic behavior
+    this.seed = seed ?? name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    // MEDIUM FIX #53: Make mock values configurable with sensible defaults
+    this.config = {
+      basePrice: config.basePrice ?? MOCK_VENUE_BASE_PRICE,
+      bidAskSpread: config.bidAskSpread ?? MOCK_VENUE_BID_ASK_SPREAD,
+      depth: config.depth ?? MOCK_VENUE_DEPTH,
+      latency: config.latency ?? 30,
+      feeRate: config.feeRate ?? MOCK_VENUE_FEE_RATE,
+      reliability: config.reliability ?? 0.95,
+      successRate: config.successRate ?? MOCK_VENUE_SUCCESS_RATE,
+    };
+  }
+  
+  // LOW FIX #56: Seeded random generator for deterministic behavior
+  private seededRandom(): number {
+    this.seed = (this.seed * 9301 + 49297) % 233280;
+    return this.seed / 233280;
+  }
+  
+  async executeOrder(params: VenueExecutionParams): Promise<VenueExecutionResult> {
+    // Simulate execution with deterministic latency
+    await this.wait(this.seededRandom() * MOCK_EXECUTION_LATENCY_MAX_MS + MOCK_EXECUTION_LATENCY_MIN_MS);
     
-    const success = Math.random() > 0.05; // 95% success rate
+    const success = this.seededRandom() > (1 - this.config.successRate);
+    const executionPrice = params.limitPrice || this.config.basePrice;
     
     return {
       success,
       executedQuantity: success ? params.quantity : 0,
-      executionPrice: params.limitPrice || 50000,
-      fees: params.quantity * 50000 * 0.001,
-      slippageBps: Math.random() * 10,
+      executionPrice,
+      fees: params.quantity * executionPrice * this.config.feeRate,
+      slippageBps: this.seededRandom() * 10,
       error: success ? undefined : 'Simulated failure'
     };
   }
@@ -592,25 +798,26 @@ class MockVenueConnection implements VenueConnection {
     return true;
   }
   
-  async getMarketData(symbol: string): Promise<any> {
+  async getMarketData(symbol: string): Promise<VenueMarketData> {
+    const halfSpread = this.config.bidAskSpread / 2;
     return {
-      bidPrice: 49950,
-      askPrice: 50050,
-      bidDepth: 100000,
-      askDepth: 100000
+      bidPrice: this.config.basePrice - halfSpread,
+      askPrice: this.config.basePrice + halfSpread,
+      bidDepth: this.config.depth,
+      askDepth: this.config.depth
     };
   }
   
   getAverageLatency(): number {
-    return 30; // 30ms average
+    return this.config.latency;
   }
   
   getFeeRate(): number {
-    return 0.001; // 0.1%
+    return this.config.feeRate;
   }
   
   getReliability(): number {
-    return 0.95; // 95% reliability
+    return this.config.reliability;
   }
   
   private wait(ms: number): Promise<void> {

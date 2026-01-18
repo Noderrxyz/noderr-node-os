@@ -27,25 +27,26 @@
   "author": "Noderr Protocol Team",
   "license": "MIT",
   "dependencies": {
+    "@flashbots/ethers-provider-bundle": "^0.6.1",
+    "@noderr/core": "workspace:*",
+    "@noderr/risk-engine": "workspace:*",
+    "@noderr/telemetry": "workspace:*",
     "@noderr/types": "workspace:*",
     "@noderr/utils": "workspace:*",
-    "@noderr/telemetry": "workspace:*",
-    "@noderr/risk-engine": "workspace:*",
-    "@flashbots/ethers-provider-bundle": "^0.6.1",
     "axios": "^1.6.7",
     "bignumber.js": "^9.1.2",
     "ccxt": "^4.2.4",
     "ethers": "^6.9.0",
     "lodash": "^4.17.21",
     "mathjs": "^12.4.0",
+    "node-cache": "^5.1.2",
     "p-queue": "^6.6.2",
     "redis": "^4.6.8",
     "simple-statistics": "^7.8.3",
     "uuid": "^9.0.1",
     "web3": "^4.1.1",
     "winston": "^3.11.0",
-    "ws": "^8.18.3",
-    "node-cache": "^5.1.2"
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
@@ -62,10 +63,10 @@
     "typescript": "^5.3.3"
   },
   "peerDependencies": {
-    "@noderr/types": "workspace:*",
-    "@noderr/utils": "workspace:*",
+    "@noderr/risk-engine": "workspace:*",
     "@noderr/telemetry": "workspace:*",
-    "@noderr/risk-engine": "workspace:*"
+    "@noderr/types": "workspace:*",
+    "@noderr/utils": "workspace:*"
   },
   "engines": {
     "node": ">=18.0.0"

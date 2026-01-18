@@ -10,8 +10,7 @@
  * - Fast consensus (< 5 seconds)
  */
 
-import { Logger } from '@noderr/utils';
-import { getShutdownHandler, onShutdown } from '@noderr/utils';
+import { Logger, getShutdownHandler, onShutdown } from '@noderr/utils/src';
 
 export interface RiskApprovalRequest {
   tradeId: string;

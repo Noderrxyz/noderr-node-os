@@ -14,6 +14,10 @@ import {
 } from '../types';
 import { AdapterRegistry } from './AdapterRegistry';
 import { MLRiskAdapter, MLRiskScore, MLAllocationRecommendation, MLEmergencyAction } from './MLRiskAdapter';
+import { Logger } from '@noderr/utils';
+
+// LOW FIX: Use Logger instead of console
+const logger = new Logger('RiskManager');
 
 /**
  * Risk Manager

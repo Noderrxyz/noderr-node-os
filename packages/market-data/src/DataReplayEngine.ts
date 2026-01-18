@@ -111,24 +111,31 @@ export class DataReplayEngine extends EventEmitter {
     const tickDelay = (intervalMs / config.speed); // Adjusted for replay speed
 
     while (this.isRunning && this.currentTime < config.endTime) {
-      if (this.isPaused) {
-        await this.sleep(100);
-        continue;
-      }
-
-      // Emit market data for all symbols at current time
-      for (const symbol of config.symbols) {
-        const tick = this.getNextTick(symbol, config.spread);
-        if (tick) {
-          this.emit('tick', tick);
+      // MEDIUM FIX #88: Add error handling in replay loop
+      try {
+        if (this.isPaused) {
+          await this.sleep(100);
+          continue;
         }
+
+        // Emit market data for all symbols at current time
+        for (const symbol of config.symbols) {
+          const tick = this.getNextTick(symbol, config.spread);
+          if (tick) {
+            this.emit('tick', tick);
+          }
+        }
+
+        // Advance time
+        this.currentTime += intervalMs;
+
+        // Sleep to simulate real-time (adjusted for speed)
+        await this.sleep(tickDelay);
+      } catch (error) {
+        this.logger.error('Error in replay loop', { error, currentTime: this.currentTime });
+        this.emit('error', error);
+        // Continue loop instead of crashing
       }
-
-      // Advance time
-      this.currentTime += intervalMs;
-
-      // Sleep to simulate real-time (adjusted for speed)
-      await this.sleep(tickDelay);
     }
 
     // Replay complete
@@ -224,8 +231,11 @@ export class DataReplayEngine extends EventEmitter {
   /**
    * Get replay progress (0-1)
    */
-  getProgress(endTime: number): number {
-    return (this.currentTime - this.replayStartTime) / (endTime - this.replayStartTime);
+  getProgress(config: { startTime: number; endTime: number }): number {
+    // MEDIUM FIX #87: Use simulation time instead of wall-clock time
+    const totalDuration = config.endTime - config.startTime;
+    if (totalDuration <= 0) return 1;
+    return Math.min(1, Math.max(0, (this.currentTime - config.startTime) / totalDuration));
   }
 
   /**

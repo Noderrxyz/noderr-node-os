@@ -12,9 +12,8 @@
  * - OHLCV candles
  */
 
-import { Logger } from '@noderr/utils';
-import { getShutdownHandler, onShutdown } from '@noderr/utils';
-import { eventBus, EventTopics } from '@noderr/core';
+import { Logger, getShutdownHandler, onShutdown } from '@noderr/utils';
+import { SimulationEventBus, eventBus, EventTopics } from '@noderr/core/src';
 
 export { MarketDataRingBuffer, MarketDataRingBufferView, RingBufferBenchmark, MarketDataPoint } from './RingBuffer';
 export { HistoricalDataLoader, OHLCVData, HistoricalDataConfig } from './HistoricalDataLoader';
@@ -84,20 +83,21 @@ export class MarketDataService {
     const replayEngine = new DataReplayEngine(loader);
     
     // Forward ticks to subscribers and publish to event bus
-    replayEngine.on('tick', (tick) => {      this.logger.debug('Market data tick', tick);
+    replayEngine.on('tick', (tick) => {
+      this.logger.debug('Market data tick', tick);
       
       // Publish to event bus for other services
-      eventBus.publish(EventTopics.MARKET_DATA_TICK, {
+      // Note: Strategies are designed to consume candles, not raw ticks.
+      // We convert the tick to a candle format for simplicity in this simulation.
+      // In a real system, we would aggregate ticks into proper OHLCV candles.
+      eventBus.publish(EventTopics.MARKET_DATA_CANDLE, {
         symbol: tick.symbol,
-        price: tick.close,
-        open: tick.open,
-        high: tick.high,
-        low: tick.low,
-        close: tick.close,
+        open: tick.last,
+        high: tick.last,
+        low: tick.last,
+        close: tick.last,
         volume: tick.volume,
         timestamp: tick.timestamp,
-        bid: tick.bid,
-        ask: tick.ask
       }, 'market-data');
     });
     
@@ -113,15 +113,6 @@ export class MarketDataService {
       speed: config.speed,
       spread: 0.001 // 0.1% bid-ask spread
     });
-    
-    // Publish system ready event
-    eventBus.publish(EventTopics.SYSTEM_READY, {
-      service: 'market-data',
-      mode: 'simulation',
-      symbols: config.symbols,
-      interval: config.interval,
-      speed: config.speed
-    }, 'market-data');
   }
   
   /**
@@ -144,12 +135,54 @@ export class MarketDataService {
     this.connections.clear();
     this.subscriptions.clear();
   }
+  
+  /**
+   * QUICK WIN: Health check method for monitoring
+   */
+  async healthCheck(): Promise<{
+    status: 'healthy' | 'unhealthy';
+    timestamp: string;
+    checks: Record<string, string>;
+    subscriptions: number;
+    connections: number;
+  }> {
+    const checks: Record<string, string> = {};
+    let allHealthy = true;
+    
+    // Check if event bus is working
+    try {
+      const eventBus = SimulationEventBus.getInstance();
+      checks.eventBus = 'ok';
+    } catch (error) {
+      checks.eventBus = 'error';
+      allHealthy = false;
+    }
+    
+    // Check connections
+    checks.connections = `${this.connections.size} active`;
+    checks.subscriptions = `${this.subscriptions.size} active`;
+    
+    return {
+      status: allHealthy ? 'healthy' : 'unhealthy',
+      timestamp: new Date().toISOString(),
+      checks,
+      subscriptions: this.subscriptions.size,
+      connections: this.connections.size
+    };
+  }
 }
 
 // ============================================================================
 // Main Entry Point
 // ============================================================================
 
+// MEDIUM FIX #71: Global mutable state note
+// This module-level variable implements the singleton pattern for the service.
+// While global mutable state is generally an anti-pattern, it's acceptable here because:
+// - MarketDataService is designed as a singleton (only one instance should exist)
+// - The service is stateful by nature (manages connections and subscriptions)
+// - For testing, use dependency injection by importing the class directly
+// - Alternative: Use a service container or DI framework for more complex apps
 let marketDataService: MarketDataService | null = null;
 
 /**
@@ -210,8 +243,10 @@ if (require.main === module) {
   // Initialize graceful shutdown
   getShutdownHandler(30000);  // 30 second global timeout
   
+  // LOW FIX: Use logger instead of console.error
+  const logger = new Logger('MarketDataService');
   startMarketDataService().catch((error) => {
-    console.error('Fatal error starting Market Data Service:', error);
+    logger.error('Fatal error starting Market Data Service', error);
     process.exit(1);
   });
 }

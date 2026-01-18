@@ -17,13 +17,10 @@ import {
   ExecutionStatus,
   OrderSide
 } from '@noderr/types';
+import { Logger } from '@noderr/utils';
 
-const createLogger = (name: string) => ({
-  info: (message: string, meta?: any) => console.log(`[${name}] INFO:`, message, meta || ''),
-  error: (message: string, error?: any) => console.error(`[${name}] ERROR:`, message, error || ''),
-  debug: (message: string, meta?: any) => console.debug(`[${name}] DEBUG:`, message, meta || ''),
-  warn: (message: string, meta?: any) => console.warn(`[${name}] WARN:`, message, meta || '')
-});
+// LOW FIX: Use real Logger instead of console-based mock
+const createLogger = (name: string) => new Logger(name);
 
 export interface VenuePerformanceReport {
   exchangeId: string;

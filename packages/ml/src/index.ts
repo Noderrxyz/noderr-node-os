@@ -327,8 +327,10 @@ if (require.main === module) {
   // Initialize graceful shutdown
   getShutdownHandler(30000);  // 30 second global timeout
   
+  // LOW FIX: Use logger instead of console.error
+  const logger = new Logger('MLService');
   startMLService().catch((error) => {
-    console.error('Fatal error starting ML Service:', error);
+    logger.error('Fatal error starting ML Service', error);
     process.exit(1);
   });
 }

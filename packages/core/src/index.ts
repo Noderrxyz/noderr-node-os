@@ -16,6 +16,9 @@ export type {
 export { SimulationEventBus, eventBus, EventTopics } from './SimulationEventBus';
 export type { SimulationEvent } from './SimulationEventBus';
 
+// Event Schemas
+export type { TradingSignal, OrderExecutedEvent, PnLUpdateEvent, TrustFingerprintUpdateEvent, ExecutionResult } from './EventSchemas';
+
 // Re-export key components for direct access (TODO: Sprint 2+)
 // export { PositionReconciliation } from '../../execution-engine/src/PositionReconciliation';
 // export { OrderLifecycleManager } from '../../execution-engine/src/OrderLifecycleManager';

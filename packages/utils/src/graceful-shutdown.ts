@@ -13,6 +13,8 @@
  * - Graceful connection closing
  */
 
+import { Logger } from './index';
+
 export interface ShutdownHandler {
   name: string;
   cleanup: () => Promise<void>;
@@ -23,8 +25,11 @@ export class GracefulShutdown {
   private handlers: ShutdownHandler[] = [];
   private isShuttingDown: boolean = false;
   private shutdownTimeout: number = 30000;  // 30 seconds default
+  // MEDIUM FIX #106: Use Logger instead of console
+  private logger: Logger;
   
-  constructor(timeout?: number) {
+  constructor(timeout?: number, logger?: Logger) {
+    this.logger = logger || new Logger('GracefulShutdown');
     if (timeout) {
       this.shutdownTimeout = timeout;
     }
@@ -46,19 +51,19 @@ export class GracefulShutdown {
   private setupSignalHandlers(): void {
     // Handle SIGTERM (Docker stop, Kubernetes termination)
     process.on('SIGTERM', () => {
-      console.log('Received SIGTERM signal');
+      this.logger.info('Received SIGTERM signal');
       this.shutdown('SIGTERM');
     });
     
     // Handle SIGINT (Ctrl+C)
     process.on('SIGINT', () => {
-      console.log('Received SIGINT signal');
+      this.logger.info('Received SIGINT signal');
       this.shutdown('SIGINT');
     });
     
     // Handle SIGQUIT (Ctrl+\)
     process.on('SIGQUIT', () => {
-      console.log('Received SIGQUIT signal');
+      this.logger.info('Received SIGQUIT signal');
       this.shutdown('SIGQUIT');
     });
   }
@@ -69,13 +74,13 @@ export class GracefulShutdown {
   private setupErrorHandlers(): void {
     // Handle uncaught exceptions
     process.on('uncaughtException', (error: Error) => {
-      console.error('Uncaught exception:', error);
+      this.logger.error('Uncaught exception:', error);
       this.shutdown('uncaughtException', 1);
     });
     
     // Handle unhandled promise rejections
     process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
-      console.error('Unhandled rejection at:', promise, 'reason:', reason);
+      this.logger.error('Unhandled rejection', { promise, reason });
       this.shutdown('unhandledRejection', 1);
     });
   }
@@ -86,19 +91,19 @@ export class GracefulShutdown {
   private async shutdown(signal: string, exitCode: number = 0): Promise<void> {
     // Prevent multiple shutdown attempts
     if (this.isShuttingDown) {
-      console.log('Shutdown already in progress, ignoring signal');
+      this.logger.info('Shutdown already in progress, ignoring signal');
       return;
     }
     
     this.isShuttingDown = true;
     
-    console.log(`========================================`);
-    console.log(`Initiating graceful shutdown (${signal})`);
-    console.log(`========================================`);
+    this.logger.info(`========================================`);
+    this.logger.info(`Initiating graceful shutdown (${signal})`);
+    this.logger.info(`========================================`);
     
     // Set a hard timeout to force exit if cleanup takes too long
     const forceExitTimer = setTimeout(() => {
-      console.error(`Shutdown timeout exceeded (${this.shutdownTimeout}ms), forcing exit`);
+      this.logger.error(`Shutdown timeout exceeded (${this.shutdownTimeout}ms), forcing exit`);
       process.exit(1);
     }, this.shutdownTimeout);
     
@@ -108,7 +113,7 @@ export class GracefulShutdown {
         const handlerTimeout = handler.timeout || 10000;  // 10 seconds default per handler
         
         try {
-          console.log(`Cleaning up: ${handler.name}...`);
+          this.logger.info(`Cleaning up: ${handler.name}...`);
           
           // Create a timeout promise
           const timeoutPromise = new Promise<void>((_, reject) => {
@@ -121,9 +126,9 @@ export class GracefulShutdown {
             timeoutPromise
           ]);
           
-          console.log(`✓ ${handler.name} cleaned up successfully`);
+          this.logger.info(`✓ ${handler.name} cleaned up successfully`);
         } catch (error) {
-          console.error(`✗ ${handler.name} cleanup failed:`, error);
+          this.logger.error(`✗ ${handler.name} cleanup failed:`, error);
           // Continue with other handlers even if one fails
         }
       });
@@ -131,9 +136,9 @@ export class GracefulShutdown {
       // Wait for all cleanup handlers to complete
       await Promise.all(cleanupPromises);
       
-      console.log(`========================================`);
-      console.log(`Graceful shutdown complete`);
-      console.log(`========================================`);
+      this.logger.info(`========================================`);
+      this.logger.info(`Graceful shutdown complete`);
+      this.logger.info(`========================================`);
       
       // Clear the force exit timer
       clearTimeout(forceExitTimer);
@@ -141,7 +146,7 @@ export class GracefulShutdown {
       // Exit with appropriate code
       process.exit(exitCode);
     } catch (error) {
-      console.error('Error during shutdown:', error);
+      this.logger.error('Error during shutdown:', error);
       clearTimeout(forceExitTimer);
       process.exit(1);
     }

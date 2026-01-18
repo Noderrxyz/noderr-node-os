@@ -306,7 +306,7 @@ export class ReputationSystem extends EventEmitter {
   private applyDecay(): void {
     const now = Date.now();
     
-    for (const [nodeId, performance] of this.nodePerformance) {
+    for (const [nodeId, performance] of Array.from(this.nodePerformance)) {
       const daysSinceActive = (now - performance.lastActive.getTime()) / (24 * 60 * 60 * 1000);
       
       // Apply decay for inactive nodes
@@ -381,7 +381,7 @@ export class ReputationSystem extends EventEmitter {
   getAllReputations(): NodeReputation[] {
     const reputations: NodeReputation[] = [];
     
-    for (const [nodeId, score] of this.nodeScores) {
+    for (const [nodeId, score] of Array.from(this.nodeScores)) {
       const reputation = this.getNodeReputation(nodeId);
       if (reputation) {
         reputations.push(reputation);
@@ -397,7 +397,7 @@ export class ReputationSystem extends EventEmitter {
   getNodesByTier(tier: ReputationTier): string[] {
     const nodes: string[] = [];
     
-    for (const [nodeId, score] of this.nodeScores) {
+    for (const [nodeId, score] of Array.from(this.nodeScores)) {
       if (this.getReputationTier(score) === tier) {
         nodes.push(nodeId);
       }

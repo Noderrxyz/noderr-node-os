@@ -9,17 +9,31 @@
     "clean": "rimraf dist",
     "test": "jest"
   },
-  "keywords": ["testing", "integration", "load-testing", "performance"],
+  "keywords": [
+    "testing",
+    "integration",
+    "load-testing",
+    "performance"
+  ],
   "author": "Noderr",
   "license": "MIT",
   "dependencies": {
     "@noderr/types": "workspace:*",
     "@noderr/utils": "workspace:*",
+    "@noderr/core": "workspace:*",
+    "@noderr/market-data": "workspace:*",
+    "@noderr/strategy": "workspace:*",
+    "@noderr/execution": "workspace:*",
+    "@noderr/performance": "workspace:*",
+    "@noderr/reputation": "workspace:*",
     "winston": "^3.11.0"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.10.0",
-    "typescript": "^5.3.2",
-    "rimraf": "^5.0.5"
+    "jest": "^30.2.0",
+    "rimraf": "^5.0.5",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.3.2"
   }
 }

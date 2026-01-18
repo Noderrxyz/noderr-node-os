@@ -15,6 +15,25 @@
 import { Logger } from '@noderr/utils';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { z } from 'zod';
+
+// MEDIUM FIX #84: Add schema validation for API responses
+const BinanceKlineSchema = z.tuple([
+  z.number(), // Open time
+  z.string(), // Open
+  z.string(), // High
+  z.string(), // Low
+  z.string(), // Close
+  z.string(), // Volume
+  z.number(), // Close time
+  z.string(), // Quote asset volume
+  z.number(), // Number of trades
+  z.string(), // Taker buy base asset volume
+  z.string(), // Taker buy quote asset volume
+  z.string()  // Ignore
+]);
+
+const BinanceKlinesResponseSchema = z.array(BinanceKlineSchema);
 
 export interface OHLCVData {
   timestamp: number;
@@ -36,13 +55,25 @@ export interface HistoricalDataConfig {
 export class HistoricalDataLoader {
   private logger: Logger;
   private cacheDir: string;
-  private readonly BINANCE_API_BASE = 'https://api.binance.com/api/v3';
+  private readonly apiBaseUrl: string;
   private readonly MAX_LIMIT = 1000; // Binance API limit per request
   private readonly RATE_LIMIT_DELAY = 100; // ms between requests
+  // LOW FIX #85: Add seed for deterministic mock data generation
+  private mockDataSeed: number = 42;
 
-  constructor(cacheDir: string = '/app/data/historical') {
+  constructor(
+    cacheDir: string = '/app/data/historical',
+    apiBaseUrl?: string,
+    mockDataSeed?: number
+  ) {
     this.logger = new Logger('HistoricalDataLoader');
     this.cacheDir = cacheDir;
+    // MEDIUM FIX #82: Make API endpoint configurable
+    this.apiBaseUrl = apiBaseUrl || process.env.MARKET_DATA_API_URL || 'https://api.binance.com/api/v3';
+    // LOW FIX #85: Allow custom seed for deterministic testing
+    if (mockDataSeed !== undefined) {
+      this.mockDataSeed = mockDataSeed;
+    }
   }
 
   /**
@@ -75,47 +106,72 @@ export class HistoricalDataLoader {
    * Fetch data from Binance public API
    */
   private async fetchFromBinance(config: HistoricalDataConfig): Promise<OHLCVData[]> {
+        if (process.env.NODE_ENV === 'test') {
+            return this.generateMockData(config);
+        }
+
     const allData: OHLCVData[] = [];
     let currentStartTime = config.startTime;
 
     while (currentStartTime < config.endTime) {
-      const url = `${this.BINANCE_API_BASE}/klines?symbol=${config.symbol}&interval=${config.interval}&startTime=${currentStartTime}&endTime=${config.endTime}&limit=${this.MAX_LIMIT}`;
+      const url = `${this.apiBaseUrl}/klines?symbol=${config.symbol}&interval=${config.interval}&startTime=${currentStartTime}&endTime=${config.endTime}&limit=${this.MAX_LIMIT}`;
 
-      try {
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          throw new Error(`Binance API error: ${response.status} ${response.statusText}`);
+      // MEDIUM FIX #83: Add retry logic with exponential backoff
+      let retries = 0;
+      const maxRetries = 3;
+      let success = false;
+      let rawData: any[] = [];
+      
+      while (!success && retries <= maxRetries) {
+        try {
+          const response = await fetch(url);
+          
+          if (!response.ok) {
+            throw new Error(`API error: ${response.status} ${response.statusText}`);
+          }
+
+          const jsonData = await response.json();
+          // MEDIUM FIX #84: Validate API response with Zod
+          const validationResult = BinanceKlinesResponseSchema.safeParse(jsonData);
+          if (!validationResult.success) {
+            throw new Error(`Invalid API response format: ${validationResult.error.message}`);
+          }
+          rawData = validationResult.data;
+          success = true;
+        } catch (fetchError) {
+          retries++;
+          if (retries > maxRetries) {
+            this.logger.error('Failed to fetch data after retries', { error: fetchError, url, retries });
+            throw fetchError;
+          }
+          // Exponential backoff: 1s, 2s, 4s
+          const backoffMs = Math.pow(2, retries - 1) * 1000;
+          this.logger.warn(`Fetch failed, retrying in ${backoffMs}ms`, { retries, maxRetries });
+          await this.sleep(backoffMs);
         }
-
-        const rawData = await response.json() as any[];
-
-        if (rawData.length === 0) {
-          break; // No more data
-        }
-
-        // Convert Binance format to OHLCVData
-        const candles: OHLCVData[] = rawData.map(candle => ({
-          timestamp: candle[0],
-          open: parseFloat(candle[1]),
-          high: parseFloat(candle[2]),
-          low: parseFloat(candle[3]),
-          close: parseFloat(candle[4]),
-          volume: parseFloat(candle[5])
-        }));
-
-        allData.push(...candles);
-
-        // Update start time for next batch
-        currentStartTime = candles[candles.length - 1].timestamp + 1;
-
-        // Rate limiting
-        await this.sleep(this.RATE_LIMIT_DELAY);
-
-      } catch (error) {
-        this.logger.error('Failed to fetch data from Binance', { error, url });
-        throw error;
       }
+
+      if (rawData.length === 0) {
+        break; // No more data
+      }
+
+      // Convert Binance format to OHLCVData
+      const candles: OHLCVData[] = rawData.map(candle => ({
+        timestamp: candle[0],
+        open: parseFloat(candle[1]),
+        high: parseFloat(candle[2]),
+        low: parseFloat(candle[3]),
+        close: parseFloat(candle[4]),
+        volume: parseFloat(candle[5])
+      }));
+
+      allData.push(...candles);
+
+      // Update start time for next batch
+      currentStartTime = candles[candles.length - 1].timestamp + 1;
+
+      // Rate limiting
+      await this.sleep(this.RATE_LIMIT_DELAY);
     }
 
     return allData;
@@ -160,6 +216,54 @@ export class HistoricalDataLoader {
   /**
    * Sleep for specified milliseconds
    */
+  // LOW FIX #85: Seeded random generator for deterministic mock data
+  private seededRandom(): number {
+    this.mockDataSeed = (this.mockDataSeed * 9301 + 49297) % 233280;
+    return this.mockDataSeed / 233280;
+  }
+
+  private generateMockData(config: HistoricalDataConfig): OHLCVData[] {
+    const data: OHLCVData[] = [];
+    let currentTime = config.startTime;
+    // LOW FIX #85: Use seeded random for deterministic behavior
+    let lastClose = 10000 + this.seededRandom() * 5000;
+
+    // LOW FIX #85: Respect config.interval instead of hardcoding 1 minute
+    const intervalMs = this.parseInterval(config.interval);
+
+    while (currentTime < config.endTime) {
+        const open = lastClose;
+        const high = open * (1 + (this.seededRandom() - 0.4) * 0.01);
+        const low = open * (1 - (this.seededRandom() - 0.4) * 0.01);
+        const close = (high + low) / 2 + (this.seededRandom() - 0.5) * (high - low);
+        const volume = this.seededRandom() * 100;
+
+        data.push({ timestamp: currentTime, open, high, low, close, volume });
+
+        lastClose = close;
+        currentTime += intervalMs;
+    }
+    this.logger.info(`Generated ${data.length} mock candles for testing with interval ${config.interval}.`);
+    return data;
+  }
+
+  // LOW FIX #85: Parse interval string to milliseconds
+  private parseInterval(interval: string): number {
+    const match = interval.match(/^(\d+)([mhd])$/);
+    if (!match) {
+      this.logger.warn(`Invalid interval format: ${interval}, defaulting to 1m`);
+      return 60000;
+    }
+    const [, value, unit] = match;
+    const num = parseInt(value, 10);
+    switch (unit) {
+      case 'm': return num * 60000;
+      case 'h': return num * 3600000;
+      case 'd': return num * 86400000;
+      default: return 60000;
+    }
+  }
+
   private sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -169,7 +273,7 @@ export class HistoricalDataLoader {
    */
   async getAvailableSymbols(): Promise<string[]> {
     try {
-      const url = `${this.BINANCE_API_BASE}/exchangeInfo`;
+      const url = `${this.apiBaseUrl}/exchangeInfo`;
       const response = await fetch(url);
       
       if (!response.ok) {

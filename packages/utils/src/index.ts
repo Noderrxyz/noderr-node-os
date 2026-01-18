@@ -2,7 +2,7 @@
  * @noderr/utils - Shared utilities for Noderr Protocol
  */
 
-import winston from 'winston';
+import * as winston from 'winston';
 import { v4 as uuidv4 } from 'uuid';
 
 // Logger

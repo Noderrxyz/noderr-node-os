@@ -9,7 +9,8 @@
  */
 
 import { EventEmitter } from 'events';
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
+import { safeValidateEventPayload, EventTopic } from './EventSchemas';
 
 export interface SimulationEvent {
   type: string;
@@ -23,11 +24,17 @@ export class SimulationEventBus extends EventEmitter {
   private static instance: SimulationEventBus | null = null;
   private logger: Logger;
   private eventCount: number = 0;
+  private validationEnabled: boolean = true; // Enable validation by default
 
   private constructor() {
     super();
     this.logger = new Logger('SimulationEventBus');
-    this.setMaxListeners(100); // Allow many subscribers
+    // LOW FIX #4: Make max listeners configurable via environment variable
+    const maxListeners = process.env.EVENT_BUS_MAX_LISTENERS 
+      ? parseInt(process.env.EVENT_BUS_MAX_LISTENERS, 10) 
+      : 100;
+    this.setMaxListeners(maxListeners);
+    this.logger.info(`Event bus initialized with max ${maxListeners} listeners`);
   }
 
   /**
@@ -41,9 +48,26 @@ export class SimulationEventBus extends EventEmitter {
   }
 
   /**
-   * Publish an event
+   * Publish an event with runtime schema validation
    */
   publish(topic: string, payload: any, source: string = 'unknown'): void {
+    // CRITICAL FIX #118: Add runtime schema validation
+    if (this.validationEnabled) {
+      const result = safeValidateEventPayload(topic as EventTopic, payload);
+      if (!result.success) {
+        // Validation failed - log and throw error
+        this.logger.error('Event payload validation failed', {
+          topic,
+          source,
+          errors: (result as any).error.issues,
+        });
+        // Throw error to prevent invalid data from propagating
+        throw new Error(`Invalid event payload for topic ${topic}: ${(result as any).error.message}`);
+      }
+      // Use the validated payload (with proper typing)
+      payload = result.data;
+    }
+
     const event: SimulationEvent = {
       type: 'event',
       topic,
@@ -63,9 +87,24 @@ export class SimulationEventBus extends EventEmitter {
 
   /**
    * Subscribe to a topic
+   * MEDIUM FIX #3: Wrap handler in try-catch to prevent subscriber errors from crashing the system
    */
   subscribe(topic: string, handler: (event: SimulationEvent) => void, subscriber: string = 'unknown'): void {
-    this.on(topic, handler);
+    // Wrap the handler in a try-catch to isolate errors
+    const safeHandler = (event: SimulationEvent) => {
+      try {
+        handler(event);
+      } catch (error) {
+        this.logger.error(`Error in subscriber handler for topic ${topic}`, {
+          subscriber,
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        // Don't rethrow - isolate the error to this subscriber
+      }
+    };
+    
+    this.on(topic, safeHandler);
     
     this.logger.debug(`Subscribed to topic: ${topic}`, {
       subscriber,
@@ -89,6 +128,14 @@ export class SimulationEventBus extends EventEmitter {
    */
   getEventCount(): number {
     return this.eventCount;
+  }
+
+  /**
+   * Enable or disable schema validation
+   */
+  setValidationEnabled(enabled: boolean): void {
+    this.validationEnabled = enabled;
+    this.logger.info(`Schema validation ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   /**
@@ -122,6 +169,7 @@ export const EventTopics = {
   ORDER_FILLED: 'order.filled',
   ORDER_CANCELLED: 'order.cancelled',
   ORDER_REJECTED: 'order.rejected',
+  ORDER_EXECUTED: 'order.executed',
   
   // Positions
   POSITION_OPENED: 'position.opened',
@@ -131,6 +179,10 @@ export const EventTopics = {
   // Risk
   RISK_ALERT: 'risk.alert',
   RISK_LIMIT_EXCEEDED: 'risk.limit.exceeded',
+
+  // Performance & Reputation
+  PNL_UPDATE: 'pnl.update',
+  TRUST_FINGERPRINT_UPDATE: 'reputation.trust_fingerprint.update',
   
   // System
   SYSTEM_READY: 'system.ready',
