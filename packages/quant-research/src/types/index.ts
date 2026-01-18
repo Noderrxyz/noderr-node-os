@@ -683,6 +683,7 @@ export interface OptimizationConstraints {
 
 export interface AlphaDecayResult {
   signal: string;
+  strategyId?: string;
   decayMetrics: DecayMetrics;
   decayRate?: number;
   regimeAnalysis: RegimeAnalysis;
@@ -693,8 +694,10 @@ export interface DecayMetrics {
   halfLife: number;
   decayRate: number;
   persistenceScore: number;
+  overallDecayRate?: number;
   significantDecay?: boolean;
-  decayByMetric?: { [key: string]: number };
+  decayByMetric?: { [key: string]: any };
+  decayCoefficient?: number;
 }
 
 export interface RegimeAnalysis {
@@ -703,10 +706,12 @@ export interface RegimeAnalysis {
   characteristics: { [key: string]: any };
   regimeStability?: number;
   currentRegime?: string;
+  regimes?: any[];
 }
 
 export interface SignalStrength {
   strength: number;
   confidence: number;
-  quality: string;
+  stability: number;
+  signal?: string;
 }
