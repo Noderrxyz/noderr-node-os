@@ -351,9 +351,10 @@ export class TelemetryIntegration {
     const originalSubmit = orderManager.submitOrder;
     orderManager.submitOrder = async function(...args: unknown[]) {
       return telemetry.withSpan('OrderManager.submitOrder', async (span) => {
-        span.setAttribute('order.symbol', args[0]?.symbol);
-        span.setAttribute('order.side', args[0]?.side);
-        span.setAttribute('order.quantity', args[0]?.quantity);
+        const order = args[0] as any;
+        span.setAttribute('order.symbol', order?.symbol);
+        span.setAttribute('order.side', order?.side);
+        span.setAttribute('order.quantity', order?.quantity);
         
         const startTime = Date.now();
         try {
