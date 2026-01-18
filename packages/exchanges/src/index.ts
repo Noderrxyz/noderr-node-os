@@ -18,6 +18,7 @@ import { Logger } from '@noderr/utils';
 import { getShutdownHandler, onShutdown } from '@noderr/utils';
 
 export { NonBlockingExchangeConnector } from './NonBlockingExchangeConnector';
+export { PaperTradingEngine, Order, Position, Trade, PaperTradingConfig } from './PaperTradingEngine';
 
 /**
  * Exchange Connectivity Service
@@ -26,6 +27,7 @@ export class ExchangeConnectivityService {
   private logger: Logger;
   private connectors: Map<string, any> = new Map();
   private isConnected: boolean = false;
+  private paperTradingEngine: any = null; // PaperTradingEngine instance
   
   constructor(config: {
     exchanges: Array<{
@@ -43,23 +45,41 @@ export class ExchangeConnectivityService {
   }
   
   /**
-   * Connect to all configured exchanges
+   * Connect to all configured exchanges (or start paper trading)
    */
   async connect(): Promise<void> {
-    this.logger.info('Connecting to exchanges...');
+    const isPaperTrading = process.env.PAPER_TRADING === 'true';
     
-    // TODO: Initialize exchange connectors
-    // - Create ccxt instances
-    // - Establish WebSocket connections
-    // - Verify API credentials
-    // - Start heartbeat monitoring
-    
-    this.isConnected = true;
-    this.logger.info('Connected to all exchanges');
+    if (isPaperTrading) {
+      this.logger.info('Starting in PAPER TRADING MODE - no real capital');
+      
+      const { PaperTradingEngine } = await import('./PaperTradingEngine');
+      
+      this.paperTradingEngine = new PaperTradingEngine({
+        initialBalance: parseFloat(process.env.INITIAL_BALANCE || '10000'),
+        takerFee: parseFloat(process.env.TAKER_FEE || '0.001'), // 0.1%
+        makerFee: parseFloat(process.env.MAKER_FEE || '0.0005'), // 0.05%
+        slippage: parseFloat(process.env.SLIPPAGE || '0.001') // 0.1%
+      });
+      
+      this.isConnected = true;
+      this.logger.info('Paper trading engine started');
+    } else {
+      this.logger.info('Connecting to live exchanges...');
+      
+      // TODO: Initialize exchange connectors
+      // - Create ccxt instances
+      // - Establish WebSocket connections
+      // - Verify API credentials
+      // - Start heartbeat monitoring
+      
+      this.isConnected = true;
+      this.logger.warn('Live exchange connections not yet implemented');
+    }
   }
   
   /**
-   * Place an order on an exchange
+   * Place an order on an exchange (or paper trading engine)
    */
   async placeOrder(exchange: string, params: {
     symbol: string;
@@ -70,40 +90,82 @@ export class ExchangeConnectivityService {
   }): Promise<any> {
     this.logger.info('Placing order', { exchange, ...params });
     
+    // Use paper trading engine if enabled
+    if (this.paperTradingEngine) {
+      if (params.type === 'market') {
+        return this.paperTradingEngine.placeMarketOrder(
+          params.symbol,
+          params.side,
+          params.amount
+        );
+      } else {
+        return this.paperTradingEngine.placeLimitOrder(
+          params.symbol,
+          params.side,
+          params.amount,
+          params.price!
+        );
+      }
+    }
+    
     const connector = this.connectors.get(exchange);
     if (!connector) {
       throw new Error(`Exchange ${exchange} not connected`);
     }
     
-    // TODO: Implement order placement
-    throw new Error('Not implemented');
+    // TODO: Implement live order placement
+    throw new Error('Live order placement not implemented');
   }
   
   /**
-   * Cancel an order on an exchange
+   * Cancel an order on an exchange (or paper trading engine)
    */
   async cancelOrder(exchange: string, orderId: string): Promise<void> {
     this.logger.info('Cancelling order', { exchange, orderId });
     
+    // Use paper trading engine if enabled
+    if (this.paperTradingEngine) {
+      this.paperTradingEngine.cancelOrder(orderId);
+      return;
+    }
+    
     const connector = this.connectors.get(exchange);
     if (!connector) {
       throw new Error(`Exchange ${exchange} not connected`);
     }
     
-    // TODO: Implement order cancellation
+    // TODO: Implement live order cancellation
   }
   
   /**
-   * Get account balances
+   * Get account balances (or paper trading balance)
    */
   async getBalances(exchange: string): Promise<Record<string, number>> {
+    // Use paper trading engine if enabled
+    if (this.paperTradingEngine) {
+      const metrics = this.paperTradingEngine.getMetrics();
+      return {
+        USDT: metrics.balance,
+        equity: metrics.equity,
+        unrealizedPnL: metrics.unrealizedPnL,
+        realizedPnL: metrics.realizedPnL
+      };
+    }
+    
     const connector = this.connectors.get(exchange);
     if (!connector) {
       throw new Error(`Exchange ${exchange} not connected`);
     }
     
-    // TODO: Implement balance query
+    // TODO: Implement live balance query
     return {};
+  }
+  
+  /**
+   * Get paper trading engine (for simulation mode)
+   */
+  getPaperTradingEngine(): any {
+    return this.paperTradingEngine;
   }
   
   /**

@@ -16,6 +16,8 @@ import { Logger } from '@noderr/utils';
 import { getShutdownHandler, onShutdown } from '@noderr/utils';
 
 export { MarketDataRingBuffer, MarketDataRingBufferView, RingBufferBenchmark, MarketDataPoint } from './RingBuffer';
+export { HistoricalDataLoader, OHLCVData, HistoricalDataConfig } from './HistoricalDataLoader';
+export { DataReplayEngine, MarketDataTick, ReplayConfig } from './DataReplayEngine';
 
 /**
  * Market Data Service
@@ -34,11 +36,19 @@ export class MarketDataService {
   }
   
   /**
-   * Connect to exchanges
+   * Connect to exchanges (or start simulation)
    */
   async connect(): Promise<void> {
-    this.logger.info('Connecting to exchanges...');
-    // TODO: Implement exchange connections
+    const isSimulation = process.env.SIMULATION_MODE === 'true';
+    
+    if (isSimulation) {
+      this.logger.info('Starting in SIMULATION MODE - using historical data replay');
+      // Simulation mode will be started via startSimulation()
+    } else {
+      this.logger.info('Connecting to live exchanges...');
+      // TODO: Implement live exchange connections
+      this.logger.warn('Live exchange connections not yet implemented');
+    }
   }
   
   /**
@@ -46,7 +56,50 @@ export class MarketDataService {
    */
   async subscribe(exchange: string, symbol: string, channels: string[]): Promise<void> {
     this.logger.info('Subscribing to market data', { exchange, symbol, channels });
-    // TODO: Implement subscriptions
+    
+    const key = `${exchange}:${symbol}`;
+    if (!this.subscriptions.has(key)) {
+      this.subscriptions.set(key, new Set());
+    }
+    channels.forEach(channel => this.subscriptions.get(key)!.add(channel));
+  }
+  
+  /**
+   * Start simulation mode with historical data replay
+   */
+  async startSimulation(config: {
+    symbols: string[];
+    interval: '1m' | '5m' | '15m' | '1h' | '4h' | '1d';
+    startTime: number;
+    endTime: number;
+    speed: number;
+  }): Promise<void> {
+    this.logger.info('Starting historical data replay simulation', config);
+    
+    const { HistoricalDataLoader } = await import('./HistoricalDataLoader');
+    const { DataReplayEngine } = await import('./DataReplayEngine');
+    
+    const loader = new HistoricalDataLoader();
+    const replayEngine = new DataReplayEngine(loader);
+    
+    // Forward ticks to subscribers
+    replayEngine.on('tick', (tick) => {
+      this.logger.debug('Market data tick', tick);
+      // TODO: Emit to subscribers
+    });
+    
+    replayEngine.on('completed', () => {
+      this.logger.info('Historical data replay completed');
+    });
+    
+    await replayEngine.start({
+      symbols: config.symbols,
+      interval: config.interval,
+      startTime: config.startTime,
+      endTime: config.endTime,
+      speed: config.speed,
+      spread: 0.001 // 0.1% bid-ask spread
+    });
   }
   
   /**
