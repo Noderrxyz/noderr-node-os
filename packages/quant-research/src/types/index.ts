@@ -581,6 +581,7 @@ export interface FactorAnalysisResult {
   performance: FactorPerformance[];
   exposures?: FactorExposure[];
   regression?: any;
+  riskAttribution?: any;
   timestamp: Date;
   insights?: string[];
 }
@@ -635,6 +636,7 @@ export interface SimulationPath {
   id?: string;
   path: number[];
   values?: number[];
+  returns?: number[];
   finalValue: number;
   totalReturn: number;
   maxDrawdown: number;
@@ -661,6 +663,7 @@ export interface PortfolioMetrics {
   expectedReturn?: number;
   expectedRisk?: number;
   sharpeRatio: number;
+  sortinoRatio?: number;
   volatility: number;
   maxDrawdown: number;
   beta?: number;

@@ -94,6 +94,7 @@ export class Backtester extends EventEmitter {
     const result: BacktestResult = {
       strategyId: config.strategy.id,
       config,
+      initialCapital: this.initialCapital,
       performance,
       trades: this.trades,
       equity: this.generateEquityCurve(),
