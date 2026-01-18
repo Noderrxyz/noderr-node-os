@@ -205,7 +205,7 @@ export class Backtester extends EventEmitter {
     // Get aligned timestamps
     const timestamps = this.data.get(symbols[0])!.map(d => d.timestamp);
     
-    for (let i = strategy.parameters.lookbackPeriod; i < timestamps.length; i++) {
+    for (let i = strategy.parameters.lookbackPeriod || 0; i < timestamps.length; i++) {
       const currentTime = timestamps[i];
       
       // Update positions with current prices
@@ -253,7 +253,7 @@ export class Backtester extends EventEmitter {
     index: number
   ): Promise<void> {
     // Skip if max positions reached
-    if (this.positions.size >= strategy.parameters.maxPositions) {
+    if (this.positions.size >= (strategy.parameters.maxPositions || Infinity)) {
       return;
     }
     
