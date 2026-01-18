@@ -1,0 +1,82 @@
+packages/alpha-exploitation/src/analytics/FlowAnalyzer.ts:7:  // TODO: Implement flow analysis
+packages/alpha-exploitation/src/analytics/RegimeDetector.ts:7:  // TODO: Implement regime detection
+packages/alpha-exploitation/src/analytics/VolumeProfiler.ts:7:  // TODO: Implement volume profile analysis
+packages/alpha-exploitation/src/arbitrage/CrossVenueScanner.ts:7:  // TODO: Implement cross-venue scanning logic
+packages/alpha-exploitation/src/arbitrage/FlashLoanArbitrage.ts:7:  // TODO: Implement flash loan arbitrage logic
+packages/alpha-exploitation/src/defense/ManipulationDetector.ts:7:  // TODO: Implement manipulation detection
+packages/alpha-exploitation/src/defense/ProtectionManager.ts:7:  // TODO: Implement protection management
+packages/alpha-exploitation/src/microstructure/MarketImpactEstimator.ts:7:  // TODO: Implement market impact estimation
+packages/alpha-exploitation/src/microstructure/OrderFlowAnalyzer.ts:7:  // TODO: Implement order flow analysis
+packages/capital-ai/src/index.ts:27:    // TODO: Initialize Capital AI components when implementation is complete
+packages/capital-ai/src/index.ts:35:      // TODO: Implement cleanup
+packages/compliance/src/ComplianceEngine.ts:5:// TODO: Replace with actual @noderr/core imports when core package is fixed
+packages/compliance/src/index.ts:32:    // TODO: Initialize ComplianceEngine when implementation is complete
+packages/compliance/src/index.ts:38:      // TODO: Implement cleanup
+packages/core/src/benchmarks.disabled/VolumeTrackerBenchmark.ts:5:// import { ComplianceEngine } from '../../compliance/src/ComplianceEngine'; // TODO: Sprint 2+
+packages/core/src/index.ts:22:// Re-export key components for direct access (TODO: Sprint 2+)
+packages/data-connectors/src/index.ts:33:    // TODO: Implement data source connections
+packages/exchanges/src/index.ts:70:      // TODO: Initialize exchange connectors
+packages/exchanges/src/index.ts:116:    // TODO: Implement live order placement
+packages/exchanges/src/index.ts:137:    // TODO: Implement live order cancellation
+packages/exchanges/src/index.ts:160:    // TODO: Implement live balance query
+packages/exchanges/src/index.ts:232:        // TODO: Implement pending order cancellation
+packages/execution/src/ExecutionOptimizerService.ts:443:    // TODO: Implementation Shortfall, Sniper, Adaptive, etc.
+packages/execution/src/ExecutionTelemetryCollector.ts:287:        algorithm: 'direct' // TODO: Get from order metadata
+packages/execution/src/index.ts:150:      // TODO: Restore pending orders
+packages/execution/src/index.ts:158:      // TODO: Implement order cancellation
+packages/execution/src/index.ts:161:      // TODO: Implement connection closing
+packages/execution/src/index.ts:166:          pendingOrders: [],  // TODO: Get actual pending orders
+packages/floor-engine/src/core/FloorEngine.ts:295:      // TODO: Implement actual execution logic
+packages/floor-engine/src/core/FloorEngine.ts:386:            // TODO: Execute deposit
+packages/floor-engine/src/core/FloorEngine.ts:398:            // TODO: Execute withdrawal
+packages/floor-engine/src/core/FloorEngine.ts:452:    // TODO: Implement yield harvesting for each adapter type
+packages/floor-engine/src/core/FloorEngine.ts:603:    // TODO: Execute allocation to adapter
+packages/floor-engine/src/core/FloorEngine.ts:669:    // TODO: Query each adapter for current position value and APY
+packages/guardian-consensus/src/StrategyReviewService.ts:228:    const completed = 0; // TODO: Track completed reviews
+packages/guardian-consensus/src/StrategyReviewService.ts:233:      approvalRate: 0, // TODO: Calculate from completed reviews
+packages/guardian-consensus/src/index.ts:64:    // TODO: Initialize guardian network
+packages/guardian-consensus/src/index.ts:70:    // TODO: Implement consensus mechanism
+packages/heartbeat-client/src/index.ts:129:        // TODO: Trigger auto-update process
+packages/integration-layer/src/core/SystemOrchestrator.ts:13:// import { ConfigurationService } from '@noderr/config'; // TODO: Fix config package exports
+packages/integration-layer/src/core/SystemOrchestrator.ts:24:// Phase 4: Meta-Governance Intelligence (TODO: Sprint 2+)
+packages/integration-layer/src/core/SystemOrchestrator.ts:31:// Phase 5: Autonomous Deployment Pipeline (TODO: Sprint 2+)
+packages/market-data/src/index.ts:49:      // TODO: Implement live exchange connections
+packages/node-onboarding/src/NodeOnboardingCLI.ts:326:      // TODO: Integrate with actual TPM attestation
+packages/oracle-consensus/src/index.ts:88:      // TODO: Restore consensus state
+packages/oracle-consensus/src/index.ts:104:          lastRound: 0,  // TODO: Get actual round number
+packages/oracle-consensus/src/index.ts:105:          activeCommittee: [],  // TODO: Get active committee
+packages/oracle-consensus/src/index.ts:106:          pendingConsensus: [],  // TODO: Get pending consensus requests
+packages/quant-research/src/index.ts:46:    // TODO: Initialize QuantResearchService when implementation is complete
+packages/quant-research/src/index.ts:51:      // TODO: Implement cleanup
+packages/risk-engine/src/index.ts:136:      // TODO: Restore risk state
+packages/risk-engine/src/index.ts:158:            portfolioValue: 0,  // TODO: Get actual portfolio value
+packages/risk-engine/src/index.ts:159:            openPositions: [],  // TODO: Get open positions
+packages/risk-engine/src/index.ts:160:            riskMetrics: {},    // TODO: Get current risk metrics
+packages/strategy/src/StrategyExecutor.ts:5:// TODO: Import from @noderr/core once it builds
+packages/telemetry/src/collectors/MetricsCollector.ts:484:    // TODO: Implement actual error rate calculation
+packages/telemetry/src/collectors/MetricsCollector.ts:489:    // TODO: Connect to incident management system
+packages/telemetry/src/collectors/MetricsCollector.ts:494:    // TODO: Collect actual metrics from each module
+packages/telemetry/src/collectors/MetricsCollector.ts:514:    // TODO: Connect to alpha-exploitation module
+packages/telemetry/src/collectors/MetricsCollector.ts:519:    // TODO: Connect to AI core module
+packages/telemetry/src/collectors/MetricsCollector.ts:527:    // TODO: Connect to quant research module
+packages/telemetry/src/collectors/MetricsCollector.ts:532:    // TODO: Connect to execution optimizer
+packages/telemetry/src/collectors/MetricsCollector.ts:542:    // TODO: Connect to execution optimizer
+packages/telemetry/src/collectors/MetricsCollector.ts:547:    // TODO: Connect to execution optimizer
+packages/telemetry/src/collectors/MetricsCollector.ts:552:    // TODO: Connect to risk engine
+packages/telemetry/src/collectors/MetricsCollector.ts:557:    // TODO: Connect to risk engine
+packages/telemetry/src/collectors/MetricsCollector.ts:562:    // TODO: Connect to risk engine
+packages/telemetry/src/collectors/MetricsCollector.ts:567:    // TODO: Connect to risk engine
+packages/telemetry/src/collectors/MetricsCollector.ts:572:    // TODO: Connect to actual P&L tracking
+packages/telemetry/src/collectors/MetricsCollector.ts:581:    // TODO: Connect to actual P&L tracking
+packages/telemetry/src/collectors/MetricsCollector.ts:590:    // TODO: Connect to actual P&L tracking
+packages/telemetry/src/collectors/MetricsCollector.ts:599:    // TODO: Connect to P&L attribution system
+packages/telemetry/src/collectors/MetricsCollector.ts:609:    // TODO: Connect to strategy attribution
+packages/telemetry/src/collectors/MetricsCollector.ts:619:    // TODO: Connect to AI core
+packages/telemetry/src/collectors/MetricsCollector.ts:628:    // TODO: Connect to AI core
+packages/telemetry/src/collectors/MetricsCollector.ts:637:    // TODO: Connect to AI core
+packages/telemetry/src/collectors/MetricsCollector.ts:646:    // TODO: Connect to message bus
+packages/telemetry/src/index.ts:299:      // TODO: Implement metric flushing
+packages/telemetry/src/index.ts:302:      // TODO: Implement exporter closing
+packages/testing/src/IntegrationTestSuite.ts:6:// TODO: Replace with actual @noderr/* imports when packages are available
+packages/typeform-integration/src/WebhookHandler.ts:45:    // TODO: Send notification email to applicant
+packages/typeform-integration/src/WebhookHandler.ts:46:    // TODO: Send notification to admin panel

@@ -1,0 +1,10 @@
+   TypeScript Errors: 0
+   ESLint not installed, skipping...
+   TODO/FIXME Count: 82
+   Empty Catch Blocks: 2
+   Async Functions Without Await: 76
+   'any' Type Usage: 783
+   Potential Sensitive Data Leaks: 71
+   Dependency Vulnerabilities: 0
+   Test Files: 13 / 303 source files (4.00%)
+   README Files: 12 / 49 packages

@@ -1,0 +1,783 @@
+packages/alpha-edge/src/arbitrage/ArbitrageEngine.ts:693:  private analyzePriceLag(prices: PricePoint[]): any[] {
+packages/alpha-edge/src/arbitrage/ArbitrageEngine.ts:707:    const lags: any[] = [];
+packages/alpha-edge/src/arbitrage/ArbitrageEngine.ts:725:    const results: any[] = [];
+packages/alpha-edge/src/microstructure/MicrostructureAnalyzer.ts:552:    const inefficiencies: any[] = [];
+packages/alpha-edge/src/risk-analytics/TailRiskManager.ts:1050:  private calculateExposures(): any[] {
+packages/alpha-edge/src/risk-analytics/TailRiskManager.ts:1055:  private async identifyOptimalHedges(exposures: any[]): Promise<any[]> {
+packages/alpha-edge/src/risk-analytics/TailRiskManager.ts:1060:  private calculateHedgeRatios(exposures: any[], instruments: any[]): number[] {
+packages/alpha-edge/src/risk-analytics/TailRiskManager.ts:1065:  private calculateHedgeEffectiveness(instruments: any[], ratios: number[]): number[] {
+packages/alpha-edge/src/risk-analytics/TailRiskManager.ts:1070:  private calculateHedgeCosts(instruments: any[], ratios: number[]): number[] {
+packages/alpha-edge/src/risk-analytics/TailRiskManager.ts:1076:    instruments: any[],
+packages/alpha-edge/src/types/index.ts:359:  metadata: any;
+packages/alpha-edge/src/types/index.ts:375:    params: any;
+packages/alpha-exploitation/src/analytics/MarketAnalytics.ts:169:  updateTrade(trade: any): void {
+packages/alpha-exploitation/src/analytics/MarketAnalytics.ts:195:  updateMarketState(marketState: any): void {
+packages/alpha-exploitation/src/analytics/MarketAnalytics.ts:524:  private updateVolumeProfile(symbol: string, volume: any): void {
+packages/alpha-exploitation/src/analytics/MarketAnalytics.ts:549:  private updateFlowAnalysis(symbol: string, flows: any): void {
+packages/alpha-exploitation/src/analytics/MarketAnalytics.ts:567:  private updateCorrelations(prices: any[]): void {
+packages/alpha-exploitation/src/analytics/MarketAnalytics.ts:666:  private checkForInsights(trade: any): void {
+packages/alpha-exploitation/src/arbitrage/ArbitrageEngine.ts:36:  data: any;
+packages/alpha-exploitation/src/arbitrage/ArbitrageEngine.ts:142:  updateMarketState(marketState: any): void {
+packages/alpha-exploitation/src/arbitrage/ArbitrageEngine.ts:561:  private updateMarketData(prices: any[]): void {
+packages/alpha-exploitation/src/core/AlphaExploitationService.ts:35:  create(type: string, from: string, to: string, data: any): any;
+packages/alpha-exploitation/src/core/AlphaExploitationService.ts:39:  sendMessage(message: any): Promise<void>;
+packages/alpha-exploitation/src/core/AlphaExploitationService.ts:48:  create: (type: string, from: string, to: string, data: any) => ({
+packages/alpha-exploitation/src/core/AlphaExploitationService.ts:462:  private async handleMicrostructureSignal(signal: any): Promise<void> {
+packages/alpha-exploitation/src/core/AlphaExploitationService.ts:485:  private async handleThreat(threat: any): Promise<void> {
+packages/alpha-exploitation/src/core/AlphaExploitationService.ts:506:  private async handleInsight(insight: any): Promise<void> {
+packages/alpha-exploitation/src/core/AlphaExploitationService.ts:518:  private adjustStrategies(insight: any): void {
+packages/alpha-exploitation/src/core/AlphaExploitationService.ts:600:  private handleOpportunityError(opportunity: AlphaOpportunity, error: any): void {
+packages/alpha-exploitation/src/core/AlphaExploitationService.ts:754:  private handleLiquidityUpdate(update: any): void {
+packages/alpha-exploitation/src/core/AlphaExploitationService.ts:767:  private async handleEmergencyStop(params: any): Promise<void> {
+packages/alpha-exploitation/src/core/AlphaExploitationService.ts:794:  private async handleReduceExposure(params: any): Promise<void> {
+packages/alpha-exploitation/src/core/AlphaExploitationService.ts:815:  private handleSwitchVenue(params: any): void {
+packages/alpha-exploitation/src/core/AlphaExploitationService.ts:828:  private handleProtectionEnabled(params: any): void {
+packages/alpha-exploitation/src/core/AlphaExploitationService.ts:838:  private handleRegimeChange(change: any): void {
+packages/alpha-exploitation/src/defense/MarketDefender.ts:38:  indicators: any[];
+packages/alpha-exploitation/src/defense/MarketDefender.ts:46:  details: any;
+packages/alpha-exploitation/src/defense/MarketDefender.ts:244:  updateMarketState(marketState: any): void {
+packages/alpha-exploitation/src/defense/MarketDefender.ts:557:  private processAnomalySignals(signals: any[]): void {
+packages/alpha-exploitation/src/defense/MarketDefender.ts:630:  private analyzeOrderPatterns(patterns: any[]): void {
+packages/alpha-exploitation/src/defense/MarketDefender.ts:669:  private updateMarketBaseline(symbol: string, stats: any): void {
+packages/alpha-exploitation/src/defense/MarketDefender.ts:903:  private classifyPattern(pattern: any): 'normal' | 'suspicious' | 'malicious' {
+packages/alpha-exploitation/src/liquidity/SmartLiquidityAggregator.ts:97:  updateMarketState(marketState: any): void {
+packages/alpha-exploitation/src/liquidity/SmartLiquidityAggregator.ts:541:  private processOrderBookUpdates(updates: any[]): void {
+packages/alpha-exploitation/src/microstructure/MicrostructureAnalyzer.ts:145:  updateMarketState(marketState: any): void {
+packages/alpha-exploitation/src/microstructure/MicrostructureAnalyzer.ts:789:  private processOrderBookUpdate(orderBook: any): void {
+packages/alpha-exploitation/src/microstructure/MicrostructureAnalyzer.ts:796:      bids: bids.map((b: any) => ({
+packages/alpha-exploitation/src/microstructure/MicrostructureAnalyzer.ts:801:      asks: asks.map((a: any) => ({
+packages/alpha-exploitation/src/microstructure/MicrostructureAnalyzer.ts:825:  private processTradeUpdates(trades: any[]): void {
+packages/alpha-exploitation/src/types/defense.ts:40:  value: any;
+packages/alpha-exploitation/src/types/defense.ts:91:  data: any;
+packages/auto-updater/src/docker.ts:47:        this.docker.pull(imageName, (err: any, stream: any) => {
+packages/auto-updater/src/docker.ts:53:          this.docker.modem.followProgress(stream, (err: any) => {
+packages/auto-updater/src/docker.ts:59:          }, (event: any) => {
+packages/auto-updater/src/health.ts:39:  details?: any;
+packages/auto-updater/src/health.ts:86:      let details: any;
+packages/autonomous-execution/src/AutonomousExecutionOrchestrator.ts:116:    this.riskEngine.on('circuit-breaker-triggered', (event: any) => {
+packages/autonomous-execution/src/AutonomousExecutionOrchestrator.ts:125:    this.riskEngine.on('prediction-rejected', (event: any) => {
+packages/autonomous-execution/src/AutonomousExecutionOrchestrator.ts:131:    this.executionEngine.on('execution-complete', (event: any) => {
+packages/autonomous-execution/src/AutonomousExecutionOrchestrator.ts:393:    } catch (error: any) {
+packages/backtesting/src/StreamingBacktestFramework.ts:495:      const handler = (msg: any) => {
+packages/backtesting/src/StreamingBacktestFramework.ts:616:  private handleWorkerMessage(workerId: number, message: any): void {
+packages/capital-ai/src/CapitalFlowOptimizer.ts:6:  info: (message: string, meta?: any) => logger.info(`[${name}] INFO:`, message, meta || ''),
+packages/capital-ai/src/CapitalFlowOptimizer.ts:7:  error: (message: string, error?: any) => logger.error(`[${name}] ERROR:`, message, error || ''),
+packages/capital-ai/src/CapitalFlowOptimizer.ts:8:  debug: (message: string, meta?: any) => logger.debug(`[${name}] DEBUG:`, message, meta || ''),
+packages/capital-ai/src/CapitalFlowOptimizer.ts:9:  warn: (message: string, meta?: any) => logger.warn(`[${name}] WARN:`, message, meta || '')
+packages/capital-ai/src/CapitalFlowOptimizer.ts:581:  private updateFlowMetrics(route: FlowRoute, results: any): void {
+packages/capital-ai/src/CapitalStrategyDashboard.d.ts:6:    data: any;
+packages/capital-ai/src/CapitalStrategyDashboard.d.ts:20:    options?: any[];
+packages/capital-ai/src/CapitalStrategyDashboard.d.ts:21:    default?: any;
+packages/capital-ai/src/CapitalStrategyDashboard.ts:6:  info: (message: string, meta?: any) => logger.info(`[${name}] INFO:`, message, meta || ''),
+packages/capital-ai/src/CapitalStrategyDashboard.ts:7:  error: (message: string, error?: any) => logger.error(`[${name}] ERROR:`, message, error || ''),
+packages/capital-ai/src/CapitalStrategyDashboard.ts:8:  debug: (message: string, meta?: any) => logger.debug(`[${name}] DEBUG:`, message, meta || ''),
+packages/capital-ai/src/CapitalStrategyDashboard.ts:9:  warn: (message: string, meta?: any) => logger.warn(`[${name}] WARN:`, message, meta || '')
+packages/capital-ai/src/CapitalStrategyDashboard.ts:16:  data: any;
+packages/capital-ai/src/CapitalStrategyDashboard.ts:32:  options?: any[];
+packages/capital-ai/src/CapitalStrategyDashboard.ts:33:  default?: any;
+packages/capital-ai/src/CapitalStrategyDashboard.ts:374:  private generateAllocationData(): any {
+packages/capital-ai/src/CapitalStrategyDashboard.ts:411:  private generateTimeSeriesData(): any {
+packages/capital-ai/src/CapitalStrategyDashboard.ts:446:  private generateRiskGaugeData(): any {
+packages/capital-ai/src/CapitalStrategyDashboard.ts:487:  private generateStrategyTableData(): any {
+packages/capital-ai/src/DynamicWeightAllocator.ts:6:  info: (message: string, meta?: any) => logger.info(`[${name}] INFO:`, message, meta || ''),
+packages/capital-ai/src/DynamicWeightAllocator.ts:7:  error: (message: string, error?: any) => logger.error(`[${name}] ERROR:`, message, error || ''),
+packages/capital-ai/src/DynamicWeightAllocator.ts:8:  debug: (message: string, meta?: any) => logger.debug(`[${name}] DEBUG:`, message, meta || ''),
+packages/capital-ai/src/DynamicWeightAllocator.ts:9:  warn: (message: string, meta?: any) => logger.warn(`[${name}] WARN:`, message, meta || '')
+packages/capital-ai/src/PortfolioSentinel.ts:6:  info: (message: string, meta?: any) => logger.info(`[${name}] INFO:`, message, meta || ''),
+packages/capital-ai/src/PortfolioSentinel.ts:7:  error: (message: string, error?: any) => logger.error(`[${name}] ERROR:`, message, error || ''),
+packages/capital-ai/src/PortfolioSentinel.ts:8:  debug: (message: string, meta?: any) => logger.debug(`[${name}] DEBUG:`, message, meta || ''),
+packages/capital-ai/src/PortfolioSentinel.ts:9:  warn: (message: string, meta?: any) => logger.warn(`[${name}] WARN:`, message, meta || '')
+packages/capital-ai/src/index.ts:19:let capitalAIService: any | null = null;
+packages/compliance/src/ComplianceEngine.ts:10:  constructor(...args: any[]) {}
+packages/compliance/src/ComplianceEngine.ts:14:  constructor(...args: any[]) {}
+packages/compliance/src/ComplianceEngine.ts:16:  async set(key: string, value: any): Promise<void> {}
+packages/compliance/src/ComplianceEngine.ts:18:  async getState<T = any>(key: string, options?: any): Promise<T | null> { return null; }
+packages/compliance/src/ComplianceEngine.ts:21:  constructor(...args: any[]) {}
+packages/compliance/src/ComplianceEngine.ts:704:  private getRecentUserOrders(userId: string): any[] {
+packages/compliance/src/ComplianceEngine.ts:709:  private calculateCancelRate(orders: any[]): number {
+packages/compliance/src/TradeReporting.ts:8:  info: (message: string, meta?: any) => logger.info(`[${name}] INFO:`, message, meta || ''),
+packages/compliance/src/TradeReporting.ts:9:  error: (message: string, error?: any) => logger.error(`[${name}] ERROR:`, message, error || ''),
+packages/compliance/src/TradeReporting.ts:10:  debug: (message: string, meta?: any) => logger.debug(`[${name}] DEBUG:`, message, meta || ''),
+packages/compliance/src/TradeReporting.ts:11:  warn: (message: string, meta?: any) => logger.warn(`[${name}] WARN:`, message, meta || '')
+packages/compliance/src/TradeReporting.ts:92:  threshold: any;
+packages/compliance/src/TradeReporting.ts:662:  public getTradeMetrics(period: { start: Date; end: Date }): any {
+packages/compliance/src/index.ts:24:let complianceService: any | null = null;
+packages/config/src/index.ts:179:  set(path: string, value: any): void {
+packages/config/src/index.ts:307:    } catch (error: any) {
+packages/config/src/index.ts:366:  private maskSensitiveValues(config: any): any {
+packages/config/src/index.ts:370:    const maskObject = (obj: any) => {
+packages/core/src/DistributedStateManager.ts:41:  private localCache: Map<string, { value: any; expiry: number }> = new Map();
+packages/core/src/DistributedStateManager.ts:329:  private async executeRedisCommand(command: string, ...args: any[]): Promise<any> {
+packages/core/src/LockFreeOrderQueue.ts:349:  static encode(order: any): EncodedOrder {
+packages/core/src/LockFreeOrderQueue.ts:366:  static decode(encoded: EncodedOrder): any {
+packages/core/src/SimulationEventBus.ts:18:  payload: any;
+packages/core/src/SimulationEventBus.ts:53:  publish(topic: string, payload: any, source: string = 'unknown'): void {
+packages/core/src/SystemOrchestrator.ts:168:      let component: any;
+packages/core/src/SystemOrchestrator.ts:248:  private setupComponentEventHandlers(name: string, component: any): void {
+packages/core/src/SystemOrchestrator.ts:251:      component.on('reconciliation', (result: any) => {
+packages/core/src/SystemOrchestrator.ts:255:      component.on('trading-paused', (data: any) => {
+packages/core/src/SystemOrchestrator.ts:259:      component.on('drift-alert', (data: any) => {
+packages/core/src/SystemOrchestrator.ts:267:      component.on('order-created', (order: any) => {
+packages/core/src/SystemOrchestrator.ts:271:      component.on('order-update', (update: any) => {
+packages/core/src/SystemOrchestrator.ts:281:      component.on('violation', (violation: any) => {
+packages/core/src/SystemOrchestrator.ts:285:      component.on('regime-change', (data: any) => {
+packages/core/src/SystemOrchestrator.ts:293:      component.on('compliance-check', (check: any) => {
+packages/core/src/SystemOrchestrator.ts:300:      component.on('aml-alert', (alert: any) => {
+packages/core/src/SystemOrchestrator.ts:308:      component.on('partition-detected', (partition: any) => {
+packages/core/src/SystemOrchestrator.ts:312:      component.on('leader-elected', (data: any) => {
+packages/core/src/SystemOrchestrator.ts:326:      orderManager.on('order-created', async (order: any) => {
+packages/core/src/SystemOrchestrator.ts:359:      orderManager.on('fill', (data: any) => {
+packages/core/src/SystemOrchestrator.ts:495:  private handleReconciliationResult(result: any): void {
+packages/core/src/SystemOrchestrator.ts:508:  private handleTradingPaused(data: any): void {
+packages/core/src/SystemOrchestrator.ts:517:         orderManager.cancelOrder(order.id, 'Trading paused').catch((err: any) => {
+packages/core/src/SystemOrchestrator.ts:524:  private handleRiskViolation(violation: any): void {
+packages/core/src/SystemOrchestrator.ts:537:  private handleNetworkPartition(partition: any): void {
+packages/core/src/SystemOrchestrator.ts:628:  getComponent(name: string): any {
+packages/core/src/SystemOrchestrator.ts:641:  async executeCommand(command: string, params: any): Promise<any> {
+packages/core/src/SystemOrchestrator.ts:695:        activeOrders.map((order: any) => 
+packages/core/src/SystemOrchestrator.ts:697:            .catch((err: any) => this.logger.error('Failed to cancel order', err))
+packages/core/src/SystemOrchestrator.ts:720:  private async attemptComponentRecovery(name: string, component: any): Promise<void> {
+packages/core/src/Telemetry.ts:48:  private tracer: any;
+packages/core/src/Telemetry.ts:49:  private meter: any;
+packages/core/src/Telemetry.ts:185:  startSpan(name: string, options?: any): any {
+packages/core/src/Telemetry.ts:192:  async withSpan<T>(name: string, fn: (span: any) => Promise<T>, options?: any): Promise<T> {
+packages/core/src/Telemetry.ts:256:      gauge.addCallback((observableResult: any) => {
+packages/core/src/Telemetry.ts:266:  injectContext(carrier: any): void {
+packages/core/src/Telemetry.ts:273:  extractContext(carrier: any): any {
+packages/core/src/Telemetry.ts:289:  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+packages/core/src/Telemetry.ts:292:    descriptor.value = async function (...args: any[]) {
+packages/core/src/Telemetry.ts:299:      return telemetry.withSpan(name, async (span: any) => {
+packages/core/src/Telemetry.ts:311:  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+packages/core/src/Telemetry.ts:314:    descriptor.value = async function (...args: any[]) {
+packages/core/src/Telemetry.ts:349:  static instrumentOrderManager(orderManager: any, telemetry: TelemetrySystem): void {
+packages/core/src/Telemetry.ts:352:    orderManager.submitOrder = async function(...args: any[]) {
+packages/core/src/Telemetry.ts:373:  static instrumentRiskEngine(riskEngine: any, telemetry: TelemetrySystem): void {
+packages/core/src/Telemetry.ts:375:    riskEngine.on('violation', (violation: any) => {
+packages/core/src/Telemetry.ts:388:  static instrumentPositionReconciliation(reconciliation: any, telemetry: TelemetrySystem): void {
+packages/core/src/Telemetry.ts:390:    reconciliation.on('reconciliation', (result: any) => {
+packages/core/src/WorkerThreadPool.ts:610:function processOrder(order: any): any {
+packages/core/src/WorkerThreadPool.ts:619:function calculateRisk(data: any): any {
+packages/core/src/WorkerThreadPool.ts:627:function executeStrategy(data: any): any {
+packages/core/src/WorkerThreadPool.ts:660:  data: any;
+packages/core/src/WorkerThreadPool.ts:662:  callback?: (error: Error | null, result: any) => void;
+packages/core/src/WorkerThreadPool.ts:668:  result: any;
+packages/core/src/WorkerThreadPool.ts:676:  result?: any;
+packages/core/src/WorkerThreadPool.ts:679:  stats?: any;
+packages/core/src/container.ts:13:  instance: any;
+packages/core/src/container.ts:217:  resolveDependencies(token: string): any[] {
+packages/core/src/container.ts:303:  return function (target: any) {
+packages/core/src/container.ts:311:  return function (target: any, propertyKey: string | symbol, parameterIndex: number) {
+packages/core/src/stubs.ts:46:  constructor(private logger: Logger, private config: any) {}
+packages/core/src/stubs.ts:62:  constructor(private logger: Logger, private config: any) {}
+packages/core/src/EventSchemas.ts:139:): any {
+packages/core/src/EventSchemas.ts:157:): { success: true; data: any } | { success: false; error: z.ZodError } {
+packages/data-connectors/src/BinanceConnector.ts:39:  private messageBuffer: any[] = [];
+packages/data-connectors/src/BinanceConnector.ts:151:  private processTicker(data: any): void {
+packages/data-connectors/src/BinanceConnector.ts:174:  private processOrderBook(data: any): void {
+packages/data-connectors/src/BinanceConnector.ts:194:  private processTrade(data: any): void {
+packages/data-connectors/src/BinanceConnector.ts:216:  private extractSymbolFromStream(data: any): string {
+packages/data-connectors/src/BinanceConnector.ts:220:  private bufferMessage(message: any): void {
+packages/data-connectors/src/ChainlinkOracle.ts:7:  info: (message: string, meta?: any) => logger.info(`[${name}] INFO:`, message, meta || ''),
+packages/data-connectors/src/ChainlinkOracle.ts:8:  error: (message: string, error?: any) => logger.error(`[${name}] ERROR:`, message, error || ''),
+packages/data-connectors/src/ChainlinkOracle.ts:9:  debug: (message: string, meta?: any) => logger.debug(`[${name}] DEBUG:`, message, meta || ''),
+packages/data-connectors/src/ChainlinkOracle.ts:10:  warn: (message: string, meta?: any) => logger.warn(`[${name}] WARN:`, message, meta || '')
+packages/data-connectors/src/CoinbaseConnector.ts:8:  info: (message: string, meta?: any) => logger.info(`[${name}] INFO:`, message, meta || ''),
+packages/data-connectors/src/CoinbaseConnector.ts:9:  error: (message: string, error?: any) => logger.error(`[${name}] ERROR:`, message, error || ''),
+packages/data-connectors/src/CoinbaseConnector.ts:10:  debug: (message: string, meta?: any) => logger.debug(`[${name}] DEBUG:`, message, meta || ''),
+packages/data-connectors/src/CoinbaseConnector.ts:11:  warn: (message: string, meta?: any) => logger.warn(`[${name}] WARN:`, message, meta || '')
+packages/data-connectors/src/CoinbaseConnector.ts:209:  private handleSubscriptions(message: any): void {
+packages/data-connectors/src/CoinbaseConnector.ts:246:  private handleSnapshot(message: any): void {
+packages/data-connectors/src/CoinbaseConnector.ts:268:  private handleL2Update(message: any): void {
+packages/data-connectors/src/CoinbaseConnector.ts:310:  private handleMatch(message: any): void {
+packages/data-connectors/src/CoinbaseConnector.ts:332:  private handleHeartbeat(message: any): void {
+packages/data-connectors/src/CoinbaseConnector.ts:351:  private handleError(message: any): void {
+packages/data-connectors/src/CoinbaseConnector.ts:409:    const candles: any[] = [];
+packages/data-connectors/src/ResilientDataConnector.ts:240:  private handleConnectionFailure(error: any): void {
+packages/data-connectors/src/ResilientDataConnector.ts:577:  protected send(data: any): void {
+packages/data-connectors/src/ResilientDataConnector.ts:590:  protected log(level: 'info' | 'warn' | 'error' | 'debug', message: string, meta?: any): void {
+packages/decentralized-core/src/NetworkPartitionSafety.d.ts:44:    command: any;
+packages/decentralized-core/src/NetworkPartitionSafety.d.ts:79:    appendEntry(command: any): boolean;
+packages/decentralized-core/src/NetworkPartitionSafety.ts:50:  command: any;
+packages/decentralized-core/src/NetworkPartitionSafety.ts:485:  appendEntry(command: any): boolean {
+packages/decentralized-core/src/NodeCommunicationLayer.ts:88:  payload: any;
+packages/decentralized-core/src/NodeCommunicationLayer.ts:165:        addresses: this.node.getMultiaddrs().map((ma: any) => ma.toString())
+packages/decentralized-core/src/NodeCommunicationLayer.ts:219:    pubsub.addEventListener('message', (evt: any) => {
+packages/decentralized-core/src/NodeCommunicationLayer.ts:227:    pubsub.addEventListener('message', (evt: any) => {
+packages/decentralized-core/src/NodeCommunicationLayer.ts:235:    pubsub.addEventListener('message', (evt: any) => {
+packages/decentralized-core/src/NodeCommunicationLayer.ts:243:    pubsub.addEventListener('message', (evt: any) => {
+packages/decentralized-core/src/NodeCommunicationLayer.ts:439:    data: any,
+packages/decentralized-core/src/NodeCommunicationLayer.ts:506:    return Array.from(this.node.getPeers()).map((peer: any) => peer.toString());
+packages/exchanges/src/NonBlockingExchangeConnector.ts:745:  getStats(): { [exchange: string]: any } {
+packages/exchanges/src/NonBlockingExchangeConnector.ts:746:    const stats: { [exchange: string]: any } = {};
+packages/exchanges/src/NonBlockingExchangeConnector.ts:820:  getStats(): { [exchange: string]: any } {
+packages/exchanges/src/NonBlockingExchangeConnector.ts:821:    const stats: { [exchange: string]: any } = {};
+packages/exchanges/src/NonBlockingExchangeConnector.ts:889:  payload: any;
+packages/exchanges/src/NonBlockingExchangeConnector.ts:897:  data: any;
+packages/exchanges/src/NonBlockingExchangeConnector.ts:904:  resolve: (value: any) => void;
+packages/exchanges/src/NonBlockingExchangeConnector.ts:915:  rateLimiter: { [exchange: string]: any };
+packages/exchanges/src/NonBlockingExchangeConnector.ts:916:  circuitBreaker: { [exchange: string]: any };
+packages/exchanges/src/index.ts:30:  private paperTradingEngine: any = null; // PaperTradingEngine instance
+packages/exchanges/src/index.ts:167:  getPaperTradingEngine(): any {
+packages/execution/src/ExchangeBatcher.ts:17:  resolve: (result: any) => void;
+packages/execution/src/ExchangeBatcher.ts:18:  reject: (error: any) => void;
+packages/execution/src/ExchangeBatcher.ts:323:    const simulateExchangeAPI = async (requests: any[]): Promise<any[]> => {
+packages/execution/src/ExecutionOptimizerService.ts:493:      algorithm.on('metricsUpdate', (metrics: any) => {
+packages/execution/src/ExecutionOptimizerService.ts:669:    const allFills: any[] = [];
+packages/execution/src/ExecutionOptimizerService.ts:801:  ): any[] {
+packages/execution/src/ExecutionOptimizerService.ts:802:    const successfulFills: any[] = [];
+packages/execution/src/ExecutionOptimizerService.ts:857:  private updateAnalytics(type: string, data: any): void {
+packages/execution/src/ExecutionOptimizerService.ts:869:  private updateAlgorithmMetrics(type: AlgorithmType, metrics: any): void {
+packages/execution/src/ExecutionOptimizerService.ts:980:    this.safetyController.on('mode-changed', (event: any) => {
+packages/execution/src/ExecutionOptimizerService.ts:997:    this.safetyController.on('emergency-stop', async (event: any) => {
+packages/execution/src/ExecutionOptimizerServicePatch.ts:38:  this: any, // ExecutionOptimizerService instance
+packages/execution/src/ExecutionOptimizerServicePatch.ts:128:  getSimulationStats(): any {
+packages/execution/src/ExecutionTelemetryCollector.ts:32:    [key: string]: any;
+packages/execution/src/ExecutionTelemetryCollector.ts:75:  'order:routed': (order: Order, routing: any) => void;
+packages/execution/src/ExecutionTelemetryCollector.ts:78:  'order:failed': (orderId: string, error: any) => void;
+packages/execution/src/ExecutionTelemetryCollector.ts:97:  'algorithm:parameter_optimized': (algorithm: string, parameters: any) => void;
+packages/execution/src/ExecutionTelemetryCollector.ts:98:  'algorithm:performance': (algorithm: string, metrics: any) => void;
+packages/execution/src/ExecutionTelemetryCollector.ts:334:  recordOrderFailed(orderId: string, error: any, order?: Order): void {
+packages/execution/src/ExecutionTelemetryCollector.ts:418:  recordAlgorithmPerformance(algorithm: string, metrics: any): void {
+packages/execution/src/ExecutionTelemetryIntegration.ts:72:  recordOrderRouted(order: Order, routing: any): void {
+packages/execution/src/ExecutionTelemetryIntegration.ts:144:  recordOrderFailed(orderId: string, error: any, order?: Order): void {
+packages/execution/src/ExecutionTelemetryIntegration.ts:284:  recordAlgorithmPerformance(algorithm: string, metrics: any): void {
+packages/execution/src/IcebergAlgorithm.ts:116:    router: any
+packages/execution/src/IcebergAlgorithm.ts:310:  private async placeNextClip(orderId: string, router: any): Promise<void> {
+packages/execution/src/IcebergAlgorithm.ts:373:  private async placeFinalClip(state: IcebergState, router: any): Promise<void> {
+packages/execution/src/IcebergAlgorithm.ts:400:    router: any
+packages/execution/src/LiquidityAggregator.ts:811:  private handleOrderBookUpdate(exchangeId: string, message: any): void {
+packages/execution/src/LiquidityAggregator.ts:837:  private handleTradeUpdate(exchangeId: string, message: any): void {
+packages/execution/src/LiquidityAggregator.ts:866:  private handleTickerUpdate(exchangeId: string, message: any): void {
+packages/execution/src/LiquidityAggregator.ts:890:  private parsePriceLevels(levels: any[]): PriceLevel[] {
+packages/execution/src/LiveMetricsCollector.ts:207:        orderbook: (data: any) => this.handleOrderBookUpdate(exchangeId, data),
+packages/execution/src/LiveMetricsCollector.ts:208:        trade: (data: any) => this.handleTradeUpdate(exchangeId, data),
+packages/execution/src/LiveMetricsCollector.ts:209:        latency: (data: any) => this.handleLatencyUpdate(exchangeId, data),
+packages/execution/src/LiveMetricsCollector.ts:264:  private handleTradeUpdate(exchangeId: string, trade: any): void {
+packages/execution/src/MEVProtectionManager.ts:800:    submission: any
+packages/execution/src/OrderLifecycleManager.ts:657:  private getExchangeConnector(venue: string): any {
+packages/execution/src/OrderLifecycleManager.ts:663:  private async reconcileOrderStatus(order: Order, exchangeStatus: any): Promise<void> {
+packages/execution/src/POVAlgorithm.ts:100:    router: any
+packages/execution/src/ParallelRiskCalculator.ts:413:    this.worker.on('message', (msg: any) => {
+packages/execution/src/ParallelRiskCalculator.ts:436:      const handler = (msg: any) => {
+packages/execution/src/ParallelRiskCalculator.ts:456:      const handler = (msg: any) => {
+packages/execution/src/ParallelRiskCalculator.ts:476:      const handler = (msg: any) => {
+packages/execution/src/ParallelRiskCalculator.ts:496:      const handler = (msg: any) => {
+packages/execution/src/ParallelRiskCalculator.ts:947:declare const SIMD: any;
+packages/execution/src/PredictiveExecutionEngine.ts:93:  private algorithmClassifier: any; // Neural network or ensemble model
+packages/execution/src/PredictiveExecutionEngine.ts:94:  private impactPredictor: any; // Regression model
+packages/execution/src/PredictiveExecutionEngine.ts:219:  private createAlgorithmClassifier(): any {
+packages/execution/src/PredictiveExecutionEngine.ts:273:  private createImpactPredictor(): any {
+packages/execution/src/PredictiveExecutionEngine.ts:389:  ): any {
+packages/execution/src/PredictiveExecutionEngine.ts:390:    const parameters: any = {};
+packages/execution/src/SafetyControllerWrapper.ts:90:export function connectToRealSafetyController(realController: any): void {
+packages/execution/src/SafetyControllerWrapper.ts:94:  realController.on('mode-changed', (event: any) => {
+packages/execution/src/SafetyControllerWrapper.ts:99:  realController.on('emergency-stop', (event: any) => {
+packages/execution/src/SmartOrderRouter.ts:1431:    executionResult: any
+packages/execution/src/TWAPAlgorithm.ts:79:    router: any // SmartOrderRouter instance
+packages/execution/src/TWAPAlgorithm.ts:387:    router: any
+packages/execution/src/VWAPAlgorithm.ts:112:    router: any
+packages/execution/src/VWAPAlgorithm.ts:163:  updateVolumeProfile(symbol: string, volumeData: any): void {
+packages/execution/src/VWAPAlgorithm.ts:675:  private async executeNextSlice(orderId: string, router: any): Promise<void> {
+packages/execution/src/index.ts:49:  emit(event: string, data: any): void {
+packages/execution/src/index.ts:83:  async protectTransaction(tx: any): Promise<any> {
+packages/execution/src/types.ts:279:  params?: any;
+packages/execution/src/types.ts:337:    public details?: any
+packages/execution/src/types.ts:390:  transaction: any; // ethers.Transaction
+packages/execution/src/types.ts:393:  gasPrice?: any; // BigNumber
+packages/execution/src/types.ts:394:  maxFeePerGas?: any; // BigNumber
+packages/execution/src/types.ts:395:  maxPriorityFeePerGas?: any; // BigNumber
+packages/execution/src/types.ts:413:  priorityFee?: any; // BigNumber
+packages/execution/src/types.ts:693:  parameterOptimization?: any;
+packages/floor-engine/src/core/MLRiskAdapter.ts:88:  positions: any[];
+packages/floor-engine/src/core/MLRiskAdapter.ts:155:    this.weightAllocator.on('allocation-updated', (allocation: any) => {
+packages/floor-engine/src/core/MLRiskAdapter.ts:161:    this.portfolioSentinel.on('emergency-action', (action: any) => {
+packages/floor-engine/src/core/MLRiskAdapter.ts:166:    this.portfolioSentinel.on('risk-limit-breach', (breach: any) => {
+packages/floor-engine/src/core/MLRiskAdapter.ts:437:    allocation: any,
+packages/floor-engine/src/core/MLRiskAdapter.ts:511:  private getRegimeRiskMultiplier(regime: any): number {
+packages/floor-engine/src/core/MLRiskAdapter.ts:529:    regime: any
+packages/floor-engine/src/core/MLRiskAdapter.ts:543:    allocation: any,
+packages/floor-engine/src/core/MLRiskAdapter.ts:567:  private handleEmergencyAction(action: any): void {
+packages/floor-engine/src/core/MLRiskAdapter.ts:609:  private generateRecommendedActions(action: any): string[] {
+packages/floor-engine/src/core/RiskManager.ts:67:    this.mlRiskAdapter.on('risk-limit-breach', (breach: any) => {
+packages/floor-engine/src/core/RiskManager.ts:73:    this.mlRiskAdapter.on('ml-allocation-updated', (allocation: any) => {
+packages/human-oversight/src/HumanOversightManager.ts:126:      } catch (error: any) {
+packages/human-oversight/src/HumanOversightManager.ts:176:      } catch (error: any) {
+packages/human-oversight/src/HumanOversightManager.ts:662:  getPendingApprovals(): any[] {
+packages/integration-layer/src/config/ConfigurationService.ts:261:    value: any,
+packages/integration-layer/src/config/ConfigurationService.ts:532:  private async loadSecrets(securityConfig: any): Promise<void> {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:33:  metrics?: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:43:  metrics?: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:57:  createGauge(config: any): void;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:58:  createCounter(config: any): void;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:59:  recordMetric(name: string, value: number, labels?: any): void;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:69:  private metaGovernance: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:70:  private votingEngine: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:71:  private signalElection: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:72:  private riskPolicyManager: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:73:  private auditLog: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:76:  private deploymentOrchestrator: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:77:  private ciValidator: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:78:  private canaryLauncher: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:79:  private livePromoter: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:80:  private rollbackEngine: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:81:  private deploymentDashboard: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:84:  private dynamicWeightAllocator: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:85:  private capitalFlowOptimizer: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:86:  private portfolioSentinel: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:87:  private capitalStrategyDashboard: any;
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:123:      createGauge: (config: any) => {},
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:124:      createCounter: (config: any) => {},
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:125:      recordMetric: (name: string, value: number, labels?: any) => {}
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:322:    this.votingEngine.on('voting-completed', async (results: any) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:343:    this.canaryLauncher.on('canary-launched', async (canary: any) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:350:    this.canaryLauncher.on('canary-promoted', async (canary: any) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:361:    this.riskPolicyManager.on('policy-updated', async (policy: any) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:375:    this.riskPolicyManager.on('risk-events', async (events: any[]) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:407:        emitter.on(event, async (data: any) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:428:    this.portfolioSentinel.on('constraints-violated', async (violation: any) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:441:    this.metaGovernance.on('low-confidence-decision', async (decision: any) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:577:    this.signalElection.on('signal-elected', async (signal: any) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:585:    this.riskPolicyManager.on('risk-events', async (events: any[]) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:601:    this.deploymentOrchestrator.on('deployment-started', async (deployment: any) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:615:    this.deploymentOrchestrator.on('deployment-completed', async (deployment: any) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:625:    this.canaryLauncher.on('canary-rolled-back', async (data: any) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:638:    this.rollbackEngine.on('rollback-completed', async (result: any) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:667:    this.portfolioSentinel.on('rebalance-requested', async (request: any) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:693:    this.portfolioSentinel.on('emergency-stop', async (event: any) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:706:    this.portfolioSentinel.on('capital-frozen', async (event: any) => {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:903:  private async handleConstraintViolation(violation: any): Promise<void> {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:916:  private async triggerCircuitBreaker(reason: string, data: any): Promise<void> {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:935:  private async executeEmergencyFreeze(event: any): Promise<void> {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:949:  private async handleLowConfidenceDecision(decision: any): Promise<void> {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:969:  private async handleCriticalRiskEvent(event: any): Promise<void> {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:997:  private determineImpact(action: string, data: any): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:1079:  getEliteSystemStatus(): any {
+packages/integration-layer/src/core/SystemOrchestrator.ts:55:  instance: any;
+packages/integration-layer/src/core/SystemOrchestrator.ts:126:    moduleClass: any,
+packages/integration-layer/src/core/SystemOrchestrator.ts:129:      config?: any;
+packages/integration-layer/src/core/SystemOrchestrator.ts:769:  private async handleModuleError(moduleId: string, error: any): Promise<void> {
+packages/integration-layer/src/core/SystemOrchestrator.ts:823:  private async broadcastSystemEvent(type: MessageType, payload: any): Promise<void> {
+packages/integration-layer/src/health/HealthMonitor.ts:522:  private calculateAggregateMetrics(results: HealthCheckResult[]): any {
+packages/integration-layer/src/recovery/RecoveryManager.ts:661:    error: any
+packages/integration-layer/src/types/config.ts:239:  oldValue: any;
+packages/integration-layer/src/types/config.ts:240:  newValue: any;
+packages/integration-layer/src/types/config.ts:254:  value?: any;
+packages/integration-layer/src/types/config.ts:279:  enum?: any[];
+packages/integration-layer/src/types/config.ts:283:  default?: any;
+packages/integration-layer/src/types/config.ts:293:  default?: any;
+packages/integration-layer/src/types/config.ts:316:  static merge(base: any, override: any): any {
+packages/integration-layer/src/types/config.ts:335:  static getValueByPath(obj: any, path: string): any {
+packages/integration-layer/src/types/config.ts:339:  static setValueByPath(obj: any, path: string, value: any): void {
+packages/integration-layer/src/types/config.ts:350:  static validateAgainstSchema(value: any, schema: ConfigSchema): ConfigValidation {
+packages/market-data/src/HistoricalDataLoader.ts:123:      let rawData: any[] = [];
+packages/market-data/src/HistoricalDataLoader.ts:285:        .filter((s: any) => s.status === 'TRADING')
+packages/market-data/src/HistoricalDataLoader.ts:286:        .map((s: any) => s.symbol);
+packages/market-data/src/RingBuffer.ts:312:  static async runBenchmark(logger: any): Promise<void> {
+packages/market-intel/src/MarketIntelService.ts:492:    const activities: any[] = [];
+packages/market-intel/src/MarketIntelService.ts:539:  private calculatePerformanceMetrics(signals: AlphaSignal[]): any {
+packages/market-intel/src/MarketIntelService.ts:554:  private generateReportSummary(data: any): string {
+packages/market-intel/src/MarketIntelService.ts:592:  private config: any;
+packages/market-intel/src/MarketIntelService.ts:594:  constructor(config: any) {
+packages/market-intel/src/MarketIntelService.ts:598:  async generateFromOrderBook(symbol: string, analysis: any): Promise<AlphaSignal | null> {
+packages/market-intel/src/MarketIntelService.ts:623:  async generateFromWhaleActivity(activity: WhaleActivity, result: any): Promise<AlphaSignal | null> {
+packages/market-intel/src/MarketIntelService.ts:669:  async generateFromSentiment(symbol: string, analysis: any, post: any): Promise<AlphaSignal | null> {
+packages/market-intel/src/MarketIntelService.ts:695:  private generateOrderBookReasoning(analysis: any): string {
+packages/market-intel/src/MarketIntelService.ts:716:  private generateWhaleReasoning(activity: WhaleActivity, result: any): string {
+packages/market-intel/src/MarketIntelService.ts:737:  private generateSentimentReasoning(analysis: any, post: any): string {
+packages/market-intel/src/MarketIntelService.ts:749:  private calculateOrderBookRisk(metrics: any): number {
+packages/market-intel/src/MarketIntelService.ts:764:  private calculateWhaleRisk(activity: WhaleActivity, result: any): number {
+packages/market-intel/src/MarketIntelService.ts:783:  async checkOrderBookAnomaly(orderBook: OrderBook, analysis: any): Promise<MarketAnomaly | null> {
+packages/market-intel/src/types.ts:280:  data: any;
+packages/market-intel/src/types.ts:349:  data: any;
+packages/ml-client/src/index.ts:102:  private client: any;
+packages/ml-client/src/index.ts:159:      this.client.Predict(request, { deadline }, (error: any, response: PredictResponse) => {
+packages/ml-client/src/index.ts:180:      this.client.ClassifyRegime(request, { deadline }, (error: any, response: RegimeResponse) => {
+packages/ml-client/src/index.ts:201:      this.client.GenerateFeatures(request, { deadline }, (error: any, response: FeatureResponse) => {
+packages/ml-client/src/index.ts:222:      this.client.BatchPredict(request, { deadline }, (error: any, response: BatchPredictResponse) => {
+packages/ml-client/src/index.ts:241:      this.client.HealthCheck({ service }, { deadline }, (error: any, response: HealthCheckResponse) => {
+packages/ml-client/src/types.ts:39:  details?: any;
+packages/ml-deployment/src/model-packager.ts:58:    [key: string]: any;
+packages/ml-deployment/src/model-packager.ts:121:  metadata: any = {}
+packages/ml-deployment/src/model-packager.ts:307:  metadata: any = {}
+packages/network-optimizer/src/NetworkBenchmark.ts:200:    client.on('data', (packet: any) => {
+packages/node-onboarding/src/NodeOnboardingCLI.ts:352:    attestation: any;
+packages/node-runtime/src/inference-service.ts:246:    } catch (error: any) {
+packages/node-runtime/src/inference-service.ts:416:    stats: any;
+packages/node-runtime/src/model-loader.ts:41:  manifest: any;
+packages/node-runtime/src/model-loader.ts:53:  manifest: any;
+packages/node-runtime/src/model-loader.ts:382:    const updates: any[] = [];
+packages/on-chain-service/src/services/CapitalManager.ts:132:    } catch (error: any) {
+packages/on-chain-service/src/services/CapitalManager.ts:205:    } catch (error: any) {
+packages/on-chain-service/src/services/CapitalManager.ts:275:    } catch (error: any) {
+packages/on-chain-service/src/services/RewardDistributor.ts:152:      const event = receipt.logs.find((log: any) => {
+packages/on-chain-service/src/services/RewardDistributor.ts:190:    } catch (error: any) {
+packages/on-chain-service/src/services/RewardDistributor.ts:259:    } catch (error: any) {
+packages/on-chain-service/src/services/RewardDistributor.ts:323:    } catch (error: any) {
+packages/on-chain-service/src/services/RewardDistributor.ts:399:    } catch (error: any) {
+packages/on-chain-service/src/services/TrustUpdater.ts:137:    } catch (error: any) {
+packages/on-chain-service/src/services/TrustUpdater.ts:227:    } catch (error: any) {
+packages/on-chain-service/src/services/TrustUpdater.ts:253:    } catch (error: any) {
+packages/on-chain-service/src/services/TrustUpdater.ts:279:    } catch (error: any) {
+packages/on-chain-service/src/index.ts:99:    } catch (error: any) {
+packages/on-chain-settlement/src/OnChainSettlementManager.ts:128:    } catch (error: any) {
+packages/on-chain-settlement/src/OnChainSettlementManager.ts:261:    } catch (error: any) {
+packages/oracle-consensus/src/BFTConsensusEngine.ts:194:    this.contract.on('SubmissionReceived', (roundId: any, oracle: any, dataHash: any, event: any) => {
+packages/oracle-consensus/src/BFTConsensusEngine.ts:199:    this.contract.on('ConsensusReached', (roundId: any, consensusHash: any, weight: any, event: any) => {
+packages/oracle-consensus/src/BFTConsensusEngine.ts:204:    this.contract.on('ConsensusFailed', (roundId: any, reason: any, event: any) => {
+packages/oracle-consensus/src/BFTConsensusEngine.ts:212:  async startRound(data: any): Promise<number> {
+packages/oracle-consensus/src/BFTConsensusEngine.ts:278:  async submitData(roundId: number, data: any): Promise<void> {
+packages/oracle-consensus/src/OracleCoordinator.ts:185:  private handleConsensusReached(event: any): void {
+packages/oracle-consensus/src/OracleCoordinator.ts:194:  private handleConsensusFailed(event: any): void {
+packages/performance/src/PnLCalculator.ts:200:    public calculatePnL(strategyId: string, executionResult: any): number;
+packages/performance/src/PnLCalculator.ts:218:    public getOpenPositions(strategyId?: string): any[] {
+packages/quant-research/src/analysis/AlphaDecayAnalyzer.ts:23:  performance: any;
+packages/quant-research/src/analysis/AlphaDecayAnalyzer.ts:144:  private calculateWindowPerformance(trades: Trade[]): any {
+packages/quant-research/src/analysis/AlphaDecayAnalyzer.ts:242:  private fitExponentialDecay(values: number[]): any {
+packages/quant-research/src/analysis/AlphaDecayAnalyzer.ts:355:    const regimes: any[] = [];
+packages/quant-research/src/analysis/AlphaDecayAnalyzer.ts:413:  private analyzeCrowding(windows: TimeWindow[]): any {
+packages/quant-research/src/analysis/AlphaDecayAnalyzer.ts:625:  private calculateTransitionProbabilities(regimes: any[]): any {
+packages/quant-research/src/analytics/StatsEngine.ts:271:  private calculateWinRate(trades: any[]): number {
+packages/quant-research/src/analytics/StatsEngine.ts:280:  private calculateProfitFactor(trades: any[]): number {
+packages/quant-research/src/analytics/StatsEngine.ts:291:  private calculatePayoffRatio(trades: any[]): number {
+packages/quant-research/src/analytics/StatsEngine.ts:392:  private calculateAvgTradesPerDay(trades: any[]): number {
+packages/quant-research/src/analytics/StatsEngine.ts:405:  private calculateAvgHoldingPeriod(trades: any[]): number {
+packages/quant-research/src/analytics/StatsEngine.ts:421:  private calculateTurnover(trades: any[], initialCapital: number): number {
+packages/quant-research/src/backtesting/Backtester.ts:79:  async run(config: BacktestConfig, data: any): Promise<BacktestResult> {
+packages/quant-research/src/backtesting/Backtester.ts:164:  private async prepareData(rawData: any): Promise<void> {
+packages/quant-research/src/backtesting/Backtester.ts:350:    action: any,
+packages/quant-research/src/backtesting/Backtester.ts:458:  private calculatePositionSize(action: any, bar: MarketData): number {
+packages/quant-research/src/backtesting/Backtester.ts:532:  private calculateIndicators(symbol: string, index: number): any {
+packages/quant-research/src/backtesting/Backtester.ts:571:  private evaluateRule(rule: any, indicators: any, bar: MarketData): boolean {
+packages/quant-research/src/core/QuantResearchService.ts:297:  async analyzeFactors(model: FactorModel, data: any): Promise<FactorAnalysisResult> {
+packages/quant-research/src/core/QuantResearchService.ts:489:    parameters: any
+packages/quant-research/src/core/QuantResearchService.ts:508:  private async updateStrategy(id: string, parameters: any): Promise<void> {
+packages/quant-research/src/data/DataManager.ts:25:    data: any;
+packages/quant-research/src/data/DataManager.ts:435:  private getFromCache(key: string): any {
+packages/quant-research/src/data/DataManager.ts:451:  private setCache(key: string, data: any, ttl: number): void {
+packages/quant-research/src/data/DataManager.ts:477:  async exportResults(result: any): Promise<void> {
+packages/quant-research/src/factors/FactorAnalyzer.ts:94:    data: any
+packages/quant-research/src/factors/FactorAnalyzer.ts:204:    const stats: any = {};
+packages/quant-research/src/factors/FactorAnalyzer.ts:230:    stats: any
+packages/quant-research/src/factors/FactorAnalyzer.ts:305:  private performPCA(correlationMatrix: number[][]): any {
+packages/quant-research/src/factors/FactorAnalyzer.ts:315:      .sort((a: any, b: any) => b.value - a.value);
+packages/quant-research/src/factors/FactorAnalyzer.ts:318:    const totalVariance = sorted.reduce((sum: number, item: any) => sum + item.value, 0);
+packages/quant-research/src/factors/FactorAnalyzer.ts:319:    const explainedVariance = sorted.map((item: any) => item.value / totalVariance);
+packages/quant-research/src/factors/FactorAnalyzer.ts:333:      eigenvalues: sorted.map((item: any) => item.value).slice(0, components.length)
+packages/quant-research/src/factors/FactorAnalyzer.ts:340:  private calculateFactorWeights(factors: Factor[], pcaResult: any): { [factorId: string]: number } {
+packages/quant-research/src/factors/FactorAnalyzer.ts:357:  private prepareData(data: any): { returns: number[], factorData: any } {
+packages/quant-research/src/factors/FactorAnalyzer.ts:362:    const factorData: any = {};
+packages/quant-research/src/factors/FactorAnalyzer.ts:376:    factorData: any,
+packages/quant-research/src/factors/FactorAnalyzer.ts:468:    factorData: any,
+packages/quant-research/src/factors/FactorAnalyzer.ts:508:  ): any {
+packages/quant-research/src/factors/FactorAnalyzer.ts:549:    riskAttribution: any
+packages/quant-research/src/factors/FactorAnalyzer.ts:900:  private calculateEigenvalues(matrix: number[][]): any {
+packages/quant-research/src/simulation/MonteCarloSimulator.ts:194:    stats: any,
+packages/quant-research/src/simulation/MonteCarloSimulator.ts:241:    strategy: any,
+packages/quant-research/src/simulation/MonteCarloSimulator.ts:276:  private calculatePathMetrics(values: number[], returns: number[]): any {
+packages/quant-research/src/simulation/MonteCarloSimulator.ts:363:  private analyzeTailRisk(paths: SimulationPath[], config: MonteCarloConfig): any {
+packages/quant-research/src/simulation/MonteCarloSimulator.ts:455:  private assessConvergence(paths: SimulationPath[]): any {
+packages/quant-research/src/simulation/MonteCarloSimulator.ts:484:  private generateStressScenarios(paths: SimulationPath[]): any[] {
+packages/quant-research/src/simulation/MonteCarloSimulator.ts:527:  private getHistoricalStatistics(strategy: any): any {
+packages/quant-research/src/simulation/MonteCarloSimulator.ts:569:  private regimeSwitchingReturn(stats: any, timeStep: number): number {
+packages/quant-research/src/testing/StrategyABTestEngine.ts:53:    trades: any[];
+packages/quant-research/src/testing/StrategyABTestEngine.ts:58:    trades: any[];
+packages/quant-research/src/testing/StrategyABTestEngine.ts:235:  private performStatisticalAnalysis(result: any, config: ABTestConfig): any {
+packages/quant-research/src/testing/StrategyABTestEngine.ts:236:    const analysis: any = {
+packages/quant-research/src/testing/StrategyABTestEngine.ts:278:  private determineWinner(analysis: any, config: ABTestConfig): any {
+packages/quant-research/src/testing/StrategyABTestEngine.ts:331:  private generateRecommendation(winner: any, analysis: any): string {
+packages/quant-research/src/testing/StrategyABTestEngine.ts:391:  private generateMarketData(timestamp: Date): any {
+packages/quant-research/src/testing/StrategyABTestEngine.ts:415:    marketData: any,
+packages/quant-research/src/testing/StrategyABTestEngine.ts:416:    state: any
+packages/quant-research/src/testing/StrategyABTestEngine.ts:417:  ): any {
+packages/quant-research/src/testing/StrategyABTestEngine.ts:439:  private executeTrade(signal: any, state: any, marketData: any): void {
+packages/quant-research/src/testing/StrategyABTestEngine.ts:465:  private updateEquity(state: any, marketData: any): void {
+packages/quant-research/src/testing/StrategyABTestEngine.ts:476:    const totalFees = state.trades.reduce((sum: number, t: any) => sum + t.fees, 0);
+packages/quant-research/src/testing/StrategyABTestEngine.ts:485:  private calculatePerformance(state: any): StrategyPerformance {
+packages/quant-research/src/testing/StrategyABTestEngine.ts:511:    const profitableTrades = trades.filter((t: any) => {
+packages/quant-research/src/testing/StrategyABTestEngine.ts:536:  private extractMetricValues(result: any, metric: string): number[] {
+packages/quant-research/src/types/index.ts:46:  [key: string]: any;
+packages/quant-research/src/types/index.ts:265:  values?: any[];
+packages/quant-research/src/types/index.ts:301:  bestParameters: { [key: string]: any };
+packages/quant-research/src/types/index.ts:325:  metadata?: { [key: string]: any };
+packages/quant-research/src/types/index.ts:348:  statistics: { [key: string]: any };
+packages/quant-research/src/types/index.ts:459:  parameters: { [key: string]: any };
+packages/quant-research/src/types/index.ts:461:  fittedParameters?: { [key: string]: any };
+packages/quant-research/src/types/index.ts:489:  analyzeFactors(model: FactorModel, data: any): Promise<FactorAnalysisResult>;
+packages/quant-research/src/types/index.ts:545:  parameters: { [key: string]: any };
+packages/quant-research/src/types/index.ts:583:  regression?: any;
+packages/quant-research/src/types/index.ts:584:  riskAttribution?: any;
+packages/quant-research/src/types/index.ts:627:  strategy?: any;
+packages/quant-research/src/types/index.ts:628:  parameters?: any;
+packages/quant-research/src/types/index.ts:651:  statistics: any;
+packages/quant-research/src/types/index.ts:652:  confidenceInterval?: any;
+packages/quant-research/src/types/index.ts:658:  tailRisk?: any;
+packages/quant-research/src/types/index.ts:659:  convergenceMetrics?: any;
+packages/quant-research/src/types/index.ts:708:  decayByMetric?: { [key: string]: any };
+packages/quant-research/src/types/index.ts:716:  characteristics: { [key: string]: any };
+packages/quant-research/src/types/index.ts:719:  regimes?: any[];
+packages/quant-research/src/types/index.ts:720:  transitionProbabilities?: any;
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:24:  parameters: { [key: string]: any };
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:35:  optimalParams?: { [key: string]: any };
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:44:  private bestParameters: { [key: string]: any } = {};
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:234:    const observations: { params: any; score: number }[] = [];
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:300:    let population: Array<{ params: any; fitness: number }> = [];
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:328:        let offspring: any;
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:387:      position: any;
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:388:      velocity: any;
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:389:      personalBest: any;
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:486:    let population: Array<{ params: any; fitness: number }> = [];
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:739:  private calculateRobustnessScore(walkForwardResults: any): number {
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:765:  private generateParameterGrid(parameters: ParameterRange[]): any[] {
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:766:    const grid: any[] = [];
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:769:    const generateCombinations = (index: number, current: any) => {
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:791:  private getParameterValues(param: ParameterRange): any[] {
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:825:  private generateRandomParameters(parameters: ParameterRange[]): any {
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:826:    const params: any = {};
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:853:    parameters: any,
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:924:  private checkConstraints(parameters: any, config: OptimizationConfig): boolean {
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:988:  private tournamentSelection(population: Array<{ params: any; fitness: number }>): any {
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1005:  private crossover(parent1: any, parent2: any, parameters: ParameterRange[]): any {
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1006:    const child: any = {};
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1022:  private mutate(individual: any, parameters: ParameterRange[]): any {
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1048:    observations: Array<{ params: any; score: number }>,
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1050:  ): any {
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1077:  private parameterDistance(params1: any, params2: any, parameters: ParameterRange[]): number {
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1096:  private initializeVelocity(parameters: ParameterRange[]): any {
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1097:    const velocity: any = {};
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1115:    velocity: any,
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1116:    position: any,
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1117:    personalBest: any,
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1118:    globalBest: any,
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1123:  ): any {
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1124:    const newVelocity: any = {};
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1148:    position: any,
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1149:    velocity: any,
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1151:  ): any {
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1152:    const newPosition: any = {};
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1204:    a: any,
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1205:    b: any,
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1206:    c: any,
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1209:  ): any {
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1210:    const mutant: any = {};
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1236:    target: any,
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1237:    mutant: any,
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1240:  ): any {
+packages/quant-research/src/optimization/WalkForwardOptimizer.ts:1241:    const trial: any = {};
+packages/quant-research/src/index.ts:38:let quantResearchService: any | null = null;
+packages/risk-engine/src/services/RiskEngineService.ts:196:    signal: any, // TradingSignal interface from PositionSizer
+packages/risk-engine/src/types/index.ts:151:  marketConditions?: any; // For backward compatibility
+packages/risk-engine/src/types/index.ts:425:  context?: any;
+packages/risk-engine/src/types/index.ts:498:    public details?: any
+packages/risk-engine/src/types/index.ts:508:  track(event: any): void;
+packages/risk-engine/src/types/index.ts:514:  data: any;
+packages/risk-engine/src/types/index.ts:573:  details?: any;
+packages/risk-engine/src/types.old.ts:197:  data: any;
+packages/risk-engine/src/types.old.ts:253:  data: any;
+packages/safety-control/src/LiveTradingReactivationService.ts:9:  info: (message: string, meta?: any) => logger.info(`[${name}] INFO: ${message}`, meta),
+packages/safety-control/src/LiveTradingReactivationService.ts:10:  error: (message: string, error?: any) => logger.error(`[${name}] ERROR: ${message}`, error),
+packages/safety-control/src/LiveTradingReactivationService.ts:11:  debug: (message: string, meta?: any) => logger.debug(`[${name}] DEBUG: ${message}`, meta),
+packages/safety-control/src/LiveTradingReactivationService.ts:12:  warn: (message: string, meta?: any) => logger.warn(`[${name}] WARN: ${message}`, meta)
+packages/safety-control/src/LiveTradingReactivationService.ts:232:    evaluation?: any;
+packages/safety-control/src/LiveTradingReactivationService.ts:411:  private getCriteriaSummary(criteria?: ReactivationCriteria): any {
+packages/safety-control/src/LiveTradingReactivationService.ts:422:  private appendToAuditLog(event: string, data: any): void {
+packages/safety-control/src/SafetyController.ts:9:  info: (message: string, meta?: any) => logger.info(`[${name}] INFO: ${message}`, meta),
+packages/safety-control/src/SafetyController.ts:10:  error: (message: string, error?: any) => logger.error(`[${name}] ERROR: ${message}`, error),
+packages/safety-control/src/SafetyController.ts:11:  debug: (message: string, meta?: any) => logger.debug(`[${name}] DEBUG: ${message}`, meta),
+packages/safety-control/src/SafetyController.ts:12:  warn: (message: string, meta?: any) => logger.warn(`[${name}] WARN: ${message}`, meta)
+packages/safety-control/src/cli.ts:122:      } catch (error: any) {
+packages/safety-control/src/cli.ts:133:      const updates: any = {};
+packages/safety-control/src/cli.ts:239:  } catch (error: any) {
+packages/strategy/src/StrategyExecutor.ts:185:  async updateParameters(strategyId: string, parameters: any): Promise<void> {
+packages/strategy/src/StrategyExecutor.ts:197:  getPerformance(strategyId?: string): any {
+packages/strategy/src/StrategyExecutor.ts:325:  async updateParameters(parameters: any): Promise<void> {
+packages/strategy/src/StrategyExecutor.ts:448:  parameters?: any;
+packages/strategy/src/StrategyExecutor.ts:457:  parameters?: any;
+packages/strategy/src/StrategyExecutor.ts:471:  metadata?: any;
+packages/strategy/src/StrategyExecutor.ts:520:  parameters?: any;
+packages/strategy/src/StrategyWorker.ts:37:  protected parameters: any;
+packages/strategy/src/StrategyWorker.ts:38:  protected state: any = {};
+packages/strategy/src/StrategyWorker.ts:40:  constructor(parameters: any) {
+packages/strategy/src/StrategyWorker.ts:58:  updateParameters(newParams: any): void {
+packages/strategy/src/StrategyWorker.ts:180:function createStrategy(name: string, parameters: any): BaseStrategy {
+packages/strategy/src/StrategyWorker.ts:195:parentPort!.on('message', (msg: any) => {
+packages/strategy/src/StrategyWorker.ts:314:  metadata?: any;
+packages/strategy/src/MockStrategy.ts:20:    private boundHandleMarketData: ((event: any) => void) | null = null;
+packages/strategy/src/MockStrategy.ts:32:    private handleMarketData(event: any): void {
+packages/system-orchestrator/src/index.ts:239:    const exchanges: any[] = [];
+packages/system-orchestrator/src/index.ts:487:  private processMarketData(exchange: string, data: any): void {
+packages/system-orchestrator/src/index.ts:500:  private async handleAlphaEvent(strategyId: string, event: any): Promise<void> {
+packages/system-orchestrator/src/index.ts:539:  private async handleEmergencyStop(event: any): Promise<void> {
+packages/system-orchestrator/src/index.ts:566:  public getStatus(): any {
+packages/telemetry/src/tracers/Tracer.ts:361:      target: any,
+packages/telemetry/src/tracers/Tracer.ts:368:      descriptor.value = async function (...args: any[]) {
+packages/telemetry/src/ErrorAlertRouter.ts:546:    data: any,
+packages/telemetry/src/TelemetryBus.ts:21:  emit(event: string, data: any): boolean {
+packages/telemetry/src/TelemetryService.ts:278:  startSpan(name: string, options?: any): string | null {
+packages/telemetry/src/TelemetryService.ts:289:  endSpan(spanId: string, status?: any): void {
+packages/telemetry/src/TelemetryService.ts:445:    this.metricExporter.on('metric:collected', (metric: any) => {
+packages/telemetry/src/TelemetryService.ts:449:    this.metricExporter.on('metric:exported', (count: any) => {
+packages/telemetry/src/TelemetryService.ts:474:    this.logBridge.on('log:written', (entry: any) => {
+packages/telemetry/src/TelemetryService.ts:478:    this.logBridge.on('log:flushed', (count: any) => {
+packages/telemetry/src/TelemetryService.ts:498:    this.tracer.on('trace:started', (span: any) => {
+packages/telemetry/src/TelemetryService.ts:502:    this.tracer.on('trace:ended', (span: any) => {
+packages/telemetry/src/TelemetryService.ts:521:    this.alertRouter.on('alert:triggered', (alert: any) => {
+packages/telemetry/src/TelemetryService.ts:525:    this.alertRouter.on('alert:resolved', (alert: any) => {
+packages/telemetry/src/TelemetryService.ts:601:  'log:written' = (entry: any) => {};
+packages/telemetry/src/health-check-enhanced.ts:89:      } catch (error: any) {
+packages/telemetry/src/health-check-enhanced.ts:179:    } catch (error: any) {
+packages/telemetry/src/health-check-enhanced.ts:216:    } catch (error: any) {
+packages/telemetry/src/health-check-enhanced.ts:230:  redisClient: any
+packages/telemetry/src/health-check-enhanced.ts:244:    } catch (error: any) {
+packages/telemetry/src/health-check-enhanced.ts:281:    } catch (error: any) {
+packages/telemetry/src/index.ts:160:  setAttribute(key: string, value: any): void {
+packages/testing/src/IntegrationTestSuite.ts:7:class PositionReconciliation { constructor(...args: any[]) {} async start(): Promise<void> {} }
+packages/testing/src/IntegrationTestSuite.ts:8:class OrderLifecycleManager { constructor(...args: any[]) {} }
+packages/testing/src/IntegrationTestSuite.ts:9:class BacktestingFramework { constructor(...args: any[]) {} }
+packages/testing/src/IntegrationTestSuite.ts:10:class DynamicRiskLimits { constructor(...args: any[]) {} async start(): Promise<void> {} }
+packages/testing/src/IntegrationTestSuite.ts:11:class ModelVersioningSystem { constructor(...args: any[]) {} }
+packages/testing/src/IntegrationTestSuite.ts:12:class NetworkPartitionSafety { constructor(...args: any[]) {} }
+packages/testing/src/IntegrationTestSuite.ts:13:class ComplianceEngine { constructor(...args: any[]) {} async start(): Promise<void> {} }
+packages/testing/src/IntegrationTestSuite.ts:15:  constructor(...args: any[]) {} 
+packages/testing/src/LoadTestingFramework.ts:27:  validation?: (response: any) => boolean;
+packages/testing/src/LoadTestingFramework.ts:40:  generateOrder(): any;
+packages/testing/src/LoadTestingFramework.ts:133:  async runTest(config: LoadTestConfig, target: any): Promise<LoadTestResult> {
+packages/testing/src/LoadTestingFramework.ts:187:  private async rampUp(target: any): Promise<void> {
+packages/testing/src/LoadTestingFramework.ts:408:  private target: any;
+packages/testing/src/LoadTestingFramework.ts:413:  constructor(id: string, config: LoadTestConfig, target: any, metrics: MetricsCollector) {
+packages/testing/src/LoadTestingFramework.ts:476:      let response: any;
+packages/testing/src/LoadTestingFramework.ts:525:  private generateOrder(params: Record<string, any>): any {
+packages/testing/src/LoadTestingFramework.ts:531:  private requests: any[] = [];
+packages/testing/src/LoadTestingFramework.ts:532:  private resourceUsage: any[] = [];
+packages/testing/src/LoadTestingFramework.ts:542:  recordRequest(request: any): void {
+packages/testing/src/LoadTestingFramework.ts:550:  recordResourceUsage(usage: any): void {
+packages/testing/src/LoadTestingFramework.ts:573:  getCurrentMetrics(): any {
+packages/testing/src/LoadTestingFramework.ts:677:  private groupErrorsByType(errors: any[]): Map<string, number> {
+packages/testing/src/LoadTestingFramework.ts:688:  private groupErrorsByScenario(errors: any[]): Map<string, number> {
+packages/typeform-integration/src/ApplicationService.ts:59:    } catch (error: any) {
+packages/typeform-integration/src/ApplicationService.ts:153:    const params: any[] = [];
+packages/typeform-integration/src/TypeformClient.ts:42:    } catch (error: any) {
+packages/typeform-integration/src/TypeformClient.ts:60:    } catch (error: any) {
+packages/typeform-integration/src/TypeformClient.ts:129:    } catch (error: any) {
+packages/typeform-integration/src/TypeformClient.ts:141:    } catch (error: any) {
+packages/typeform-integration/src/TypeformClient.ts:155:    } catch (error: any) {
+packages/typeform-integration/src/WebhookHandler.ts:54:  validatePayload(payload: any): payload is WebhookPayload {
+packages/typeform-integration/src/WebhookHandler.ts:81:      fields: any[];
+packages/types/src/index.d.ts:86:    performance?: any;
+packages/types/src/index.d.ts:99:    details?: any | undefined;
+packages/types/src/index.d.ts:100:    constructor(message: string, code: ExecutionErrorCode, details?: any | undefined);
+packages/types/src/index.d.ts:126:    [key: string]: any;
+packages/types/src/index.d.ts:278:    data: any;
+packages/types/src/index.d.ts:496:    value: any;
+packages/types/src/index.d.ts:509:    value?: any;
+packages/types/src/index.d.ts:515:    default?: any;
+packages/types/src/index.d.ts:516:    validation?: (value: any) => boolean;
+packages/types/src/index.d.ts:536:    static merge(base: any, override: any): any;
+packages/types/src/index.d.ts:537:    static validate(config: any, schema: ConfigSchema): ConfigValidation;
+packages/types/src/index.d.ts:538:    static setValueByPath(obj: any, path: string, value: any): void;
+packages/types/src/index.d.ts:659:    payload: any;
+packages/types/src/index.d.ts:671:    static create(type: MessageType, topic: string, payload: any, source: string): Message;
+packages/types/src/index.d.ts:672:    static createCommand(topic: string, payload: any, source: string): Message;
+packages/types/src/index.d.ts:673:    static createEvent(topic: string, payload: any, source: string): Message;
+packages/types/src/index.d.ts:674:    static createQuery(topic: string, payload: any, source: string): Message;
+packages/types/src/index.d.ts:691:    result?: any;
+packages/types/src/index.d.ts:851:    result?: any;
+packages/types/src/index.d.ts:864:    payload: any;
+packages/types/src/index.ts:96:  performance?: any;
+packages/types/src/index.ts:113:    public details?: any
+packages/types/src/index.ts:146:  [key: string]: any;
+packages/types/src/index.ts:325:  data: any;
+packages/types/src/index.ts:586:  value: any;
+packages/types/src/index.ts:601:  value?: any;
+packages/types/src/index.ts:608:  default?: any;
+packages/types/src/index.ts:609:  validation?: (value: any) => boolean;
+packages/types/src/index.ts:633:  static merge(base: any, override: any): any {
+packages/types/src/index.ts:636:  static validate(config: any, schema: ConfigSchema): ConfigValidation {
+packages/types/src/index.ts:639:  static setValueByPath(obj: any, path: string, value: any): void {
+packages/types/src/index.ts:784:  payload: any;
+packages/types/src/index.ts:797:  static create(type: MessageType, topic: string, payload: any, source: string): Message {
+packages/types/src/index.ts:809:  static createCommand(topic: string, payload: any, source: string): Message {
+packages/types/src/index.ts:821:  static createEvent(topic: string, payload: any, source: string): Message {
+packages/types/src/index.ts:833:  static createQuery(topic: string, payload: any, source: string): Message {
+packages/types/src/index.ts:863:  result?: any;
+packages/types/src/index.ts:1051:  result?: any;
+packages/types/src/index.ts:1065:  payload: any;
+packages/types/src/ml-types.d.ts:127:    details?: any;
+packages/types/src/ml-types.d.ts:327:    currentPolicy: any;
+packages/types/src/ml-types.d.ts:362:    entryConditions?: any;
+packages/types/src/ml-types.d.ts:398:    oldValue: any;
+packages/types/src/ml-types.d.ts:399:    newValue: any;
+packages/types/src/ml-types.ts:153:  details?: any;
+packages/types/src/ml-types.ts:398:  currentPolicy: any; // Neural network weights
+packages/types/src/ml-types.ts:442:  entryConditions?: any;
+packages/types/src/ml-types.ts:486:  oldValue: any;
+packages/types/src/ml-types.ts:487:  newValue: any;
+packages/utils/src/CapitalFlowLimiter.ts:6:  info: (message: string, meta?: any) => logger.info(`[${name}] INFO: ${message}`, meta),
+packages/utils/src/CapitalFlowLimiter.ts:7:  error: (message: string, error?: any) => logger.error(`[${name}] ERROR: ${message}`, error),
+packages/utils/src/CapitalFlowLimiter.ts:8:  debug: (message: string, meta?: any) => logger.debug(`[${name}] DEBUG: ${message}`, meta),
+packages/utils/src/CapitalFlowLimiter.ts:9:  warn: (message: string, meta?: any) => logger.warn(`[${name}] WARN: ${message}`, meta)
+packages/utils/src/CapitalFlowLimiter.ts:418:    limits: any;
+packages/utils/src/DeadMansSwitch.ts:6:  info: (message: string, meta?: any) => logger.info(`[${name}] INFO: ${message}`, meta),
+packages/utils/src/DeadMansSwitch.ts:7:  error: (message: string, error?: any) => logger.error(`[${name}] ERROR: ${message}`, error),
+packages/utils/src/DeadMansSwitch.ts:8:  debug: (message: string, meta?: any) => logger.debug(`[${name}] DEBUG: ${message}`, meta),
+packages/utils/src/DeadMansSwitch.ts:9:  warn: (message: string, meta?: any) => logger.warn(`[${name}] WARN: ${message}`, meta)
+packages/utils/src/DeadMansSwitch.ts:109:  public heartbeat(metadata?: any): void {
+packages/utils/src/DeadMansSwitch.ts:308:    } catch (error: any) {
+packages/utils/src/MultiSig.ts:7:  info: (message: string, meta?: any) => logger.info(`[${name}] INFO: ${message}`, meta),
+packages/utils/src/MultiSig.ts:8:  error: (message: string, error?: any) => logger.error(`[${name}] ERROR: ${message}`, error),
+packages/utils/src/MultiSig.ts:9:  debug: (message: string, meta?: any) => logger.debug(`[${name}] DEBUG: ${message}`, meta),
+packages/utils/src/MultiSig.ts:10:  warn: (message: string, meta?: any) => logger.warn(`[${name}] WARN: ${message}`, meta)
+packages/utils/src/MultiSig.ts:24:  payload: any;
+packages/utils/src/MultiSig.ts:33:  executionResult?: any;
+packages/utils/src/MultiSig.ts:80:    payload: any,
+packages/utils/src/MultiSig.ts:209:    } catch (error: any) {
+packages/utils/src/NodeRegistry.ts:1:export const NODE_REGISTRY_ABI: any[] = [];
+packages/utils/src/TimeLock.ts:6:  info: (message: string, meta?: any) => logger.info(`[${name}] INFO: ${message}`, meta),
+packages/utils/src/TimeLock.ts:7:  error: (message: string, error?: any) => logger.error(`[${name}] ERROR: ${message}`, error),
+packages/utils/src/TimeLock.ts:8:  debug: (message: string, meta?: any) => logger.debug(`[${name}] DEBUG: ${message}`, meta),
+packages/utils/src/TimeLock.ts:9:  warn: (message: string, meta?: any) => logger.warn(`[${name}] WARN: ${message}`, meta)
+packages/utils/src/TimeLock.ts:15:  payload: any;
+packages/utils/src/TimeLock.ts:23:  executionResult?: any;
+packages/utils/src/TimeLock.ts:54:    payload: any,
+packages/utils/src/TimeLock.ts:248:    } catch (error: any) {
+packages/utils/src/adversarial-robustness.ts:16:  private models: any[] = [];
+packages/utils/src/adversarial-robustness.ts:17:  private trainingData: any[] = [];
+packages/utils/src/adversarial-robustness.ts:98:  async generateAdversarialExamples(data: any[]): Promise<any[]> {
+packages/utils/src/adversarial-robustness.ts:99:    const adversarial: any[] = [];
+packages/utils/src/adversarial-robustness.ts:125:  async trainWithAdversarialExamples(model: any): Promise<void> {
+packages/utils/src/adversarial-robustness.ts:143:  async testAdversarialRobustness(model: any): Promise<number> {
+packages/utils/src/adversarial-robustness.ts:164:  private async calculateGradient(example: any): Promise<number[]> {
+packages/utils/src/adversarial-robustness.ts:173:  async validateTrainingData(data: any[]): Promise<ValidationResult> {
+packages/utils/src/adversarial-robustness.ts:216:  async detectDataDrift(newData: any[]): Promise<boolean> {
+packages/utils/src/adversarial-robustness.ts:237:  private getDistribution(data: any[]): number[] {
+packages/utils/src/graceful-shutdown.d.ts:50:export declare function registerConnection(name: string, connection: any, closeMethod?: string): void;
+packages/utils/src/graceful-shutdown.d.ts:56:    connection: any;
+packages/utils/src/graceful-shutdown.ts:82:    process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
+packages/utils/src/graceful-shutdown.ts:179:export function registerConnection(name: string, connection: any, closeMethod: string = 'close'): void {
+packages/utils/src/graceful-shutdown.ts:190:export function registerConnections(connections: Array<{ name: string; connection: any; closeMethod?: string }>): void {
+packages/utils/src/index.d.ts:8:    debug(message: string, meta?: any): void;
+packages/utils/src/index.d.ts:9:    info(message: string, meta?: any): void;
+packages/utils/src/index.d.ts:10:    warn(message: string, meta?: any): void;
+packages/utils/src/index.d.ts:11:    error(message: string, error?: Error | any, meta?: any): void;
+packages/utils/src/index.ts:33:  debug(message: string, meta?: any): void {
+packages/utils/src/index.ts:37:  info(message: string, meta?: any): void {
+packages/utils/src/index.ts:41:  warn(message: string, meta?: any): void {
+packages/utils/src/index.ts:45:  error(message: string, error?: Error | any, meta?: any): void {
+packages/utils/src/mev-protection.ts:112:  private isSimilarTransaction(tx: any, order: Order): boolean {
+packages/utils/src/mev-protection.ts:163:  private isLikelyFrontRun(tx: any): boolean {
+packages/utils/src/mev-protection.ts:233:  private async alertOperations(alert: any): Promise<void> {
+packages/utils/src/mev-protection.ts:238:  private async submitToMempool(encrypted: any): Promise<void> {
+packages/utils/src/mev-protection.ts:248:  private async thresholdEncrypt(order: Order, config: any): Promise<any> {
+packages/utils/src/mev-protection.ts:253:  private async thresholdDecrypt(encrypted: any): Promise<Order> {
+packages/utils/src/mev-protection.ts:264:  private transactions: any[] = [];
+packages/utils/src/mev-protection.ts:269:  addTransaction(tx: any): void {
+packages/utils/src/mev-protection.ts:276:  getBundle(): any {
+packages/utils/src/nft-verification.d.ts:81:    nodeInfo?: any;
+packages/utils/src/nft-verification.ts:157:  } catch (error: any) {
+packages/utils/src/nft-verification.ts:269:  nodeInfo?: any;
+packages/utils/src/state-persistence.ts:79:    } catch (error: any) {
+packages/utils/src/state-persistence.ts:138:    } catch (error: any) {
+packages/utils/src/state-persistence.ts:192:    } catch (error: any) {
+packages/validator-consensus/src/ValidatorConsensus.ts:285:  private async validateData(data: any): Promise<boolean> {
+packages/validator-consensus/src/ValidatorConsensus.ts:391:  private hashData(data: any): string {
+packages/validator-consensus/src/ValidatorConsensus.ts:413:  getHealthStatus(): { healthy: boolean; details: any } {
+packages/validator-consensus/src/index.ts:93:  consensusService.on('roundFailed', (roundId: string, error: any) => {

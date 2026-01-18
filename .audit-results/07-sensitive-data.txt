@@ -1,0 +1,71 @@
+packages/attestation-hardening/src/enhanced-attestation.service.test.ts:11:  let rsaKeyPair: { publicKey: Buffer; privateKey: Buffer };
+packages/attestation-hardening/src/enhanced-attestation.service.test.ts:39:    const { publicKey, privateKey } = generateKeyPairSync('rsa', {
+packages/attestation-hardening/src/enhanced-attestation.service.test.ts:47:      privateKey: privateKey as Buffer,
+packages/attestation-hardening/src/enhanced-attestation.service.test.ts:104:      key: rsaKeyPair.privateKey,
+packages/attestation-mvs/src/index.test.ts:9:  let keyPair: { publicKey: string; privateKey: string };
+packages/attestation-mvs/src/index.test.ts:13:    const { publicKey, privateKey } = generateKeyPairSync('rsa', {
+packages/attestation-mvs/src/index.test.ts:18:    keyPair = { publicKey, privateKey };
+packages/attestation-mvs/src/index.test.ts:38:    const signature = signer.sign(keyPair.privateKey);
+packages/config/src/index.ts:68:      password?: string;
+packages/config/src/index.ts:74:      password?: string;
+packages/config/src/index.ts:260:          password: Joi.string(),
+packages/config/src/index.ts:266:          password: Joi.string(),
+packages/config/src/index.ts:342:      'NODERR_DB_POSTGRES_PASSWORD': 'database.postgres.password',
+packages/config/src/index.ts:345:      'NODERR_DB_REDIS_PASSWORD': 'database.redis.password',
+packages/config/src/index.ts:368:    const sensitiveKeys = ['apiKey', 'apiSecret', 'password', 'jwtSecret', 'encryptionKey'];
+packages/core/src/DistributedStateManager.d.ts:7:        password?: string;
+packages/core/src/DistributedStateManager.ts:11:    password?: string;
+packages/core/src/DistributedStateManager.ts:55:            password: config.redis.password,
+packages/core/src/DistributedStateManager.ts:64:        password: config.redis.password,
+packages/decentralized-core/src/NodeCommunicationLayer.ts:114:    privateKey: string,
+packages/decentralized-core/src/NodeCommunicationLayer.ts:120:    this.wallet = new ethers.Wallet(privateKey);
+packages/floor-engine/src/core/FloorEngine.ts:57:    this.wallet = new ethers.Wallet(config.privateKey, this.provider);
+packages/integration-layer/src/config/ConfigurationService.ts:33:  secrets: Map<string, Secret>;
+packages/integration-layer/src/config/ConfigurationService.ts:46:    secrets: new Map(),
+packages/integration-layer/src/config/ConfigurationService.ts:207:      // Load secrets
+packages/integration-layer/src/config/ConfigurationService.ts:345:   * Get secret value
+packages/integration-layer/src/config/ConfigurationService.ts:348:    const secret = this.state.secrets.get(name);
+packages/integration-layer/src/config/ConfigurationService.ts:349:    if (!secret) return undefined;
+packages/integration-layer/src/config/ConfigurationService.ts:352:    if (secret.expiresAt && Date.now() > secret.expiresAt) {
+packages/integration-layer/src/config/ConfigurationService.ts:353:      this.state.secrets.delete(name);
+packages/integration-layer/src/config/ConfigurationService.ts:357:    return secret.value;
+packages/integration-layer/src/config/ConfigurationService.ts:361:   * Set secret value
+packages/integration-layer/src/config/ConfigurationService.ts:364:    const secret: Secret = {
+packages/integration-layer/src/config/ConfigurationService.ts:365:      id: `secret_${Date.now()}`,
+packages/integration-layer/src/config/ConfigurationService.ts:372:    this.state.secrets.set(name, secret);
+packages/integration-layer/src/config/ConfigurationService.ts:530:   * Private: Load secrets
+packages/integration-layer/src/config/ConfigurationService.ts:534:    const secretEnvVars = Object.keys(process.env)
+packages/integration-layer/src/config/ConfigurationService.ts:537:    for (const envVar of secretEnvVars) {
+packages/integration-layer/src/config/ConfigurationService.ts:544:    // Load from secrets file if configured
+packages/integration-layer/src/config/ConfigurationService.ts:548:        const secrets = JSON.parse(content);
+packages/integration-layer/src/config/ConfigurationService.ts:550:        for (const [name, value] of Object.entries(secrets)) {
+packages/integration-layer/src/config/ConfigurationService.ts:554:        this.logger.error('Failed to load secrets file', { error });
+packages/ml-deployment/src/model-packager.ts:30:    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ''
+packages/node-onboarding/src/NodeOnboardingCLI.ts:170:          { name: 'Enter private key (secure input)', value: 'privateKey' },
+packages/node-onboarding/src/NodeOnboardingCLI.ts:179:    if (method === 'privateKey') {
+packages/node-onboarding/src/NodeOnboardingCLI.ts:180:      const { privateKey } = await inquirer.prompt([
+packages/node-onboarding/src/NodeOnboardingCLI.ts:183:          name: 'privateKey',
+packages/node-onboarding/src/NodeOnboardingCLI.ts:188:      wallet = new ethers.Wallet(privateKey, this.provider);
+packages/node-onboarding/src/NodeOnboardingCLI.ts:190:      const { keystorePath, password } = await inquirer.prompt([
+packages/node-onboarding/src/NodeOnboardingCLI.ts:198:          name: 'password',
+packages/node-onboarding/src/NodeOnboardingCLI.ts:199:          message: 'Enter keystore password:',
+packages/node-onboarding/src/NodeOnboardingCLI.ts:205:      wallet = await ethers.Wallet.fromEncryptedJson(keystoreJson, password);
+packages/on-chain-service/src/config/index.ts:35:    privateKey: process.env.PRIVATE_KEY!,
+packages/on-chain-service/src/config/index.ts:78:  if (!config.privateKey.startsWith('0x') || config.privateKey.length !== 66) {
+packages/on-chain-service/src/services/CapitalManager.ts:52:    this.wallet = new Wallet(config.privateKey, this.provider);
+packages/on-chain-service/src/services/RewardDistributor.ts:64:    this.wallet = new Wallet(config.privateKey, this.provider);
+packages/on-chain-service/src/services/TrustUpdater.ts:61:    this.wallet = new Wallet(config.privateKey, this.provider);
+packages/on-chain-settlement/src/OnChainSettlementManager.ts:20:  privateKey: string;
+packages/on-chain-settlement/src/OnChainSettlementManager.ts:70:    this.wallet = new ethers.Wallet(config.privateKey, this.provider);
+packages/oracle-consensus/src/index.ts:58:      signer: new ethers.Wallet(process.env.ORACLE_PRIVATE_KEY || ethers.Wallet.createRandom().privateKey),
+packages/strategy/src/OnChainRegistry.ts:38:    const privateKey = process.env.STRATEGY_REGISTRY_PRIVATE_KEY || ethers.Wallet.createRandom().privateKey;
+packages/strategy/src/OnChainRegistry.ts:41:    const signer = new ethers.Wallet(privateKey, provider);
+packages/telemetry/src/ErrorAlertRouter.ts:231:        pass: channel.config.password
+packages/utils/src/MultiSig.ts:120:    privateKey: string,
+packages/utils/src/MultiSig.ts:144:    const signature = this.generateSignature(dataToSign, privateKey);
+packages/utils/src/MultiSig.ts:318:  private generateSignature(data: string, privateKey: string): string {
+packages/utils/src/MultiSig.ts:322:    return sign.sign(privateKey, 'hex');
+packages/validator-consensus/src/ValidatorConsensus.ts:53:  privateKey: string;
+packages/validator-consensus/src/ValidatorConsensus.ts:103:    this.wallet = new ethers.Wallet(config.privateKey, this.provider);
+packages/validator-consensus/src/index.ts:58:    privateKey: process.env.VALIDATOR_PRIVATE_KEY || '',
+packages/validator-consensus/src/index.ts:68:  if (!config.privateKey) {

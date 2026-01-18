@@ -1,0 +1,12 @@
+packages/execution/README.md
+packages/floor-engine/README.md
+packages/utils/README.md
+packages/alpha-edge/README.md
+packages/alpha-exploitation/README.md
+packages/integration-layer/README.md
+packages/market-intel/README.md
+packages/on-chain-service/README.md
+packages/quant-research/README.md
+packages/risk-engine/README.md
+packages/telemetry/README.md
+packages/types/README.md

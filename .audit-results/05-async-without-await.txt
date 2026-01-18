@@ -1,0 +1,76 @@
+packages/auto-updater/src/index.ts:17:async function reportTelemetry(
+packages/auto-updater/src/index.ts:53:async function runUpdateCheck(orchestrator: UpdateOrchestrator, config: ReturnType<typeof loadConfig>): Promise<void> {
+packages/auto-updater/src/index.ts:95:async function main(): Promise<void> {
+packages/capital-ai/src/index.ts:21:export async function startCapitalAIService(): Promise<void> {
+packages/compliance/src/index.ts:26:export async function startComplianceService(): Promise<void> {
+packages/core/src/Telemetry.ts:292:    descriptor.value = async function (...args: any[]) {
+packages/core/src/Telemetry.ts:314:    descriptor.value = async function (...args: any[]) {
+packages/core/src/Telemetry.ts:352:    orderManager.submitOrder = async function(...args: any[]) {
+packages/core/src/WorkerThreadPool.ts:597:async function executeTask(task: Task): Promise<any> {
+packages/core/src/index.ts:110:export async function createSystem(config?: Partial<SystemConfig>): Promise<SystemOrchestrator> {
+packages/core/src/test-lockfree-queue.ts:6:async function testBasicOperations() {
+packages/core/src/test-lockfree-queue.ts:55:async function testConcurrentAccess() {
+packages/core/src/test-lockfree-queue.ts:142:async function runAllTests() {
+packages/data-connectors/src/index.ts:60:export async function startDataConnectorsService(): Promise<void> {
+packages/exchanges/src/index.ts:205:export async function startExchangeService(): Promise<void> {
+packages/execution/src/ExecutionOptimizerServicePatch.ts:37:export async function safeExecuteOrder(
+packages/execution/src/index.ts:116:export async function startExecutionService(): Promise<void> {
+packages/floor-engine/src/DeFiAdapterUtils.ts:34:export async function simulateTransaction(adapterName: string, functionName: string): Promise<string> {
+packages/gpu-service-mvs/src/index.ts:19:export async function getGPUHardwareId(): Promise<string | null> {
+packages/gpu-service-mvs/src/index.ts:45:export async function getGPUInfo(): Promise<GPUInfo | null> {
+packages/gpu-service-mvs/src/index.ts:83:export async function hasGPU(): Promise<boolean> {
+packages/gpu-service/src/gpu-detector.ts:38:async function detectNvidiaGpus(): Promise<GpuInfo[]> {
+packages/gpu-service/src/gpu-detector.ts:69:async function detectGpusViaLspci(): Promise<GpuInfo[]> {
+packages/gpu-service/src/gpu-detector.ts:101:async function detectWindowsGpus(): Promise<GpuInfo[]> {
+packages/gpu-service/src/gpu-detector.ts:139:export async function detectGpus(): Promise<GpuInfo[]> {
+packages/gpu-service/src/gpu-detector.ts:209:export async function getGpuHardwareId(): Promise<GpuHardwareId> {
+packages/guardian-consensus/src/index.ts:92:export async function startGuardianConsensusService(): Promise<void> {
+packages/heartbeat-client/src/index.ts:90:async function sendHeartbeat(): Promise<boolean> {
+packages/heartbeat-client/src/index.ts:155:async function refreshJwtToken(): Promise<boolean> {
+packages/heartbeat-client/src/index.ts:228:async function heartbeatLoop(): Promise<void> {
+packages/heartbeat-client/src/index.ts:281:async function main(): Promise<void> {
+packages/integration-layer/src/core/EliteSystemIntegrator.ts:1133:export async function validateEliteSystemIntegration(): Promise<boolean> {
+packages/market-data/src/index.ts:191:export async function startMarketDataService(): Promise<void> {
+packages/market-intel/src/index.ts:36:export async function startMarketIntelService(): Promise<void> {
+packages/ml-deployment/src/model-packager.ts:76:export async function calculateChecksum(filePath: string): Promise<string> {
+packages/ml-deployment/src/model-packager.ts:90:export async function getFileSize(filePath: string): Promise<number> {
+packages/ml-deployment/src/model-packager.ts:98:export async function exportModel(
+packages/ml-deployment/src/model-packager.ts:116:export async function createManifest(
+packages/ml-deployment/src/model-packager.ts:165:export async function packageModel(
+packages/ml-deployment/src/model-packager.ts:227:export async function uploadToS3(
+packages/ml-deployment/src/model-packager.ts:266:export async function updateVersionBeacon(
+packages/ml-deployment/src/model-packager.ts:302:export async function deployModel(
+packages/ml-deployment/src/model-packager.ts:355:export async function listModelVersions(
+packages/ml-deployment/src/model-packager.ts:385:export async function getLatestModelVersion(
+packages/ml-deployment/src/model-packager.ts:409:export async function deactivateModelVersion(
+packages/ml/src/index.ts:262:export async function startMLService(): Promise<void> {
+packages/network-optimizer/src/NetworkBenchmark.ts:346:export async function runQuickBenchmark(
+packages/node-onboarding/src/NodeOnboardingCLI.ts:439:export async function runOnboarding(config: OnboardingConfig): Promise<OnboardingResult> {
+packages/node-runtime/src/gpu-integration.ts:19:export async function getNodeGpuId(): Promise<string | null> {
+packages/node-runtime/src/gpu-integration.ts:45:export async function hasGpu(): Promise<boolean> {
+packages/node-runtime/src/gpu-integration.ts:59:export async function getSystemInfoWithGpu(baseSystemInfo: {
+packages/node-runtime/src/inference-service.ts:451:export async function createInferenceService(
+packages/node-runtime/src/registration-example.ts:13:async function registerNode(
+packages/oracle-consensus/src/index.ts:35:export async function startOracleConsensusService(): Promise<void> {
+packages/quant-research/src/index.ts:40:export async function startQuantResearchService(): Promise<void> {
+packages/reputation/src/index.ts:16:export async function startReputationService(config: ReputationConfig = defaultConfig): Promise<void> {
+packages/risk-engine/src/index.ts:108:export async function startRiskEngineService(): Promise<void> {
+packages/safety-control/src/cli.ts:55:async function handleCommand(): Promise<void> {
+packages/strategy/src/index.ts:70:export async function startStrategyService(): Promise<void> {
+packages/strategy/src/OnChainRegistry.ts:27:export async function registerStrategyOnChain(
+packages/strategy/src/StrategyValidator.ts:52:export async function validateStrategy(strategyPath: string): Promise<void> {
+packages/strategy/src/StrategyValidator.ts:134:async function performASTValidation(content: string, filePath: string): Promise<void> {
+packages/strategy/src/StrategyValidator.ts:227:async function verifyCompilation(entryFilePath: string): Promise<void> {
+packages/strategy/src/StrategyBacktester.ts:17:export async function runInitialBacktest(
+packages/telemetry/src/tracers/Tracer.ts:299:   * Trace async function
+packages/telemetry/src/tracers/Tracer.ts:368:      descriptor.value = async function (...args: any[]) {
+packages/telemetry/src/health-check-enhanced.ts:111:export async function checkMemoryUsage(): Promise<{
+packages/telemetry/src/health-check-enhanced.ts:134:export async function checkUptime(minSeconds: number = 5): Promise<{
+packages/telemetry/src/health-check.ts:10:export async function healthCheck(): Promise<boolean> {
+packages/telemetry/src/index.ts:277:export async function startTelemetryService(): Promise<void> {
+packages/utils/src/nft-verification.ts:67:export async function verifyNFTOwnership(
+packages/utils/src/nft-verification.ts:178:export async function verifyNFTOwnershipWithRetry(
+packages/utils/src/nft-verification.ts:225:export async function isNodeRegistered(tokenId: string): Promise<boolean> {
+packages/utils/src/nft-verification.ts:241:export async function getNodeInfo(tokenId: string): Promise<{
+packages/utils/src/nft-verification.ts:262:export async function verifyNodeAuthorization(
+packages/validator-consensus/src/index.ts:35:async function main(): Promise<void> {
