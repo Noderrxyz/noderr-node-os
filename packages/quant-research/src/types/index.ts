@@ -550,3 +550,19 @@ export interface FactorResilience {
   recoveryTime: number;
   stability: number;
 }
+
+
+export interface FactorCorrelation {
+  factorId1: string;
+  factorId2: string;
+  correlation: number;
+  pValue?: number;
+}
+
+export interface FactorAnalysisResult {
+  factors: Factor[];
+  correlations: FactorCorrelation[];
+  performance: FactorPerformance[];
+  exposures?: FactorExposure[];
+  timestamp: Date;
+}
