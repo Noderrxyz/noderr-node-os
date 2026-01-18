@@ -395,11 +395,11 @@ export interface Portfolio {
   assets: Asset[];
   weights: number[];
   totalValue?: number;
-  constraints: PortfolioConstraint[];
+  constraints: PortfolioConstraint[] | OptimizationConstraints;
   objective: PortfolioObjective;
   rebalanceFrequency: string;
   performance?: PortfolioPerformance;
-  metrics?: any;
+  metrics?: PortfolioMetrics;
 }
 
 export interface Asset {
@@ -620,6 +620,7 @@ export interface MonteCarloConfig {
 export interface SimulationPath {
   id?: string;
   path: number[];
+  values?: number[];
   finalValue: number;
   totalReturn: number;
   maxDrawdown: number;
@@ -644,6 +645,7 @@ export interface MonteCarloResult {
 export interface PortfolioMetrics {
   totalReturn: number;
   expectedReturn?: number;
+  expectedRisk?: number;
   sharpeRatio: number;
   volatility: number;
   maxDrawdown: number;
@@ -653,12 +655,39 @@ export interface PortfolioMetrics {
 
 
 export interface OptimizationConstraints {
-  minWeights?: number[];
-  maxWeights?: number[];
+  minWeights?: { [assetId: string]: number };
+  maxWeights?: { [assetId: string]: number };
   minReturn?: number;
   maxRisk?: number;
   riskFreeRate?: number;
   maxTurnover?: number;
-  currentWeights?: number[];
+  currentWeights?: { [assetId: string]: number };
+  riskAversion?: number;
+  totalCapital?: number;
   constraints?: OptimizationConstraint[];
+}
+
+export interface AlphaDecayResult {
+  signal: string;
+  decayMetrics: DecayMetrics;
+  regimeAnalysis: RegimeAnalysis;
+  signalStrength: SignalStrength;
+}
+
+export interface DecayMetrics {
+  halfLife: number;
+  decayRate: number;
+  persistenceScore: number;
+}
+
+export interface RegimeAnalysis {
+  regime: string;
+  confidence: number;
+  characteristics: { [key: string]: any };
+}
+
+export interface SignalStrength {
+  strength: number;
+  confidence: number;
+  quality: string;
 }
