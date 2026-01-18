@@ -42,11 +42,39 @@ export async function startMarketIntelService(): Promise<void> {
     
     // Initialize market intelligence service
     marketIntelService = new MarketIntelService({
-      symbols: process.env.SYMBOLS?.split(',') || ['BTC/USDT', 'ETH/USDT'],
-      updateInterval: parseInt(process.env.UPDATE_INTERVAL || '5000'),
-      enableArbitrage: process.env.ENABLE_ARBITRAGE !== 'false',
-      enableWhaleTracking: process.env.ENABLE_WHALE_TRACKING !== 'false',
-      enableSentiment: process.env.ENABLE_SENTIMENT !== 'false',
+      orderBook: {
+        depthLevels: 10,
+        updateFrequency: 1000,
+        spoofingThreshold: 0.3,
+        minOrderSize: 1000,
+        icebergDetection: true
+      },
+      whaleTracking: {
+        minTransactionSize: 100000,
+        chains: ['ethereum', 'bsc', 'polygon'],
+        smartMoneyThreshold: 1000000,
+        impactAnalysis: true,
+        trackDexActivity: true
+      },
+      arbitrage: {
+        minProfitPercentage: 0.5,
+        maxExecutionTime: 5000,
+        includeFees: true,
+        slippageTolerance: 0.01,
+        capitalLimit: 1000000
+      },
+      sentiment: {
+        sources: ['twitter', 'reddit', 'telegram'],
+        updateInterval: parseInt(process.env.UPDATE_INTERVAL || '5000'),
+        influencerWeight: 2.0,
+        minSampleSize: 100,
+        languages: ['en']
+      },
+      alphaGeneration: {
+        minConfidence: 0.7,
+        combineSignals: true,
+        riskAdjusted: true
+      }
     }, telemetry);
     
     // Start monitoring
