@@ -69,8 +69,8 @@ RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/ml-client" build && \
     pnpm --filter "@noderr/ml-deployment" build && \
     pnpm --filter "@noderr/ml" build && \
-    pnpm --filter "@noderr/quant-research" build && \
     pnpm --filter "@noderr/market-intel" build && \
+    pnpm --filter "@noderr/quant-research" build && \
     pnpm --filter "@noderr/strategy" build && \
     pnpm --filter "@noderr/capital-ai" build && \
     pnpm --filter "@noderr/backtesting" build && \

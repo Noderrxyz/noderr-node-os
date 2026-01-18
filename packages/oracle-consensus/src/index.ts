@@ -52,10 +52,7 @@ export async function startOracleConsensusService(): Promise<void> {
     });
     
     // Initialize coordinator
-    coordinator = new OracleCoordinator({
-      consensusEngine,
-      lotterySelector,
-    });
+    coordinator = new OracleCoordinator(consensusEngine);
     
     // Initialize state persistence
     statePersistence = createStatePersistence({
