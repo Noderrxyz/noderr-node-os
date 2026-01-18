@@ -570,6 +570,12 @@ export class MarketIntelService extends EventEmitter {
     return summary;
   }
 
+  async start(): Promise<void> {
+    // Start all analyzers
+    // Note: Individual analyzers don't have start methods yet
+    // This is a placeholder for future initialization logic
+  }
+
   async stop(): Promise<void> {
     await this.orderBookAnalyzer.stop();
     await this.whaleTracker.stop();
