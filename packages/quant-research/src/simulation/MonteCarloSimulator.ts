@@ -359,6 +359,7 @@ export class MonteCarloSimulator extends EventEmitter {
   /**
    * Analyze tail risk
    */
+  private analyzeTailRisk(paths: SimulationPath[], config: MonteCarloConfig): any {
     const returns = paths.map(p => p.totalReturn);
     const sortedReturns = [...returns].sort((a, b) => a - b);
     
