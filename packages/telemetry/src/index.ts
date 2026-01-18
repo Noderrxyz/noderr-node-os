@@ -3,12 +3,15 @@
  */
 
 import { Logger } from '@noderr/utils/src';
+import * as winston from 'winston';
 import { createLogger, format, transports } from 'winston';
 import type { Logger as WinstonLogger } from 'winston';
 
+const logger = new Logger('telemetry');
+
 // Core telemetry system
 export class TelemetrySystem {
-  private logger: Logger;
+  private logger: winston.Logger;
   private serviceName: string;
   private environment: string;
 
@@ -171,7 +174,7 @@ export class Span {
 // Alert manager
 export class AlertManager {
   private alerts: Alert[] = [];
-  private logger: Logger;
+  private logger: winston.Logger;
 
   constructor() {
     this.logger = createLogger({
@@ -264,7 +267,7 @@ export class Panel {
 // Main Entry Point for Telemetry Service
 // ============================================================================
 
-import { getShutdownHandler, onShutdown } from '@noderr/utils';
+import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
 
 let telemetrySystem: TelemetrySystem | null = null;
 

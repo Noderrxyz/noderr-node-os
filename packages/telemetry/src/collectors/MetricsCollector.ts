@@ -62,12 +62,12 @@ interface DashboardMetrics {
 }
 
 export class MetricsCollector extends EventEmitter {
-  private logger: Logger;
+  private logger: winston.Logger;
   private exporter: MetricExporter;
   private metrics: Partial<DashboardMetrics> = {};
   private updateInterval: NodeJS.Timeout | null = null;
   
-  constructor(logger: Logger, exporter: MetricExporter) {
+  constructor(logger: winston.Logger, exporter: MetricExporter) {
     super();
     this.logger = logger;
     this.exporter = exporter;

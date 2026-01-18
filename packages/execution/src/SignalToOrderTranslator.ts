@@ -1,4 +1,4 @@
-import { TradingSignal } from '@noderr/core';
+import { TradingSignal } from '@noderr/core/src';
 import { OrderRequest } from './SmartExecutionEngine';
 import { v4 as uuidv4 } from 'uuid';
 

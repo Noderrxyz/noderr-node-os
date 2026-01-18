@@ -7,7 +7,7 @@
 
 import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
-import winston, { Logger, format, transports } from 'winston';
+import winston, { format, transports } from 'winston';
 import LokiTransport from 'winston-loki';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { createGzip } from 'zlib';

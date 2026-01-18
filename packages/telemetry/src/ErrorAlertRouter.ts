@@ -43,7 +43,7 @@ interface ChannelClient {
 }
 
 export class ErrorAlertRouter extends EventEmitter {
-  private logger: Logger;
+  private logger: winston.Logger;
   private config: Required<AlertRouterConfig>;
   private channels: Map<string, ChannelClient> = new Map();
   private alertHistory: Map<string, AlertState> = new Map();
@@ -52,7 +52,7 @@ export class ErrorAlertRouter extends EventEmitter {
   private slackClient?: SlackClient;
   private emailTransporter?: nodemailer.Transporter;
   
-  constructor(logger: Logger, config: AlertRouterConfig) {
+  constructor(logger: winston.Logger, config: AlertRouterConfig) {
     super();
     this.logger = logger;
     

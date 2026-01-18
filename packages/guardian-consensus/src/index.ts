@@ -12,6 +12,8 @@
 
 import { Logger, getShutdownHandler, onShutdown } from '@noderr/utils/src';
 
+const logger = new Logger('guardian-consensus');
+
 export interface RiskApprovalRequest {
   tradeId: string;
   symbol: string;

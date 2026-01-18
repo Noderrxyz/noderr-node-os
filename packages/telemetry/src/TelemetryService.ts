@@ -63,7 +63,7 @@ interface TelemetryServiceConfig {
 }
 
 export class TelemetryService extends EventEmitter {
-  private logger: Logger;
+  private logger: winston.Logger;
   private config: TelemetryServiceConfig;
   private metricExporter?: MetricExporter;
   private metricsCollector?: MetricsCollector;
@@ -74,7 +74,7 @@ export class TelemetryService extends EventEmitter {
   private healthStatus: Record<string, boolean> = {};
   private startTime: number = Date.now();
   
-  constructor(logger: Logger, config: TelemetryServiceConfig) {
+  constructor(logger: winston.Logger, config: TelemetryServiceConfig) {
     super();
     this.logger = logger;
     this.config = config;

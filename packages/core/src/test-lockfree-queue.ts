@@ -1,6 +1,8 @@
 import { Logger } from '@noderr/utils/src';
 import { LockFreeOrderQueue, OrderEncoder, LockFreeQueueBenchmark } from './LockFreeOrderQueue';
 
+const logger = new Logger('test-lockfree-queue');
+
 async function testBasicOperations() {
   logger.info('🧪 Testing Lock-Free Order Queue Basic Operations\n');
   

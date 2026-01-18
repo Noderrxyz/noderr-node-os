@@ -47,7 +47,7 @@ interface MetricExporterConfig {
 }
 
 export class MetricExporter extends EventEmitter {
-  private logger: Logger;
+  private logger: winston.Logger;
   private registry: Registry;
   private metrics: MetricRegistry = {};
   private config: Required<MetricExporterConfig>;
@@ -67,7 +67,7 @@ export class MetricExporter extends EventEmitter {
     moduleStatus: Gauge;
   };
   
-  constructor(logger: Logger, config?: MetricExporterConfig) {
+  constructor(logger: winston.Logger, config?: MetricExporterConfig) {
     super();
     this.logger = logger;
     

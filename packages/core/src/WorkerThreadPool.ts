@@ -4,6 +4,8 @@ import * as os from 'os';
 import { EventEmitter } from 'events';
 import { LockFreeOrderQueue, EncodedOrder } from './LockFreeOrderQueue';
 
+
+const logger = new Logger('WorkerThreadPool');
 /**
  * High-performance Worker Thread Pool
  * Features:
@@ -605,7 +607,6 @@ async function executeTask(task: Task): Promise<any> {
   }
 }
 
-const logger = new Logger('WorkerThreadPool');
 function processOrder(order: any): any {
   // Simulate order processing
   return {

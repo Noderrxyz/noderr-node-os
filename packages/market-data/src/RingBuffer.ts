@@ -416,8 +416,9 @@ export class RingBufferBenchmark {
 }
 
 // Run benchmark if executed directly
+import { Logger } from '@noderr/utils/src';
+
 if (require.main === module) {
-  import { Logger } from '@noderr/utils/src';
   const logger = new Logger('RingBufferBenchmark');
   
   RingBufferBenchmark.runBenchmark(logger as any).catch((err) => logger.error("Unhandled error", err));

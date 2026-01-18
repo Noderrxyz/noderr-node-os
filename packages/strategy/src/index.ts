@@ -10,8 +10,8 @@
  * - Risk-adjusted position sizing
  */
 
-import { Logger } from '@noderr/utils';
-import { getShutdownHandler, onShutdown } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
+import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
 import { startStrategyIngestionApi } from './StrategyIngestionApi';
 import { MockStrategy } from './MockStrategy';
 

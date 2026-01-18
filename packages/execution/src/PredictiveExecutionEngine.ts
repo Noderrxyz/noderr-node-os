@@ -12,7 +12,7 @@ import {
   AlgorithmType,
   ExecutionResult,
   Fill
-} from '@noderr/types';
+} from '@noderr/types/src';
 
 interface MarketFeatures {
   // Price features

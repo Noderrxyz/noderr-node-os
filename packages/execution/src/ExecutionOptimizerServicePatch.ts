@@ -5,7 +5,7 @@
 
 import { Logger } from '@noderr/utils/src';
 import { SafetyController } from '@noderr/safety-control';
-import { Order, ExecutionError, ExecutionErrorCode } from '@noderr/types';
+import { Order, ExecutionError, ExecutionErrorCode } from '@noderr/types/src';
 
 /**
  * Add this to the ExecutionOptimizerService class properties:
