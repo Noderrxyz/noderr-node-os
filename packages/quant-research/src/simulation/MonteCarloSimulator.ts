@@ -56,7 +56,7 @@ export class MonteCarloSimulator extends EventEmitter {
    * Run Monte Carlo simulation
    */
   async simulate(config: MonteCarloConfig): Promise<MonteCarloResult> {
-    this.logger.info(`Running Monte Carlo simulation with ${config.simulations} paths`);
+    this.logger.info(`Running Monte Carlo simulation with ${config.numSimulations} paths`);
     
     // Check cache
     const cacheKey = this.generateCacheKey(config);
@@ -107,8 +107,8 @@ export class MonteCarloSimulator extends EventEmitter {
     const paths: SimulationPath[] = [];
     const batchSize = 100;
     
-    for (let i = 0; i < config.simulations; i += batchSize) {
-      const batch = Math.min(batchSize, config.simulations - i);
+    for (let i = 0; i < config.numSimulations; i += batchSize) {
+      const batch = Math.min(batchSize, config.numSimulations - i);
       
       // Generate batch of paths in parallel
       const batchPaths = await Promise.all(
@@ -174,7 +174,7 @@ export class MonteCarloSimulator extends EventEmitter {
     const metrics = this.calculatePathMetrics(values, returns);
     
     return {
-      id: pathId,
+      id: pathId.toString(),
       values,
       returns,
       timestamps,
@@ -431,7 +431,7 @@ export class MonteCarloSimulator extends EventEmitter {
       
       // Probability of achieving target return
       targetReturn: config.targetReturn
-        ? paths.filter(p => p.totalReturn >= config.targetReturn).length / totalPaths
+        ? paths.filter(p => p.totalReturn >= config.targetReturn!).length / totalPaths
         : 0,
       
       // Probability of exceeding max drawdown
@@ -689,7 +689,7 @@ export class MonteCarloSimulator extends EventEmitter {
     return JSON.stringify({
       strategy: config.strategy.id,
       parameters: config.parameters,
-      simulations: config.simulations,
+      simulations: config.numSimulations,
       timeHorizon: config.timeHorizon,
       distribution: config.distribution
     });

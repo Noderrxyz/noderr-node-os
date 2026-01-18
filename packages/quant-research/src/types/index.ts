@@ -643,6 +643,7 @@ export interface MonteCarloResult {
 
 export interface PortfolioMetrics {
   totalReturn: number;
+  expectedReturn?: number;
   sharpeRatio: number;
   volatility: number;
   maxDrawdown: number;
@@ -651,4 +652,13 @@ export interface PortfolioMetrics {
 }
 
 
-export type OptimizationConstraints = OptimizationConstraint[];
+export interface OptimizationConstraints {
+  minWeights?: number[];
+  maxWeights?: number[];
+  minReturn?: number;
+  maxRisk?: number;
+  riskFreeRate?: number;
+  maxTurnover?: number;
+  currentWeights?: number[];
+  constraints?: OptimizationConstraint[];
+}
