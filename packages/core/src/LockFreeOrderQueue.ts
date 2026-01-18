@@ -1,3 +1,4 @@
+import { Logger } from '@noderr/utils/src';
 import { Worker, isMainThread, parentPort, workerData } from 'worker_threads';
 import * as os from 'os';
 
@@ -312,6 +313,7 @@ export class LockFreeOrderQueue {
   }
 }
 
+const logger = new Logger('LockFreeOrderQueue');
 export interface EncodedOrder {
   symbolHash: number;
   side: number; // 0=BUY, 1=SELL
@@ -457,7 +459,7 @@ export class OrderProcessorWorker {
   }
   
   async start(): Promise<void> {
-    console.log(`Worker ${this.workerId} started on CPU ${os.cpus()[this.workerId % os.cpus().length].model}`);
+    logger.info(`Worker ${this.workerId} started on CPU ${os.cpus()[this.workerId % os.cpus().length].model}`);
     
     while (this.running) {
       const order = await this.queue.dequeueWait(100);
@@ -509,8 +511,8 @@ export class OrderProcessorWorker {
  */
 export class LockFreeQueueBenchmark {
   static async runBenchmark(): Promise<void> {
-    console.log('\n🚀 Lock-Free Order Queue Benchmark');
-    console.log('Target: 1M+ orders/second\n');
+    logger.info('\n🚀 Lock-Free Order Queue Benchmark');
+    logger.info('Target: 1M+ orders/second\n');
     
     const queue = new LockFreeOrderQueue(1_000_000);
     const numProducers = 4;
@@ -518,15 +520,15 @@ export class LockFreeQueueBenchmark {
     const ordersPerProducer = 250_000;
     const cpuCount = os.cpus().length;
     
-    console.log(`System Configuration:`);
-    console.log(`  CPU Cores: ${cpuCount}`);
-    console.log(`  CPU Model: ${os.cpus()[0].model}`);
-    console.log(`  Total Memory: ${(os.totalmem() / 1024 / 1024 / 1024).toFixed(2)} GB`);
-    console.log(`\nBenchmark Configuration:`);
-    console.log(`  Producers: ${numProducers}`);
-    console.log(`  Consumers: ${numConsumers}`);
-    console.log(`  Orders per producer: ${ordersPerProducer.toLocaleString()}`);
-    console.log(`  Total orders: ${(numProducers * ordersPerProducer).toLocaleString()}\n`);
+    logger.info(`System Configuration:`);
+    logger.info(`  CPU Cores: ${cpuCount}`);
+    logger.info(`  CPU Model: ${os.cpus()[0].model}`);
+    logger.info(`  Total Memory: ${(os.totalmem() / 1024 / 1024 / 1024).toFixed(2)} GB`);
+    logger.info(`\nBenchmark Configuration:`);
+    logger.info(`  Producers: ${numProducers}`);
+    logger.info(`  Consumers: ${numConsumers}`);
+    logger.info(`  Orders per producer: ${ordersPerProducer.toLocaleString()}`);
+    logger.info(`  Total orders: ${(numProducers * ordersPerProducer).toLocaleString()}\n`);
     
     const startTime = process.hrtime.bigint();
     
@@ -591,7 +593,7 @@ export class LockFreeQueueBenchmark {
     const progressInterval = setInterval(() => {
       const progress = (totalConsumed / targetOrders * 100).toFixed(1);
       const queueStats = queue.getStats();
-      console.log(`Progress: ${progress}% | Queue size: ${queueStats.size} | Produced: ${totalProduced.toLocaleString()} | Consumed: ${totalConsumed.toLocaleString()}`);
+      logger.info(`Progress: ${progress}% | Queue size: ${queueStats.size} | Produced: ${totalProduced.toLocaleString()} | Consumed: ${totalConsumed.toLocaleString()}`);
     }, 1000);
     
     // Wait for all orders to be consumed
@@ -605,30 +607,30 @@ export class LockFreeQueueBenchmark {
     const duration = Number(endTime - startTime) / 1_000_000_000; // seconds
     const throughput = targetOrders / duration;
     
-    console.log('\n📊 Results:');
-    console.log(`  Duration: ${duration.toFixed(2)}s`);
-    console.log(`  Total orders: ${targetOrders.toLocaleString()}`);
-    console.log(`  Throughput: ${throughput.toFixed(0).toLocaleString()} orders/second`);
-    console.log(`  Latency: ${(duration * 1000 / targetOrders).toFixed(3)}ms per order`);
+    logger.info('\n📊 Results:');
+    logger.info(`  Duration: ${duration.toFixed(2)}s`);
+    logger.info(`  Total orders: ${targetOrders.toLocaleString()}`);
+    logger.info(`  Throughput: ${throughput.toFixed(0).toLocaleString()} orders/second`);
+    logger.info(`  Latency: ${(duration * 1000 / targetOrders).toFixed(3)}ms per order`);
     
     // Get final stats
     const finalStats = queue.getStats();
-    console.log('\nFinal Queue Stats:');
-    console.log(`  Size: ${finalStats.size}`);
-    console.log(`  Sequence: ${finalStats.sequence.toLocaleString()}`);
-    console.log(`  Head: ${finalStats.head}`);
-    console.log(`  Tail: ${finalStats.tail}`);
+    logger.info('\nFinal Queue Stats:');
+    logger.info(`  Size: ${finalStats.size}`);
+    logger.info(`  Sequence: ${finalStats.sequence.toLocaleString()}`);
+    logger.info(`  Head: ${finalStats.head}`);
+    logger.info(`  Tail: ${finalStats.tail}`);
     
     // Cleanup
     producers.forEach(w => w.terminate());
     consumers.forEach(w => w.terminate());
     
     if (throughput >= 1_000_000) {
-      console.log('\n✅ SUCCESS: Achieved 1M+ orders/second!');
+      logger.info('\n✅ SUCCESS: Achieved 1M+ orders/second!');
     } else if (throughput >= 500_000) {
-      console.log('\n⚠️  GOOD: Achieved 500K+ orders/second');
+      logger.info('\n⚠️  GOOD: Achieved 500K+ orders/second');
     } else {
-      console.log(`\n❌ NEEDS OPTIMIZATION: Only ${throughput.toFixed(0)} orders/second`);
+      logger.info(`\n❌ NEEDS OPTIMIZATION: Only ${throughput.toFixed(0)} orders/second`);
     }
     
     return;
@@ -708,5 +710,5 @@ if (!isMainThread && workerData) {
 
 // Run benchmark if executed directly
 if (require.main === module && isMainThread) {
-  LockFreeQueueBenchmark.runBenchmark().catch(console.error);
+  LockFreeQueueBenchmark.runBenchmark().catch((err) => logger.error("Unhandled error", err));
 } 

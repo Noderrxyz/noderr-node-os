@@ -12,6 +12,7 @@
  * - JWT token refresh
  */
 
+import { Logger } from '@noderr/utils/src';
 import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -45,10 +46,10 @@ function loadCredentials(): void {
         config.nodeId = credentials.nodeId || config.nodeId;
         currentJwtToken = credentials.jwtToken || config.jwtToken;
         config.apiKey = credentials.apiKey || config.apiKey;
-        console.log('✅ Loaded credentials from file');
+        logger.info('✅ Loaded credentials from file');
       }
     } catch (error) {
-      console.error('❌ Failed to load credentials:', error);
+      logger.error('❌ Failed to load credentials:', error);
     }
   }
 }
@@ -124,7 +125,7 @@ async function sendHeartbeat(): Promise<boolean> {
       
       // Check if we need to update node software
       if (data.shouldUpdate && data.targetVersion) {
-        console.log(`📦 Update available: ${data.targetVersion}`);
+        logger.info(`📦 Update available: ${data.targetVersion}`);
         // TODO: Trigger auto-update process
       }
       
@@ -132,18 +133,18 @@ async function sendHeartbeat(): Promise<boolean> {
       return true;
     } else {
       const errorText = await response.text();
-      console.error(`❌ Heartbeat failed: ${response.status} - ${errorText}`);
+      logger.error(`❌ Heartbeat failed: ${response.status} - ${errorText}`);
       
       // Handle specific error codes
       if (response.status === 401) {
-        console.log('🔄 JWT expired, attempting refresh...');
+        logger.info('🔄 JWT expired, attempting refresh...');
         await refreshJwtToken();
       }
       
       return false;
     }
   } catch (error) {
-    console.error('❌ Heartbeat error:', error);
+    logger.error('❌ Heartbeat error:', error);
     return false;
   }
 }
@@ -153,7 +154,7 @@ async function sendHeartbeat(): Promise<boolean> {
  */
 async function refreshJwtToken(): Promise<boolean> {
   if (!config.apiKey) {
-    console.error('❌ No API key available for JWT refresh');
+    logger.error('❌ No API key available for JWT refresh');
     return false;
   }
   
@@ -176,14 +177,14 @@ async function refreshJwtToken(): Promise<boolean> {
       const data = await response.json() as { jwtToken: string };
       currentJwtToken = data.jwtToken;
       saveCredentials();
-      console.log('✅ JWT token refreshed');
+      logger.info('✅ JWT token refreshed');
       return true;
     } else {
-      console.error('❌ JWT refresh failed:', response.status);
+      logger.error('❌ JWT refresh failed:', response.status);
       return false;
     }
   } catch (error) {
-    console.error('❌ JWT refresh error:', error);
+    logger.error('❌ JWT refresh error:', error);
     return false;
   }
 }
@@ -207,7 +208,7 @@ function saveCredentials(): void {
     
     fs.writeFileSync(config.credentialsPath, JSON.stringify(credentials, null, 2));
   } catch (error) {
-    console.error('❌ Failed to save credentials:', error);
+    logger.error('❌ Failed to save credentials:', error);
   }
 }
 
@@ -225,33 +226,33 @@ function getBackoffDelay(failures: number): number {
  * Main heartbeat loop
  */
 async function heartbeatLoop(): Promise<void> {
-  console.log('💓 Starting heartbeat client...');
-  console.log(`   Node ID: ${config.nodeId}`);
-  console.log(`   Auth API: ${config.authApiUrl}`);
-  console.log(`   Interval: ${config.heartbeatInterval}ms`);
+  logger.info('💓 Starting heartbeat client...');
+  logger.info(`   Node ID: ${config.nodeId}`);
+  logger.info(`   Auth API: ${config.authApiUrl}`);
+  logger.info(`   Interval: ${config.heartbeatInterval}ms`);
   
   while (isRunning) {
     const success = await sendHeartbeat();
     
     if (success) {
-      console.log(`💓 Heartbeat sent successfully (${new Date().toISOString()})`);
+      logger.info(`💓 Heartbeat sent successfully (${new Date().toISOString()})`);
       // Wait for next interval
       await sleep(config.heartbeatInterval);
     } else {
       consecutiveFailures++;
       
       if (consecutiveFailures >= config.maxRetries) {
-        console.error(`❌ ${consecutiveFailures} consecutive failures, backing off...`);
+        logger.error(`❌ ${consecutiveFailures} consecutive failures, backing off...`);
       }
       
       // Wait with exponential backoff
       const backoffDelay = getBackoffDelay(consecutiveFailures);
-      console.log(`⏳ Retrying in ${backoffDelay / 1000}s...`);
+      logger.info(`⏳ Retrying in ${backoffDelay / 1000}s...`);
       await sleep(backoffDelay);
     }
   }
   
-  console.log('💔 Heartbeat client stopped');
+  logger.info('💔 Heartbeat client stopped');
 }
 
 /**
@@ -266,7 +267,7 @@ function sleep(ms: number): Promise<void> {
  */
 function setupShutdownHandlers(): void {
   const shutdown = () => {
-    console.log('\n🛑 Shutting down heartbeat client...');
+    logger.info('\n🛑 Shutting down heartbeat client...');
     isRunning = false;
   };
   
@@ -278,20 +279,20 @@ function setupShutdownHandlers(): void {
  * Main entry point
  */
 async function main(): Promise<void> {
-  console.log('🚀 Noderr Heartbeat Client v1.0.0');
-  console.log('================================');
+  logger.info('🚀 Noderr Heartbeat Client v1.0.0');
+  logger.info('================================');
   
   // Load credentials
   loadCredentials();
   
   // Validate configuration
   if (!config.nodeId) {
-    console.error('❌ NODE_ID is required');
+    logger.error('❌ NODE_ID is required');
     process.exit(1);
   }
   
   if (!currentJwtToken && !config.apiKey) {
-    console.error('❌ JWT_TOKEN or API_KEY is required');
+    logger.error('❌ JWT_TOKEN or API_KEY is required');
     process.exit(1);
   }
   
@@ -304,7 +305,7 @@ async function main(): Promise<void> {
 
 // Run
 main().catch(error => {
-  console.error('💥 Fatal error:', error);
+  logger.error('💥 Fatal error:', error);
   process.exit(1);
 });
 

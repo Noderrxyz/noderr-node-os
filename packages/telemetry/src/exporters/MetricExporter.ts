@@ -15,7 +15,7 @@ import {
   collectDefaultMetrics,
   register
 } from 'prom-client';
-import { Logger } from 'winston';
+import * as winston from 'winston';
 import * as http from 'http';
 import * as https from 'https';
 import { gzip } from 'zlib';

@@ -1,3 +1,4 @@
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import {
   WhaleActivity,
@@ -9,6 +10,7 @@ import {
   MarketIntelTelemetryEvent
 } from './types';
 
+const logger = new Logger('WhaleTracker');
 export class WhaleTracker extends EventEmitter {
   private config: WhaleTrackingConfig;
   private telemetry: TelemetryClient;
@@ -107,7 +109,7 @@ export class WhaleTracker extends EventEmitter {
         smartMoneyScore
       };
     } catch (error) {
-      console.error('Whale tracking error:', error);
+      logger.error('Whale tracking error:', error);
       throw error;
     }
   }

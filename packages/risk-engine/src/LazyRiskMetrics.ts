@@ -1,5 +1,7 @@
+import { Logger } from '@noderr/utils/src';
 import * as winston from 'winston';
 
+const logger = new Logger('LazyRiskMetrics');
 export interface Position {
   symbol: string;
   quantity: number;
@@ -328,8 +330,8 @@ export class LazyRiskMetrics {
  */
 export class LazyRiskMetricsBenchmark {
   static async runBenchmark(logger: winston.Logger): Promise<void> {
-    console.log('\n⚡ Lazy Risk Metrics Performance Benchmark');
-    console.log('Target: -2ms per risk check\n');
+    logger.info('\n⚡ Lazy Risk Metrics Performance Benchmark');
+    logger.info('Target: -2ms per risk check\n');
     
     // Create positions
     const positions: Position[] = [];
@@ -344,7 +346,7 @@ export class LazyRiskMetricsBenchmark {
     }
     
     // Test eager computation
-    console.log('📊 Eager computation (always recalculate):');
+    logger.info('📊 Eager computation (always recalculate):');
     const eagerStart = process.hrtime.bigint();
     let eagerSum = 0;
     
@@ -369,7 +371,7 @@ export class LazyRiskMetricsBenchmark {
     const eagerTime = Number(process.hrtime.bigint() - eagerStart) / 1_000_000;
     
     // Test lazy computation
-    console.log('\n📊 Lazy computation (cache when possible):');
+    logger.info('\n📊 Lazy computation (cache when possible):');
     const lazyMetrics = new LazyRiskMetrics(logger);
     
     // Initialize positions
@@ -398,24 +400,24 @@ export class LazyRiskMetricsBenchmark {
     const lazyTime = Number(process.hrtime.bigint() - lazyStart) / 1_000_000;
     
     // Results
-    console.log('\nResults:');
-    console.log(`Eager computation: ${eagerTime.toFixed(2)}ms (${(eagerTime / 1000).toFixed(3)}ms per check)`);
-    console.log(`Lazy computation: ${lazyTime.toFixed(2)}ms (${(lazyTime / 1000).toFixed(3)}ms per check)`);
+    logger.info('\nResults:');
+    logger.info(`Eager computation: ${eagerTime.toFixed(2)}ms (${(eagerTime / 1000).toFixed(3)}ms per check)`);
+    logger.info(`Lazy computation: ${lazyTime.toFixed(2)}ms (${(lazyTime / 1000).toFixed(3)}ms per check)`);
     
     const improvement = (eagerTime - lazyTime) / 1000;
-    console.log(`\n🎯 Improvement: ${improvement.toFixed(3)}ms per check`);
+    logger.info(`\n🎯 Improvement: ${improvement.toFixed(3)}ms per check`);
     
     const stats = lazyMetrics.getPerformanceStats();
-    console.log('\nLazy metrics stats:');
-    console.log(`  Compute count: ${stats.computeCount}`);
-    console.log(`  Cache hits: ${stats.cacheHits}`);
-    console.log(`  Cache hit rate: ${(stats.cacheHitRate * 100).toFixed(1)}%`);
-    console.log(`  Avg compute time: ${stats.avgComputeTime.toFixed(3)}ms`);
+    logger.info('\nLazy metrics stats:');
+    logger.info(`  Compute count: ${stats.computeCount}`);
+    logger.info(`  Cache hits: ${stats.cacheHits}`);
+    logger.info(`  Cache hit rate: ${(stats.cacheHitRate * 100).toFixed(1)}%`);
+    logger.info(`  Avg compute time: ${stats.avgComputeTime.toFixed(3)}ms`);
     
     if (improvement >= 2) {
-      console.log('\n✅ SUCCESS: Achieved target -2ms improvement!');
+      logger.info('\n✅ SUCCESS: Achieved target -2ms improvement!');
     } else {
-      console.log(`\n⚠️  WARNING: Only achieved ${improvement.toFixed(3)}ms improvement (target: 2ms)`);
+      logger.info(`\n⚠️  WARNING: Only achieved ${improvement.toFixed(3)}ms improvement (target: 2ms)`);
     }
   }
 }
@@ -428,5 +430,5 @@ if (require.main === module) {
     transports: [new winston.transports.Console()]
   });
   
-  LazyRiskMetricsBenchmark.runBenchmark(logger).catch(console.error);
+  LazyRiskMetricsBenchmark.runBenchmark(logger).catch((err) => logger.error("Unhandled error", err));
 } 

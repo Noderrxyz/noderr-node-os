@@ -5,7 +5,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { Logger } from 'winston';
+import * as winston from 'winston';
 import { MetricExporter } from '../exporters/MetricExporter';
 import { MetricType, MetricValue } from '../types/telemetry';
 

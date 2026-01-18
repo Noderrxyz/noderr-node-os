@@ -110,7 +110,7 @@ export async function startMarketIntelService(): Promise<void> {
 if (require.main === module) {
   getShutdownHandler(30000);
   startMarketIntelService().catch((error) => {
-    console.error('Fatal error starting Market Intelligence Service:', error);
+    logger.error('Fatal error starting Market Intelligence Service:', error);
     process.exit(1);
   });
 }

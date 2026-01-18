@@ -11,6 +11,7 @@
  * Integration Complete - Phase 7
  */
 
+import { Logger } from '@noderr/utils/src';
 import * as tf from '@tensorflow/tfjs-node';
 import { ModelLoader, LoadedModel } from './model-loader';
 import { createClient } from '@supabase/supabase-js';
@@ -82,25 +83,25 @@ export class InferenceService {
    * Initialize inference service
    */
   async initialize(): Promise<void> {
-    console.log('🚀 Initializing inference service...');
-    console.log(`   Node ID: ${this.nodeId}`);
-    console.log(`   Tier: ${this.tier}`);
+    logger.info('🚀 Initializing inference service...');
+    logger.info(`   Node ID: ${this.nodeId}`);
+    logger.info(`   Tier: ${this.tier}`);
     
     // Start telemetry flush interval (every 60 seconds)
     this.telemetryFlushInterval = setInterval(() => {
       this.flushTelemetry().catch(err => {
-        console.error('❌ Failed to flush telemetry:', err);
+        logger.error('❌ Failed to flush telemetry:', err);
       });
     }, 60000);
     
-    console.log('✅ Inference service initialized');
+    logger.info('✅ Inference service initialized');
   }
   
   /**
    * Shutdown inference service
    */
   async shutdown(): Promise<void> {
-    console.log('🛑 Shutting down inference service...');
+    logger.info('🛑 Shutting down inference service...');
     
     // Stop telemetry flush interval
     if (this.telemetryFlushInterval) {
@@ -111,7 +112,7 @@ export class InferenceService {
     await this.flushTelemetry();
     await this.flushResults();
     
-    console.log('✅ Inference service shut down');
+    logger.info('✅ Inference service shut down');
   }
   
   /**
@@ -175,8 +176,8 @@ export class InferenceService {
    * Run inference
    */
   async runInference(request: InferenceRequest): Promise<InferenceResult> {
-    console.log(`🧠 Running inference: ${request.requestId}`);
-    console.log(`   Model: ${request.modelId}`);
+    logger.info(`🧠 Running inference: ${request.requestId}`);
+    logger.info(`   Model: ${request.modelId}`);
     
     const startTime = Date.now();
     const startMemory = process.memoryUsage().heapUsed;
@@ -186,7 +187,7 @@ export class InferenceService {
       let model = this.modelLoader.getModel(request.modelId);
       
       if (!model) {
-        console.log('   Loading model...');
+        logger.info('   Loading model...');
         model = await this.modelLoader.loadModel(request.modelId);
       }
       
@@ -206,9 +207,9 @@ export class InferenceService {
       const executionTime = Date.now() - startTime;
       const memoryUsage = process.memoryUsage().heapUsed - startMemory;
       
-      console.log(`✅ Inference complete (${executionTime}ms)`);
+      logger.info(`✅ Inference complete (${executionTime}ms)`);
       if (confidence !== undefined) {
-        console.log(`   Confidence: ${(confidence * 100).toFixed(2)}%`);
+        logger.info(`   Confidence: ${(confidence * 100).toFixed(2)}%`);
       }
       
       // Create result
@@ -245,7 +246,7 @@ export class InferenceService {
     } catch (error: any) {
       const executionTime = Date.now() - startTime;
       
-      console.error('❌ Inference failed:', error);
+      logger.error('❌ Inference failed:', error);
       
       // Collect error telemetry
       const telemetry: InferenceTelemetry = {
@@ -269,7 +270,7 @@ export class InferenceService {
    * Run batch inference
    */
   async runBatchInference(requests: InferenceRequest[]): Promise<InferenceResult[]> {
-    console.log(`🧠 Running batch inference: ${requests.length} requests`);
+    logger.info(`🧠 Running batch inference: ${requests.length} requests`);
     
     const results: InferenceResult[] = [];
     
@@ -278,11 +279,11 @@ export class InferenceService {
         const result = await this.runInference(request);
         results.push(result);
       } catch (error) {
-        console.error(`❌ Failed to process request ${request.requestId}:`, error);
+        logger.error(`❌ Failed to process request ${request.requestId}:`, error);
       }
     }
     
-    console.log(`✅ Batch inference complete: ${results.length}/${requests.length} successful`);
+    logger.info(`✅ Batch inference complete: ${results.length}/${requests.length} successful`);
     
     return results;
   }
@@ -295,7 +296,7 @@ export class InferenceService {
       return;
     }
     
-    console.log(`📊 Flushing telemetry: ${this.telemetryBuffer.length} records`);
+    logger.info(`📊 Flushing telemetry: ${this.telemetryBuffer.length} records`);
     
     try {
       // Insert telemetry records
@@ -316,17 +317,17 @@ export class InferenceService {
         );
       
       if (error) {
-        console.error('❌ Failed to flush telemetry:', error);
+        logger.error('❌ Failed to flush telemetry:', error);
         return;
       }
       
-      console.log('✅ Telemetry flushed successfully');
+      logger.info('✅ Telemetry flushed successfully');
       
       // Clear buffer
       this.telemetryBuffer = [];
       
     } catch (error) {
-      console.error('❌ Failed to flush telemetry:', error);
+      logger.error('❌ Failed to flush telemetry:', error);
     }
   }
   
@@ -338,7 +339,7 @@ export class InferenceService {
       return;
     }
     
-    console.log(`📤 Flushing results: ${this.resultBuffer.length} records`);
+    logger.info(`📤 Flushing results: ${this.resultBuffer.length} records`);
     
     try {
       // Insert result records
@@ -359,17 +360,17 @@ export class InferenceService {
         );
       
       if (error) {
-        console.error('❌ Failed to flush results:', error);
+        logger.error('❌ Failed to flush results:', error);
         return;
       }
       
-      console.log('✅ Results flushed successfully');
+      logger.info('✅ Results flushed successfully');
       
       // Clear buffer
       this.resultBuffer = [];
       
     } catch (error) {
-      console.error('❌ Failed to flush results:', error);
+      logger.error('❌ Failed to flush results:', error);
     }
   }
   
@@ -452,7 +453,7 @@ export async function createInferenceService(
   tier: string,
   cacheDir?: string
 ): Promise<InferenceService> {
-  console.log('🔧 Creating inference service...');
+  logger.info('🔧 Creating inference service...');
   
   // Create model loader
   const modelLoader = new ModelLoader(tier, cacheDir);
@@ -465,7 +466,7 @@ export async function createInferenceService(
   const inferenceService = new InferenceService(nodeId, tier, modelLoader);
   await inferenceService.initialize();
   
-  console.log('✅ Inference service ready');
+  logger.info('✅ Inference service ready');
   
   return inferenceService;
 }

@@ -12,6 +12,7 @@
  * Integration Complete - Phase 6
  */
 
+import { Logger } from '@noderr/utils/src';
 import * as tf from '@tensorflow/tfjs-node';
 import { createHash } from 'crypto';
 import { createWriteStream, createReadStream, promises as fs } from 'fs';
@@ -72,21 +73,21 @@ export class ModelLoader {
    * Creates cache directory and loads any cached models
    */
   async initialize(): Promise<void> {
-    console.log('🔧 Initializing model loader...');
-    console.log(`   Tier: ${this.tier}`);
-    console.log(`   Cache dir: ${this.cacheDir}`);
+    logger.info('🔧 Initializing model loader...');
+    logger.info(`   Tier: ${this.tier}`);
+    logger.info(`   Cache dir: ${this.cacheDir}`);
     
     // Create cache directory
     await fs.mkdir(this.cacheDir, { recursive: true });
     
-    console.log('✅ Model loader initialized');
+    logger.info('✅ Model loader initialized');
   }
   
   /**
    * Query version beacon for available models
    */
   async queryVersionBeacon(modelId?: string): Promise<ModelInfo[]> {
-    console.log('🔔 Querying version beacon...');
+    logger.info('🔔 Querying version beacon...');
     
     let query = supabase
       .from('model_versions')
@@ -105,7 +106,7 @@ export class ModelLoader {
       throw new Error(`Failed to query version beacon: ${error.message}`);
     }
     
-    console.log(`✅ Found ${data?.length || 0} available models`);
+    logger.info(`✅ Found ${data?.length || 0} available models`);
     
     return (data || []) as ModelInfo[];
   }
@@ -163,8 +164,8 @@ export class ModelLoader {
    * Download model from S3
    */
   async downloadModel(modelInfo: ModelInfo): Promise<string> {
-    console.log(`📥 Downloading model: ${modelInfo.model_id}@${modelInfo.version}`);
-    console.log(`   URL: ${modelInfo.url}`);
+    logger.info(`📥 Downloading model: ${modelInfo.model_id}@${modelInfo.version}`);
+    logger.info(`   URL: ${modelInfo.url}`);
     
     const downloadPath = path.join(this.cacheDir, 'downloads', `${modelInfo.model_id}-${modelInfo.version}.tar.gz`);
     await fs.mkdir(path.dirname(downloadPath), { recursive: true });
@@ -180,10 +181,10 @@ export class ModelLoader {
     const fileStream = createWriteStream(downloadPath);
     await pipeline(response.body as any, fileStream);
     
-    console.log('✅ Model downloaded');
+    logger.info('✅ Model downloaded');
     
     // Verify checksum
-    console.log('🔍 Verifying checksum...');
+    logger.info('🔍 Verifying checksum...');
     const checksum = await this.calculateChecksum(downloadPath);
     
     if (checksum !== modelInfo.checksum) {
@@ -191,7 +192,7 @@ export class ModelLoader {
       throw new Error(`Checksum mismatch! Expected: ${modelInfo.checksum}, Got: ${checksum}`);
     }
     
-    console.log('✅ Checksum verified');
+    logger.info('✅ Checksum verified');
     
     return downloadPath;
   }
@@ -200,7 +201,7 @@ export class ModelLoader {
    * Extract model archive
    */
   async extractModel(archivePath: string, modelId: string, version: string): Promise<string> {
-    console.log('📦 Extracting model archive...');
+    logger.info('📦 Extracting model archive...');
     
     const extractPath = path.join(this.cacheDir, modelId, version);
     await fs.mkdir(extractPath, { recursive: true });
@@ -211,7 +212,7 @@ export class ModelLoader {
       cwd: extractPath
     });
     
-    console.log('✅ Model extracted to:', extractPath);
+    logger.info('✅ Model extracted to:', extractPath);
     
     // Clean up archive
     await fs.unlink(archivePath);
@@ -223,15 +224,15 @@ export class ModelLoader {
    * Load model into memory
    */
   async loadModelIntoMemory(modelPath: string, modelInfo: ModelInfo): Promise<LoadedModel> {
-    console.log(`🧠 Loading model into memory: ${modelInfo.model_id}@${modelInfo.version}`);
+    logger.info(`🧠 Loading model into memory: ${modelInfo.model_id}@${modelInfo.version}`);
     
     // Load TensorFlow model
     const model = await tf.loadLayersModel(`file://${modelPath}/model.json`);
     
-    console.log('✅ Model loaded into memory');
-    console.log(`   Architecture: ${model.name}`);
-    console.log(`   Inputs: ${model.inputs.map(i => i.shape).join(', ')}`);
-    console.log(`   Outputs: ${model.outputs.map(o => o.shape).join(', ')}`);
+    logger.info('✅ Model loaded into memory');
+    logger.info(`   Architecture: ${model.name}`);
+    logger.info(`   Inputs: ${model.inputs.map(i => i.shape).join(', ')}`);
+    logger.info(`   Outputs: ${model.outputs.map(o => o.shape).join(', ')}`);
     
     const loadedModel: LoadedModel = {
       modelId: modelInfo.model_id,
@@ -249,7 +250,7 @@ export class ModelLoader {
    * Load model (download if not cached)
    */
   async loadModel(modelId: string, version?: string): Promise<LoadedModel> {
-    console.log(`🔄 Loading model: ${modelId}${version ? `@${version}` : ' (latest)'}`);
+    logger.info(`🔄 Loading model: ${modelId}${version ? `@${version}` : ' (latest)'}`);
     
     // Get model info from version beacon
     let modelInfo: ModelInfo | null;
@@ -275,7 +276,7 @@ export class ModelLoader {
     // Check if already loaded
     const cacheKey = `${modelInfo.model_id}@${modelInfo.version}`;
     if (this.loadedModels.has(cacheKey)) {
-      console.log('✅ Model already loaded (using cached)');
+      logger.info('✅ Model already loaded (using cached)');
       return this.loadedModels.get(cacheKey)!;
     }
     
@@ -285,7 +286,7 @@ export class ModelLoader {
     let modelPath: string;
     
     if (isCached) {
-      console.log('✅ Using cached model');
+      logger.info('✅ Using cached model');
       modelPath = path.join(this.cacheDir, modelInfo.model_id, modelInfo.version);
     } else {
       // Download and extract
@@ -305,7 +306,7 @@ export class ModelLoader {
     // Cache in memory
     this.loadedModels.set(cacheKey, loadedModel);
     
-    console.log('🎉 Model ready for inference!');
+    logger.info('🎉 Model ready for inference!');
     
     return loadedModel;
   }
@@ -314,7 +315,7 @@ export class ModelLoader {
    * Load all available models for this tier
    */
   async loadAllModels(): Promise<LoadedModel[]> {
-    console.log('🔄 Loading all available models...');
+    logger.info('🔄 Loading all available models...');
     
     const availableModels = await this.queryVersionBeacon();
     const loadedModels: LoadedModel[] = [];
@@ -324,11 +325,11 @@ export class ModelLoader {
         const loaded = await this.loadModel(modelInfo.model_id, modelInfo.version);
         loadedModels.push(loaded);
       } catch (error) {
-        console.error(`❌ Failed to load model ${modelInfo.model_id}:`, error);
+        logger.error(`❌ Failed to load model ${modelInfo.model_id}:`, error);
       }
     }
     
-    console.log(`✅ Loaded ${loadedModels.length}/${availableModels.length} models`);
+    logger.info(`✅ Loaded ${loadedModels.length}/${availableModels.length} models`);
     
     return loadedModels;
   }
@@ -353,7 +354,7 @@ export class ModelLoader {
     const model = this.getModel(modelId);
     
     if (!model) {
-      console.log(`⚠️  Model not loaded: ${modelId}`);
+      logger.info(`⚠️  Model not loaded: ${modelId}`);
       return;
     }
     
@@ -364,7 +365,7 @@ export class ModelLoader {
     const cacheKey = `${model.modelId}@${model.version}`;
     this.loadedModels.delete(cacheKey);
     
-    console.log(`✅ Model unloaded: ${modelId}`);
+    logger.info(`✅ Model unloaded: ${modelId}`);
   }
   
   /**
@@ -376,7 +377,7 @@ export class ModelLoader {
     latestVersion: string;
     updateAvailable: boolean;
   }[]> {
-    console.log('🔍 Checking for model updates...');
+    logger.info('🔍 Checking for model updates...');
     
     const updates: any[] = [];
     
@@ -394,9 +395,9 @@ export class ModelLoader {
     }
     
     if (updates.length > 0) {
-      console.log(`📢 ${updates.length} model update(s) available`);
+      logger.info(`📢 ${updates.length} model update(s) available`);
     } else {
-      console.log('✅ All models up to date');
+      logger.info('✅ All models up to date');
     }
     
     return updates;
@@ -406,7 +407,7 @@ export class ModelLoader {
    * Update model to latest version
    */
   async updateModel(modelId: string): Promise<LoadedModel> {
-    console.log(`🔄 Updating model: ${modelId}`);
+    logger.info(`🔄 Updating model: ${modelId}`);
     
     // Unload current version
     await this.unloadModel(modelId);
@@ -414,7 +415,7 @@ export class ModelLoader {
     // Load latest version
     const updated = await this.loadModel(modelId);
     
-    console.log(`✅ Model updated: ${modelId}@${updated.version}`);
+    logger.info(`✅ Model updated: ${modelId}@${updated.version}`);
     
     return updated;
   }
@@ -423,7 +424,7 @@ export class ModelLoader {
    * Clean up old cached models
    */
   async cleanupCache(keepVersions: number = 2): Promise<void> {
-    console.log('🧹 Cleaning up old cached models...');
+    logger.info('🧹 Cleaning up old cached models...');
     
     const modelDirs = await fs.readdir(this.cacheDir);
     
@@ -448,11 +449,11 @@ export class ModelLoader {
       const toDelete = versionStats.slice(keepVersions);
       
       for (const { version, path: versionPath } of toDelete) {
-        console.log(`   Deleting old version: ${modelId}@${version}`);
+        logger.info(`   Deleting old version: ${modelId}@${version}`);
         await fs.rm(versionPath, { recursive: true, force: true });
       }
     }
     
-    console.log('✅ Cache cleanup complete');
+    logger.info('✅ Cache cleanup complete');
   }
 }

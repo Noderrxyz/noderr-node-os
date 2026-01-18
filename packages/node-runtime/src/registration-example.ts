@@ -4,6 +4,7 @@
  * This example shows how to integrate GPU detection into the node registration flow
  */
 
+import { Logger } from '@noderr/utils/src';
 import { getSystemInfoWithGpu, hasGpu } from './gpu-integration';
 
 /**
@@ -15,7 +16,7 @@ async function registerNode(
   walletAddress: string,
   nodeTier: 'micro' | 'validator' | 'guardian' | 'oracle'
 ) {
-  console.log('🚀 Starting node registration...\n');
+  logger.info('🚀 Starting node registration...\n');
 
   // Step 1: Check GPU requirements based on node tier
   const gpuAvailable = await hasGpu();
@@ -28,17 +29,17 @@ async function registerNode(
         '   Please ensure you have a compatible GPU installed and drivers configured.'
       );
     }
-    console.log('✅ GPU requirement met for Oracle node\n');
+    logger.info('✅ GPU requirement met for Oracle node\n');
   } else if (nodeTier === 'guardian') {
     // Guardian nodes: GPU is optional (bonus rewards)
     if (gpuAvailable) {
-      console.log('✅ GPU detected for Guardian node (bonus rewards enabled)\n');
+      logger.info('✅ GPU detected for Guardian node (bonus rewards enabled)\n');
     } else {
-      console.log('ℹ️  No GPU detected for Guardian node (will receive base rewards only)\n');
+      logger.info('ℹ️  No GPU detected for Guardian node (will receive base rewards only)\n');
     }
   } else {
     // Micro and Validator nodes don't use GPU
-    console.log('ℹ️  GPU not required for', nodeTier, 'node\n');
+    logger.info('ℹ️  GPU not required for', nodeTier, 'node\n');
   }
 
   // Step 2: Collect system information (including GPU if available)
@@ -74,8 +75,8 @@ async function registerNode(
     systemInfo, // Includes gpuHardwareId if available
   };
 
-  console.log('📤 Sending registration request...');
-  console.log(JSON.stringify(registrationPayload, null, 2));
+  logger.info('📤 Sending registration request...');
+  logger.info(JSON.stringify(registrationPayload, null, 2));
 
   // In production, this would be an actual HTTP request:
   // const response = await fetch('https://auth-api.noderr.io/api/v1/auth/register', {
@@ -84,7 +85,7 @@ async function registerNode(
   //   body: JSON.stringify(registrationPayload),
   // });
 
-  console.log('\n✅ Node registered successfully!');
+  logger.info('\n✅ Node registered successfully!');
 }
 
 // Example usage
@@ -96,13 +97,14 @@ if (require.main === module) {
     'oracle'
   )
     .then(() => {
-      console.log('\n🎉 Registration complete!');
+      logger.info('\n🎉 Registration complete!');
       process.exit(0);
     })
     .catch((error) => {
-      console.error('\n❌ Registration failed:', error.message);
+      logger.error('\n❌ Registration failed:', error.message);
       process.exit(1);
     });
 }
 
+const logger = new Logger('registration-example');
 export { registerNode };

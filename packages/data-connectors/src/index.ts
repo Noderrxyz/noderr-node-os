@@ -87,7 +87,7 @@ export async function startDataConnectorsService(): Promise<void> {
 if (require.main === module) {
   getShutdownHandler(30000);
   startDataConnectorsService().catch((error) => {
-    console.error('Fatal error starting Data Connectors Service:', error);
+    logger.error('Fatal error starting Data Connectors Service:', error);
     process.exit(1);
   });
 }

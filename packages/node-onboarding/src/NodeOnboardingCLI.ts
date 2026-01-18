@@ -10,6 +10,7 @@
  * @module node-onboarding
  */
 
+import { Logger } from '@noderr/utils/src';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import ora from 'ora';
@@ -19,6 +20,7 @@ import { getGPUHardwareId } from '@noderr/gpu-service-mvs';
 import { verifyAttestation, generateNonce } from '@noderr/attestation-mvs';
 import { STAKING_REQUIREMENTS, NodeTier } from '@noderr/protocol-config';
 
+const logger = new Logger('NodeOnboardingCLI');
 export interface OnboardingConfig {
   rpcUrl: string;
   authApiUrl: string;
@@ -105,7 +107,7 @@ export class NodeOnboardingCLI {
    */
   private displayWelcome() {
     console.clear();
-    console.log(boxen(
+    logger.info(boxen(
       chalk.bold.cyan('Welcome to Noderr Protocol\n\n') +
       chalk.white('Node Onboarding System'),
       {
@@ -115,7 +117,7 @@ export class NodeOnboardingCLI {
         borderColor: 'cyan'
       }
     ));
-    console.log();
+    logger.info();
   }
 
   /**
@@ -148,9 +150,9 @@ export class NodeOnboardingCLI {
       }
     ]);
 
-    console.log();
-    console.log(chalk.cyan(`✓ Selected: ${chalk.bold(tier)}`));
-    console.log();
+    logger.info();
+    logger.info(chalk.cyan(`✓ Selected: ${chalk.bold(tier)}`));
+    logger.info();
 
     return tier;
   }
@@ -214,9 +216,9 @@ export class NodeOnboardingCLI {
       wallet = ethers.Wallet.fromPhrase(mnemonic, this.provider);
     }
 
-    console.log();
-    console.log(chalk.cyan(`✓ Wallet connected: ${chalk.bold(wallet.address)}`));
-    console.log();
+    logger.info();
+    logger.info(chalk.cyan(`✓ Wallet connected: ${chalk.bold(wallet.address)}`));
+    logger.info();
 
     return wallet;
   }
@@ -242,9 +244,9 @@ export class NodeOnboardingCLI {
 
       spinner.stop();
 
-      console.log(chalk.cyan(`Your balance: ${chalk.bold(balanceFormatted)} NODR`));
-      console.log(chalk.cyan(`Required: ${chalk.bold(required.toLocaleString())} NODR`));
-      console.log();
+      logger.info(chalk.cyan(`Your balance: ${chalk.bold(balanceFormatted)} NODR`));
+      logger.info(chalk.cyan(`Required: ${chalk.bold(required.toLocaleString())} NODR`));
+      logger.info();
 
       if (parseFloat(balanceFormatted) < required) {
         throw new Error(
@@ -252,8 +254,8 @@ export class NodeOnboardingCLI {
         );
       }
 
-      console.log(chalk.green('✓ Staking requirement met'));
-      console.log();
+      logger.info(chalk.green('✓ Staking requirement met'));
+      logger.info();
     } catch (error) {
       spinner.stop();
       throw error;
@@ -281,9 +283,9 @@ export class NodeOnboardingCLI {
           throw new Error('GPU required for Oracle nodes. No NVIDIA GPU detected.');
         } else {
           // Guardian - GPU optional
-          console.log(chalk.yellow('⚠ No GPU detected'));
-          console.log(chalk.yellow('Guardian nodes can run without GPU, but you won\'t receive GPU bonus rewards.'));
-          console.log();
+          logger.info(chalk.yellow('⚠ No GPU detected'));
+          logger.info(chalk.yellow('Guardian nodes can run without GPU, but you won\'t receive GPU bonus rewards.'));
+          logger.info();
 
           const { proceed } = await inquirer.prompt([
             {
@@ -302,8 +304,8 @@ export class NodeOnboardingCLI {
         }
       }
 
-      console.log(chalk.green(`✓ GPU detected: ${gpuId.substring(0, 16)}...`));
-      console.log();
+      logger.info(chalk.green(`✓ GPU detected: ${gpuId.substring(0, 16)}...`));
+      logger.info();
 
       return gpuId;
     } catch (error) {
@@ -331,7 +333,7 @@ export class NodeOnboardingCLI {
       };
 
       spinner.succeed('TPM attestation generated');
-      console.log();
+      logger.info();
 
       return attestation;
     } catch (error) {
@@ -378,7 +380,7 @@ export class NodeOnboardingCLI {
       const result = await response.json();
 
       spinner.succeed('Node registered successfully');
-      console.log();
+      logger.info();
 
       return {
         utilityNFTId: result.utilityNFTId,
@@ -394,7 +396,7 @@ export class NodeOnboardingCLI {
    * Display success message
    */
   private displaySuccess(result: { utilityNFTId: string; registrationTxHash: string }) {
-    console.log(boxen(
+    logger.info(boxen(
       chalk.bold.green('✓ Node Registration Complete!\n\n') +
       chalk.white(`Utility NFT ID: ${chalk.bold(result.utilityNFTId)}\n`) +
       chalk.white(`Transaction: ${chalk.bold(result.registrationTxHash)}`),
@@ -405,19 +407,19 @@ export class NodeOnboardingCLI {
         borderColor: 'green'
       }
     ));
-    console.log();
-    console.log(chalk.cyan('Next steps:'));
-    console.log(chalk.white('1. Start your node client'));
-    console.log(chalk.white('2. Monitor your node dashboard'));
-    console.log(chalk.white('3. Start earning rewards!'));
-    console.log();
+    logger.info();
+    logger.info(chalk.cyan('Next steps:'));
+    logger.info(chalk.white('1. Start your node client'));
+    logger.info(chalk.white('2. Monitor your node dashboard'));
+    logger.info(chalk.white('3. Start earning rewards!'));
+    logger.info();
   }
 
   /**
    * Display error message
    */
   private displayError(error: string) {
-    console.log(boxen(
+    logger.info(boxen(
       chalk.bold.red('✗ Onboarding Failed\n\n') +
       chalk.white(error),
       {
@@ -427,7 +429,7 @@ export class NodeOnboardingCLI {
         borderColor: 'red'
       }
     ));
-    console.log();
+    logger.info();
   }
 }
 

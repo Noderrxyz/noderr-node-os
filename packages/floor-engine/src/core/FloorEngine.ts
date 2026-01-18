@@ -115,8 +115,8 @@ export class FloorEngine extends EventEmitter {
 
     const allocationStrategy = strategy || this.config.allocationStrategy;
 
-    console.log(`[FloorEngine] Allocating ${ethers.formatEther(amount)} ETH`);
-    console.log(`[FloorEngine] Strategy:`, allocationStrategy);
+    logger.info(`[FloorEngine] Allocating ${ethers.formatEther(amount)} ETH`);
+    logger.info(`[FloorEngine] Strategy:`, allocationStrategy);
 
     // Calculate allocation amounts per category
     const lendingAmount = (amount * BigInt(allocationStrategy.lending)) / 100n;
@@ -156,7 +156,7 @@ export class FloorEngine extends EventEmitter {
     // Emit event
     this.emit('capital_allocated', { amount, strategy: allocationStrategy });
 
-    console.log(`[FloorEngine] Capital allocation complete`);
+    logger.info(`[FloorEngine] Capital allocation complete`);
   }
 
   /**
@@ -170,7 +170,7 @@ export class FloorEngine extends EventEmitter {
       throw new Error('Floor Engine not initialized');
     }
 
-    console.log(`[FloorEngine] Allocating ${ethers.formatEther(amount)} ETH using ML optimization`);
+    logger.info(`[FloorEngine] Allocating ${ethers.formatEther(amount)} ETH using ML optimization`);
 
     // Get ML-driven allocation recommendations
     const recommendations = await this.riskManager.getMLAllocationRecommendations(
@@ -178,12 +178,12 @@ export class FloorEngine extends EventEmitter {
       this.positions
     );
 
-    console.log(`[FloorEngine] ML generated ${recommendations.length} allocation recommendations`);
+    logger.info(`[FloorEngine] ML generated ${recommendations.length} allocation recommendations`);
 
     // Execute allocations based on ML recommendations
     for (const rec of recommendations) {
       if (rec.recommendedAllocation > 0n) {
-        console.log(
+        logger.info(
           `[FloorEngine] ML recommends ${ethers.formatEther(rec.recommendedAllocation)} to ${rec.adapterName} ` +
           `(confidence: ${(rec.confidence * 100).toFixed(0)}%, risk: ${rec.riskScore.toFixed(0)}/100)`
         );
@@ -199,7 +199,7 @@ export class FloorEngine extends EventEmitter {
           // Execute allocation
           await this.allocateToAdapter(rec.adapterId, rec.recommendedAllocation);
         } else {
-          console.warn(
+          logger.warn(
             `[FloorEngine] ML allocation rejected for ${rec.adapterName}: ${validation.reason}`
           );
         }
@@ -212,7 +212,7 @@ export class FloorEngine extends EventEmitter {
     // Emit event
     this.emit('capital_allocated_ml', { amount, recommendations });
 
-    console.log(`[FloorEngine] ML-driven capital allocation complete`);
+    logger.info(`[FloorEngine] ML-driven capital allocation complete`);
   }
 
   /**
@@ -225,7 +225,7 @@ export class FloorEngine extends EventEmitter {
       throw new Error('Floor Engine not initialized');
     }
 
-    console.log('[FloorEngine] Starting ML-driven rebalance...');
+    logger.info('[FloorEngine] Starting ML-driven rebalance...');
 
     const actions: RebalanceAction[] = [];
     let totalGasUsed = 0n;
@@ -238,7 +238,7 @@ export class FloorEngine extends EventEmitter {
       const totalValue = this.positions.reduce((sum, p) => sum + p.value, 0n);
 
       if (totalValue === 0n) {
-        console.warn('[FloorEngine] No positions to rebalance');
+        logger.warn('[FloorEngine] No positions to rebalance');
         return {
           success: true,
           actions: [],
@@ -253,7 +253,7 @@ export class FloorEngine extends EventEmitter {
         this.positions
       );
 
-      console.log(`[FloorEngine] ML generated ${recommendations.length} rebalance recommendations`);
+      logger.info(`[FloorEngine] ML generated ${recommendations.length} rebalance recommendations`);
 
       // Execute rebalancing based on ML recommendations
       for (const rec of recommendations) {
@@ -271,7 +271,7 @@ export class FloorEngine extends EventEmitter {
             };
             actions.push(action);
 
-            console.log(
+            logger.info(
               `[FloorEngine] ML recommends deposit ${ethers.formatEther(difference)} to ${rec.adapterName}`
             );
           } else {
@@ -284,7 +284,7 @@ export class FloorEngine extends EventEmitter {
             };
             actions.push(action);
 
-            console.log(
+            logger.info(
               `[FloorEngine] ML recommends withdraw ${ethers.formatEther(-difference)} from ${rec.adapterName}`
             );
           }
@@ -299,7 +299,7 @@ export class FloorEngine extends EventEmitter {
       // Emit event
       this.emit('rebalance_ml_completed', { actions, gasUsed: totalGasUsed });
 
-      console.log(`[FloorEngine] ML-driven rebalance complete: ${actions.length} actions`);
+      logger.info(`[FloorEngine] ML-driven rebalance complete: ${actions.length} actions`);
 
       return {
         success: true,
@@ -308,7 +308,7 @@ export class FloorEngine extends EventEmitter {
         timestamp: this.lastRebalance,
       };
     } catch (error) {
-      console.error('[FloorEngine] ML rebalance failed:', error);
+      logger.error('[FloorEngine] ML rebalance failed:', error);
 
       return {
         success: false,
@@ -338,7 +338,7 @@ export class FloorEngine extends EventEmitter {
       );
     }
 
-    console.log('[FloorEngine] Starting rebalance...');
+    logger.info('[FloorEngine] Starting rebalance...');
 
     const actions: RebalanceAction[] = [];
     let totalGasUsed = 0n;
@@ -351,7 +351,7 @@ export class FloorEngine extends EventEmitter {
       const totalValue = this.positions.reduce((sum, p) => sum + p.value, 0n);
 
       if (totalValue === 0n) {
-        console.warn('[FloorEngine] No positions to rebalance');
+        logger.warn('[FloorEngine] No positions to rebalance');
         return {
           success: true,
           actions: [],
@@ -384,7 +384,7 @@ export class FloorEngine extends EventEmitter {
             actions.push(action);
 
             // TODO: Execute deposit
-            console.log(`[FloorEngine] Would deposit ${ethers.formatEther(difference)} to ${target.adapterId}`);
+            logger.info(`[FloorEngine] Would deposit ${ethers.formatEther(difference)} to ${target.adapterId}`);
           } else {
             // Need to withdraw
             const action: RebalanceAction = {
@@ -396,7 +396,7 @@ export class FloorEngine extends EventEmitter {
             actions.push(action);
 
             // TODO: Execute withdrawal
-            console.log(`[FloorEngine] Would withdraw ${ethers.formatEther(-difference)} from ${target.adapterId}`);
+            logger.info(`[FloorEngine] Would withdraw ${ethers.formatEther(-difference)} from ${target.adapterId}`);
           }
         }
       }
@@ -406,7 +406,7 @@ export class FloorEngine extends EventEmitter {
       // Emit event
       this.emit('rebalance_completed', { actions, gasUsed: totalGasUsed });
 
-      console.log(`[FloorEngine] Rebalance complete: ${actions.length} actions`);
+      logger.info(`[FloorEngine] Rebalance complete: ${actions.length} actions`);
 
       return {
         success: true,
@@ -415,7 +415,7 @@ export class FloorEngine extends EventEmitter {
         timestamp: this.lastRebalance,
       };
     } catch (error) {
-      console.error('[FloorEngine] Rebalance failed:', error);
+      logger.error('[FloorEngine] Rebalance failed:', error);
 
       return {
         success: false,
@@ -445,7 +445,7 @@ export class FloorEngine extends EventEmitter {
       );
     }
 
-    console.log('[FloorEngine] Harvesting yields...');
+    logger.info('[FloorEngine] Harvesting yields...');
 
     let totalYield = 0n;
 
@@ -457,7 +457,7 @@ export class FloorEngine extends EventEmitter {
     // Emit event
     this.emit('harvest_completed', { totalYield });
 
-    console.log(`[FloorEngine] Harvest complete: ${ethers.formatEther(totalYield)} ETH`);
+    logger.info(`[FloorEngine] Harvest complete: ${ethers.formatEther(totalYield)} ETH`);
 
     return totalYield;
   }
@@ -571,7 +571,7 @@ export class FloorEngine extends EventEmitter {
    */
   setMLEnabled(enabled: boolean): void {
     this.riskManager.setMLEnabled(enabled);
-    console.log(`[FloorEngine] ML-driven allocation ${enabled ? 'enabled' : 'disabled'}`);
+    logger.info(`[FloorEngine] ML-driven allocation ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   /**
@@ -601,7 +601,7 @@ export class FloorEngine extends EventEmitter {
    */
   private async allocateToAdapter(adapterId: string, amount: bigint): Promise<void> {
     // TODO: Execute allocation to adapter
-    console.log(
+    logger.info(
       `[FloorEngine] Allocating ${ethers.formatEther(amount)} to ${adapterId}`
     );
 
@@ -651,7 +651,7 @@ export class FloorEngine extends EventEmitter {
       );
 
       if (!validation.valid) {
-        console.warn(
+        logger.warn(
           `[FloorEngine] Skipping ${adapterId}: ${validation.reason}`
         );
         continue;

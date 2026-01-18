@@ -12,12 +12,14 @@
  * - Automatic recovery
  */
 
+import { Logger } from '@noderr/utils/src';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import * as zlib from 'zlib';
 import { promisify } from 'util';
 
+const logger = new Logger('state-persistence');
 const writeFile = promisify(fs.writeFile);
 const readFile = promisify(fs.readFile);
 const rename = promisify(fs.rename);
@@ -181,7 +183,7 @@ export class StatePersistenceManager<T = any> {
         .digest('hex');
       
       if (calculatedChecksum !== persistedState.metadata.checksum) {
-        console.warn('State file checksum mismatch, attempting recovery from backup');
+        logger.warn('State file checksum mismatch, attempting recovery from backup');
         return await this.loadFromBackup();
       }
       
@@ -193,7 +195,7 @@ export class StatePersistenceManager<T = any> {
         return null;
       }
       
-      console.error('Error loading state, attempting recovery from backup:', error);
+      logger.error('Error loading state, attempting recovery from backup:', error);
       return await this.loadFromBackup();
     }
   }
@@ -216,7 +218,7 @@ export class StatePersistenceManager<T = any> {
           persistedState = JSON.parse(decompressed.toString('utf8'));
         }
         
-        console.log(`Successfully recovered state from backup ${i}`);
+        logger.info(`Successfully recovered state from backup ${i}`);
         this.currentState = persistedState.data;
         return persistedState.data;
       } catch (error) {
@@ -225,7 +227,7 @@ export class StatePersistenceManager<T = any> {
       }
     }
     
-    console.error('Failed to recover state from any backup');
+    logger.error('Failed to recover state from any backup');
     return null;
   }
   
@@ -271,7 +273,7 @@ export class StatePersistenceManager<T = any> {
         try {
           await this.save(this.currentState);
         } catch (error) {
-          console.error('Auto-save failed:', error);
+          logger.error('Auto-save failed:', error);
         }
       }
     }, this.config.autoSaveInterval);

@@ -50,7 +50,7 @@ export async function startCapitalAIService(): Promise<void> {
 if (require.main === module) {
   getShutdownHandler(30000);
   startCapitalAIService().catch((error) => {
-    console.error('Fatal error starting Capital AI Service:', error);
+    logger.error('Fatal error starting Capital AI Service:', error);
     process.exit(1);
   });
 }

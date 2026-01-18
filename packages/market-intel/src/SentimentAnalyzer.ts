@@ -1,3 +1,4 @@
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import {
   SentimentData,
@@ -9,6 +10,7 @@ import {
   MarketIntelTelemetryEvent
 } from './types';
 
+const logger = new Logger('SentimentAnalyzer');
 interface SocialPost {
   id: string;
   source: 'twitter' | 'reddit' | 'telegram' | 'discord';
@@ -130,7 +132,7 @@ export class SentimentAnalyzer extends EventEmitter {
         impact
       };
     } catch (error) {
-      console.error('Sentiment analysis error:', error);
+      logger.error('Sentiment analysis error:', error);
       throw error;
     }
   }

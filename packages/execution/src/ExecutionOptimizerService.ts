@@ -1,3 +1,4 @@
+import { Logger } from '@noderr/utils/src';
 import {
   Order,
   Exchange,
@@ -34,6 +35,7 @@ import { ethers } from 'ethers';
 import { SafetyControllerWrapper } from './SafetyControllerWrapper';
 import { ExecutionTelemetryIntegration } from './ExecutionTelemetryIntegration';
 
+const logger = new Logger('ExecutionOptimizerService');
 interface ServiceState {
   isRunning: boolean;
   exchanges: Map<string, Exchange>;

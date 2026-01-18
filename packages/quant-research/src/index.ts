@@ -63,7 +63,7 @@ export async function startQuantResearchService(): Promise<void> {
 if (require.main === module) {
   getShutdownHandler(30000);
   startQuantResearchService().catch((error) => {
-    console.error('Fatal error starting Quant Research Service:', error);
+    logger.error('Fatal error starting Quant Research Service:', error);
     process.exit(1);
   });
 }

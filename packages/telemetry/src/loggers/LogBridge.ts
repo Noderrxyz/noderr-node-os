@@ -5,6 +5,7 @@
  * and streaming to multiple outputs including Loki and S3.
  */
 
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import winston, { Logger, format, transports } from 'winston';
 import LokiTransport from 'winston-loki';
@@ -22,6 +23,7 @@ import {
   TraceContext
 } from '../types/telemetry';
 
+const logger = new Logger('LogBridge');
 interface LogBridgeConfig {
   level?: LogLevel;
   format?: 'json' | 'text';
@@ -157,7 +159,7 @@ export class LogBridge extends EventEmitter {
     // Check buffer size
     if (this.buffer.length >= this.config.bufferSize) {
       this.flush().catch(err => 
-        console.error('Failed to flush logs:', err)
+        logger.error('Failed to flush logs:', err)
       );
     }
   }
@@ -304,7 +306,7 @@ export class LogBridge extends EventEmitter {
       interval: output.config.interval || 5,
       timeout: output.config.timeout || 10000,
       onConnectionError: (err: Error) => {
-        console.error('Loki connection error:', err);
+        logger.error('Loki connection error:', err);
       }
     });
     
@@ -403,7 +405,7 @@ export class LogBridge extends EventEmitter {
   private startFlushTimer(): void {
     this.flushTimer = setInterval(
       () => this.flush().catch(err => 
-        console.error('Failed to flush logs:', err)
+        logger.error('Failed to flush logs:', err)
       ),
       this.config.flushInterval
     );
@@ -434,7 +436,7 @@ export class LogBridge extends EventEmitter {
         }
       }
     } catch (error) {
-      console.error('Failed to rotate logs:', error);
+      logger.error('Failed to rotate logs:', error);
     }
   }
 } 

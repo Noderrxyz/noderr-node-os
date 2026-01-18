@@ -2,7 +2,9 @@
  * @noderr/telemetry - Unified telemetry system
  */
 
-import { Logger, createLogger, format, transports } from 'winston';
+import { Logger } from '@noderr/utils/src';
+import { createLogger, format, transports } from 'winston';
+import type { Logger as WinstonLogger } from 'winston';
 
 // Core telemetry system
 export class TelemetrySystem {
@@ -317,7 +319,7 @@ if (require.main === module) {
   getShutdownHandler(30000);  // 30 second global timeout
   
   startTelemetryService().catch((error) => {
-    console.error('Fatal error starting Telemetry Service:', error);
+    logger.error('Fatal error starting Telemetry Service:', error);
     process.exit(1);
   });
 }

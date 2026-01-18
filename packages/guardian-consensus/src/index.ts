@@ -123,7 +123,7 @@ export async function startGuardianConsensusService(): Promise<void> {
 if (require.main === module) {
   getShutdownHandler(30000);
   startGuardianConsensusService().catch((error) => {
-    console.error('Fatal error starting Guardian Consensus Service:', error);
+    logger.error('Fatal error starting Guardian Consensus Service:', error);
     process.exit(1);
   });
 }

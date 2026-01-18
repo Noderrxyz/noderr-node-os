@@ -125,24 +125,24 @@ export class MLRiskAdapter extends EventEmitter {
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
-      console.warn('[MLRiskAdapter] Already initialized');
+      logger.warn('[MLRiskAdapter] Already initialized');
       return;
     }
     
-    console.log('[MLRiskAdapter] Initializing ML risk assessment system...');
+    logger.info('[MLRiskAdapter] Initializing ML risk assessment system...');
     
     try {
       // Capital-ai components are self-initializing
       // Just verify they're operational
-      console.log('[MLRiskAdapter] DynamicWeightAllocator ready');
-      console.log('[MLRiskAdapter] PortfolioSentinel ready');
+      logger.info('[MLRiskAdapter] DynamicWeightAllocator ready');
+      logger.info('[MLRiskAdapter] PortfolioSentinel ready');
       
       this.isInitialized = true;
       this.emit('initialized');
       
-      console.log('[MLRiskAdapter] ML risk assessment system initialized successfully');
+      logger.info('[MLRiskAdapter] ML risk assessment system initialized successfully');
     } catch (error) {
-      console.error('[MLRiskAdapter] Initialization failed:', error);
+      logger.error('[MLRiskAdapter] Initialization failed:', error);
       throw error;
     }
   }
@@ -153,7 +153,7 @@ export class MLRiskAdapter extends EventEmitter {
   private setupEventListeners(): void {
     // Listen for allocation updates from weight allocator
     this.weightAllocator.on('allocation-updated', (allocation: any) => {
-      console.log('[MLRiskAdapter] Allocation updated by ML model');
+      logger.info('[MLRiskAdapter] Allocation updated by ML model');
       this.emit('ml-allocation-updated', allocation);
     });
     
@@ -164,7 +164,7 @@ export class MLRiskAdapter extends EventEmitter {
     
     // Listen for risk limit breaches
     this.portfolioSentinel.on('risk-limit-breach', (breach: any) => {
-      console.warn('[MLRiskAdapter] Risk limit breach detected:', breach);
+      logger.warn('[MLRiskAdapter] Risk limit breach detected:', breach);
       this.emit('risk-limit-breach', breach);
     });
   }
@@ -207,7 +207,7 @@ export class MLRiskAdapter extends EventEmitter {
       return riskScore;
       
     } catch (error) {
-      console.error(`[MLRiskAdapter] Error getting risk score for ${adapterId}:`, error);
+      logger.error(`[MLRiskAdapter] Error getting risk score for ${adapterId}:`, error);
       // Return high-risk score on error (fail-safe)
       return this.getDefaultRiskScore(adapterId, metadata, true);
     }
@@ -230,8 +230,8 @@ export class MLRiskAdapter extends EventEmitter {
       throw new Error('MLRiskAdapter not initialized');
     }
     
-    console.log(`[MLRiskAdapter] Generating ML allocation recommendations for ${adapters.length} adapters`);
-    console.log(`[MLRiskAdapter] Total capital: ${totalCapital.toString()}`);
+    logger.info(`[MLRiskAdapter] Generating ML allocation recommendations for ${adapters.length} adapters`);
+    logger.info(`[MLRiskAdapter] Total capital: ${totalCapital.toString()}`);
     
     try {
       // Register all adapters as strategies with ML model
@@ -281,13 +281,13 @@ export class MLRiskAdapter extends EventEmitter {
         Number(b.recommendedAllocation - a.recommendedAllocation)
       );
       
-      console.log(`[MLRiskAdapter] Generated ${recommendations.length} allocation recommendations`);
+      logger.info(`[MLRiskAdapter] Generated ${recommendations.length} allocation recommendations`);
       this.emit('allocation-recommendations-generated', recommendations);
       
       return recommendations;
       
     } catch (error) {
-      console.error('[MLRiskAdapter] Error generating allocation recommendations:', error);
+      logger.error('[MLRiskAdapter] Error generating allocation recommendations:', error);
       throw error;
     }
   }
@@ -333,7 +333,7 @@ export class MLRiskAdapter extends EventEmitter {
       // Sentinel will automatically trigger emergency actions if limits breached
       
     } catch (error) {
-      console.error('[MLRiskAdapter] Error monitoring portfolio:', error);
+      logger.error('[MLRiskAdapter] Error monitoring portfolio:', error);
     }
   }
   
@@ -565,10 +565,10 @@ export class MLRiskAdapter extends EventEmitter {
    * Handle emergency action from portfolio sentinel
    */
   private handleEmergencyAction(action: any): void {
-    console.error('[MLRiskAdapter] 🚨 EMERGENCY ACTION TRIGGERED 🚨');
-    console.error('[MLRiskAdapter] Type:', action.type);
-    console.error('[MLRiskAdapter] Severity:', action.severity);
-    console.error('[MLRiskAdapter] Reason:', action.reason);
+    logger.error('[MLRiskAdapter] 🚨 EMERGENCY ACTION TRIGGERED 🚨');
+    logger.error('[MLRiskAdapter] Type:', action.type);
+    logger.error('[MLRiskAdapter] Severity:', action.severity);
+    logger.error('[MLRiskAdapter] Reason:', action.reason);
     
     const mlEmergencyAction: MLEmergencyAction = {
       id: action.id,

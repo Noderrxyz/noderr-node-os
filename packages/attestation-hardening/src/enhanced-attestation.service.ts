@@ -1,3 +1,4 @@
+import { Logger } from '@noderr/utils/src';
 import { createVerify, createHash } from 'crypto';
 import { PCRBaselineService, PCRValues, HardwareProfile } from './pcr-baseline.service';
 
@@ -22,6 +23,7 @@ import { PCRBaselineService, PCRValues, HardwareProfile } from './pcr-baseline.s
  * - Configuration drift: Deviation detection
  */
 
+const logger = new Logger('enhanced-attestation.service');
 export interface AttestationQuote {
   // TPM quote data
   signature: string;          // Base64-encoded signature
@@ -223,7 +225,7 @@ export class EnhancedAttestationService {
         algorithm,
       };
     } catch (error) {
-      console.error('Signature verification error:', error);
+      logger.error('Signature verification error:', error);
       return {
         passed: false,
         algorithm: quote.publicKeyAlgorithm,
@@ -349,9 +351,9 @@ export class EnhancedAttestationService {
  * const result = await attestationService.verifyAttestation(quote, nonce);
  * 
  * if (result.isValid) {
- *   console.log('Node attestation verified');
+ *   logger.info('Node attestation verified');
  * } else {
- *   console.log('Attestation failed:', result.reason);
+ *   logger.info('Attestation failed:', result.reason);
  * }
  * ```
  */

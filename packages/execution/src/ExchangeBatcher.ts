@@ -1,6 +1,8 @@
+import { Logger } from '@noderr/utils/src';
 import * as winston from 'winston';
 import { CircuitBreaker } from '../../core/src/CircuitBreaker';
 
+const logger = new Logger('ExchangeBatcher');
 export interface BatchConfig {
   minBatchSize: number;
   maxBatchSize: number;
@@ -314,8 +316,8 @@ export class ExchangeBatcherFactory {
  */
 export class ExchangeBatcherBenchmark {
   static async runBenchmark(logger: winston.Logger): Promise<void> {
-    console.log('\n🎯 Exchange Batcher Performance Benchmark');
-    console.log('Target: -50ms reconciliation time\n');
+    logger.info('\n🎯 Exchange Batcher Performance Benchmark');
+    logger.info('Target: -50ms reconciliation time\n');
     
     // Simulate exchange API with variable latency
     const simulateExchangeAPI = async (requests: any[]): Promise<any[]> => {
@@ -332,7 +334,7 @@ export class ExchangeBatcherBenchmark {
     };
     
     // Test without batching
-    console.log('📊 Without batching (sequential calls):');
+    logger.info('📊 Without batching (sequential calls):');
     const withoutBatchingStart = Date.now();
     const sequentialPromises = [];
     
@@ -344,7 +346,7 @@ export class ExchangeBatcherBenchmark {
     const withoutBatchingTime = Date.now() - withoutBatchingStart;
     
     // Test with batching
-    console.log('\n📊 With adaptive batching:');
+    logger.info('\n📊 With adaptive batching:');
     const batcher = new ExchangeBatcher(
       'benchmark',
       logger,
@@ -368,22 +370,22 @@ export class ExchangeBatcherBenchmark {
     const withBatchingTime = Date.now() - withBatchingStart;
     
     // Results
-    console.log('\nResults:');
-    console.log(`  Without batching: ${withoutBatchingTime}ms`);
-    console.log(`  With batching: ${withBatchingTime}ms`);
-    console.log(`  Improvement: ${withoutBatchingTime - withBatchingTime}ms (${((withoutBatchingTime - withBatchingTime) / withoutBatchingTime * 100).toFixed(1)}%)`);
+    logger.info('\nResults:');
+    logger.info(`  Without batching: ${withoutBatchingTime}ms`);
+    logger.info(`  With batching: ${withBatchingTime}ms`);
+    logger.info(`  Improvement: ${withoutBatchingTime - withBatchingTime}ms (${((withoutBatchingTime - withBatchingTime) / withoutBatchingTime * 100).toFixed(1)}%)`);
     
-    console.log('\nBatcher metrics:');
+    logger.info('\nBatcher metrics:');
     const metrics = batcher.getMetrics();
-    console.log(`  Total batches: ${metrics.totalBatches}`);
-    console.log(`  Avg batch size: ${metrics.avgBatchSize.toFixed(1)}`);
-    console.log(`  P99 latency: ${metrics.p99Latency.toFixed(1)}ms`);
-    console.log(`  Final batch size: ${metrics.currentBatchSize}`);
+    logger.info(`  Total batches: ${metrics.totalBatches}`);
+    logger.info(`  Avg batch size: ${metrics.avgBatchSize.toFixed(1)}`);
+    logger.info(`  P99 latency: ${metrics.p99Latency.toFixed(1)}ms`);
+    logger.info(`  Final batch size: ${metrics.currentBatchSize}`);
     
     if (withoutBatchingTime - withBatchingTime >= 50) {
-      console.log('\n✅ SUCCESS: Achieved target -50ms improvement!');
+      logger.info('\n✅ SUCCESS: Achieved target -50ms improvement!');
     } else {
-      console.log('\n⚠️  WARNING: Improvement below target');
+      logger.info('\n⚠️  WARNING: Improvement below target');
     }
   }
 }
@@ -396,5 +398,5 @@ if (require.main === module) {
     transports: [new winston.transports.Console()]
   });
   
-  ExchangeBatcherBenchmark.runBenchmark(logger).catch(console.error);
+  ExchangeBatcherBenchmark.runBenchmark(logger).catch((err) => logger.error("Unhandled error", err));
 } 

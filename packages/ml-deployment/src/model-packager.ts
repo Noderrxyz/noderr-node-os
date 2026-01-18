@@ -11,6 +11,7 @@
  * Integration Complete - Phase 5
  */
 
+import { Logger } from '@noderr/utils/src';
 import * as tf from '@tensorflow/tfjs-node';
 import { createHash } from 'crypto';
 import { createGzip } from 'zlib';
@@ -98,7 +99,7 @@ export async function exportModel(
   model: tf.LayersModel,
   outputPath: string
 ): Promise<void> {
-  console.log('📦 Exporting model to:', outputPath);
+  logger.info('📦 Exporting model to:', outputPath);
   
   // Ensure output directory exists
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
@@ -106,7 +107,7 @@ export async function exportModel(
   // Save model in TensorFlow.js format
   await model.save(`file://${outputPath}`);
   
-  console.log('✅ Model exported successfully');
+  logger.info('✅ Model exported successfully');
 }
 
 /**
@@ -119,7 +120,7 @@ export async function createManifest(
   modelPath: string,
   metadata: any = {}
 ): Promise<ModelManifest> {
-  console.log('📝 Creating model manifest...');
+  logger.info('📝 Creating model manifest...');
   
   // Load model to get architecture info
   const model = await tf.loadLayersModel(`file://${modelPath}/model.json`);
@@ -153,7 +154,7 @@ export async function createManifest(
     metadata: metadata
   };
   
-  console.log('✅ Manifest created:', manifest);
+  logger.info('✅ Manifest created:', manifest);
   
   return manifest;
 }
@@ -166,7 +167,7 @@ export async function packageModel(
   manifest: ModelManifest,
   outputDir: string
 ): Promise<ModelPackage> {
-  console.log('📦 Packaging model:', manifest.id);
+  logger.info('📦 Packaging model:', manifest.id);
   
   // Create output directory
   await fs.mkdir(outputDir, { recursive: true });
@@ -207,9 +208,9 @@ export async function packageModel(
   // Clean up temp directory
   await fs.rm(tempDir, { recursive: true, force: true });
   
-  console.log('✅ Model packaged:', packagePath);
-  console.log(`   Size: ${(size / 1024 / 1024).toFixed(2)} MB`);
-  console.log(`   Checksum: ${checksum}`);
+  logger.info('✅ Model packaged:', packagePath);
+  logger.info(`   Size: ${(size / 1024 / 1024).toFixed(2)} MB`);
+  logger.info(`   Checksum: ${checksum}`);
   
   return {
     manifest,
@@ -229,7 +230,7 @@ export async function uploadToS3(
   version: string,
   tier: string
 ): Promise<string> {
-  console.log('☁️  Uploading to S3...');
+  logger.info('☁️  Uploading to S3...');
   
   const bucket = process.env.MODEL_BUCKET || 'noderr-models';
   const key = `models/${tier}/${modelId}/${version}/model.tar.gz`;
@@ -254,7 +255,7 @@ export async function uploadToS3(
   
   const url = `https://${bucket}.s3.amazonaws.com/${key}`;
   
-  console.log('✅ Uploaded to S3:', url);
+  logger.info('✅ Uploaded to S3:', url);
   
   return url;
 }
@@ -270,7 +271,7 @@ export async function updateVersionBeacon(
   checksum: string,
   manifest: ModelManifest
 ): Promise<void> {
-  console.log('🔔 Updating version beacon...');
+  logger.info('🔔 Updating version beacon...');
   
   // Insert into model_versions table
   const { error } = await supabase
@@ -290,7 +291,7 @@ export async function updateVersionBeacon(
     throw new Error(`Failed to update version beacon: ${error.message}`);
   }
   
-  console.log('✅ Version beacon updated');
+  logger.info('✅ Version beacon updated');
 }
 
 /**
@@ -309,7 +310,7 @@ export async function deployModel(
   checksum: string;
   manifest: ModelManifest;
 }> {
-  console.log('🚀 Deploying model:', { modelId, version, tier });
+  logger.info('🚀 Deploying model:', { modelId, version, tier });
   
   const workDir = path.join('/tmp', 'model-deployment', modelId, version);
   await fs.mkdir(workDir, { recursive: true });
@@ -334,7 +335,7 @@ export async function deployModel(
     // Clean up
     await fs.rm(workDir, { recursive: true, force: true });
     
-    console.log('🎉 Model deployment complete!');
+    logger.info('🎉 Model deployment complete!');
     
     return {
       url,
@@ -419,5 +420,5 @@ export async function deactivateModelVersion(
     throw new Error(`Failed to deactivate model version: ${error.message}`);
   }
   
-  console.log('✅ Model version deactivated:', { modelId, version });
+  logger.info('✅ Model version deactivated:', { modelId, version });
 }

@@ -53,7 +53,7 @@ export async function startComplianceService(): Promise<void> {
 if (require.main === module) {
   getShutdownHandler(30000);
   startComplianceService().catch((error) => {
-    console.error('Fatal error starting Compliance Service:', error);
+    logger.error('Fatal error starting Compliance Service:', error);
     process.exit(1);
   });
 }

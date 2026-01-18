@@ -3,6 +3,7 @@
  * This file contains the modifications needed to respect trading mode controls
  */
 
+import { Logger } from '@noderr/utils/src';
 import { SafetyController } from '@noderr/safety-control';
 import { Order, ExecutionError, ExecutionErrorCode } from '@noderr/types';
 
@@ -183,5 +184,5 @@ export const helperMethods = {
  *   type: 'MARKET'
  * });
  * 
- * console.log(result.metadata.isSimulation); // true
+ * logger.info(result.metadata.isSimulation); // true
  */ 

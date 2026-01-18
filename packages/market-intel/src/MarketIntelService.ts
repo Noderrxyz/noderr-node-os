@@ -1,3 +1,4 @@
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import {
   MarketIntelConfig,
@@ -17,6 +18,7 @@ import { WhaleTracker } from './WhaleTracker';
 import { ArbitrageScanner } from './ArbitrageScanner';
 import { SentimentAnalyzer } from './SentimentAnalyzer';
 
+const logger = new Logger('MarketIntelService');
 interface PriceData {
   symbol: string;
   exchange: string;
@@ -181,7 +183,7 @@ export class MarketIntelService extends EventEmitter {
         timestamp: new Date()
       });
     } catch (error) {
-      console.error('Order book processing error:', error);
+      logger.error('Order book processing error:', error);
       throw error;
     }
   }
@@ -233,7 +235,7 @@ export class MarketIntelService extends EventEmitter {
         timestamp: new Date()
       });
     } catch (error) {
-      console.error('Whale activity processing error:', error);
+      logger.error('Whale activity processing error:', error);
       throw error;
     }
   }
@@ -268,7 +270,7 @@ export class MarketIntelService extends EventEmitter {
 
       return opportunities;
     } catch (error) {
-      console.error('Arbitrage scanning error:', error);
+      logger.error('Arbitrage scanning error:', error);
       throw error;
     }
   }
@@ -306,7 +308,7 @@ export class MarketIntelService extends EventEmitter {
         timestamp: new Date()
       });
     } catch (error) {
-      console.error('Social post processing error:', error);
+      logger.error('Social post processing error:', error);
       throw error;
     }
   }
@@ -427,7 +429,7 @@ export class MarketIntelService extends EventEmitter {
     }
 
     // Log event
-    console.log(`Market Intel Event: ${event.type} - Priority: ${event.priority}`);
+    logger.info(`Market Intel Event: ${event.type} - Priority: ${event.priority}`);
   }
 
   private handleAnomaly(anomaly: MarketAnomaly): void {

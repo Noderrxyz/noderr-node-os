@@ -28,9 +28,11 @@
  * @module OracleLotterySelector
  */
 
+import { Logger } from '@noderr/utils/src';
 import { ethers } from 'ethers';
 import { EventEmitter } from 'events';
 
+const logger = new Logger('OracleLotterySelector');
 export interface OracleInfo {
   address: string;
   stake: bigint;
@@ -115,7 +117,7 @@ export class OracleLotterySelector extends EventEmitter {
       }
     }
     
-    console.log(`Oracle pool updated: ${this.oraclePool.size} active oracles`);
+    logger.info(`Oracle pool updated: ${this.oraclePool.size} active oracles`);
     
     this.emit('poolUpdated', {
       totalOracles: this.oraclePool.size,
@@ -141,7 +143,7 @@ export class OracleLotterySelector extends EventEmitter {
     roundId: number,
     blockHash: string
   ): Promise<CommitteeSelection> {
-    console.log(`Selecting committee for round ${roundId}...`);
+    logger.info(`Selecting committee for round ${roundId}...`);
     
     // Validate pool size
     if (this.oraclePool.size < this.config.minCommitteeSize) {
@@ -218,7 +220,7 @@ export class OracleLotterySelector extends EventEmitter {
       }
     }
     
-    console.log(
+    logger.info(
       `Committee selected: ${selectedOracles.length} oracles, ` +
       `${ethers.formatEther(totalStake)} ETH total stake`
     );
@@ -389,21 +391,21 @@ export class OracleLotterySelector extends EventEmitter {
     
     // Verify proof matches
     if (selection.selectionProof !== expectedProof) {
-      console.error('Selection proof mismatch');
+      logger.error('Selection proof mismatch');
       return false;
     }
     
     // Verify committee size
     if (selection.committeeSize < this.config.minCommitteeSize ||
         selection.committeeSize > this.config.maxCommitteeSize) {
-      console.error('Invalid committee size');
+      logger.error('Invalid committee size');
       return false;
     }
     
     // Verify all oracles are in pool
     for (const oracleAddr of selection.selectedOracles) {
       if (!this.oraclePool.has(oracleAddr.toLowerCase())) {
-        console.error(`Oracle not in pool: ${oracleAddr}`);
+        logger.error(`Oracle not in pool: ${oracleAddr}`);
         return false;
       }
     }

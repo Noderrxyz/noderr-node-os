@@ -11,8 +11,10 @@
  * @module HumanOversightManager
  */
 
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 
+const logger = new Logger('HumanOversightManager');
 export enum AlertSeverity {
   INFO = 'INFO',
   WARNING = 'WARNING',
@@ -109,24 +111,24 @@ export class HumanOversightManager extends EventEmitter {
    * Initialize oversight manager
    */
   async initialize(): Promise<void> {
-    console.log('Initializing Human Oversight Manager...');
+    logger.info('Initializing Human Oversight Manager...');
     
     // Test notification channels
     const enabledChannels = this.getEnabledChannels();
     
-    console.log(`Enabled notification channels: ${enabledChannels.join(', ')}`);
+    logger.info(`Enabled notification channels: ${enabledChannels.join(', ')}`);
     
     // Send test notifications
     for (const channel of enabledChannels) {
       try {
         await this.sendTestNotification(channel);
-        console.log(`✅ ${channel} channel test successful`);
+        logger.info(`✅ ${channel} channel test successful`);
       } catch (error: any) {
-        console.error(`❌ ${channel} channel test failed:`, error.message);
+        logger.error(`❌ ${channel} channel test failed:`, error.message);
       }
     }
     
-    console.log('Human Oversight Manager initialized');
+    logger.info('Human Oversight Manager initialized');
     
     this.emit('initialized');
   }
@@ -156,14 +158,14 @@ export class HumanOversightManager extends EventEmitter {
     
     this.alerts.set(alert.id, alert);
     
-    console.log(`\n${'='.repeat(60)}`);
-    console.log(`ALERT: ${alert.id}`);
-    console.log(`${'='.repeat(60)}`);
-    console.log(`Type: ${type}`);
-    console.log(`Severity: ${severity}`);
-    console.log(`Title: ${title}`);
-    console.log(`Message: ${message}`);
-    console.log(`${'='.repeat(60)}\n`);
+    logger.info(`\n${'='.repeat(60)}`);
+    logger.info(`ALERT: ${alert.id}`);
+    logger.info(`${'='.repeat(60)}`);
+    logger.info(`Type: ${type}`);
+    logger.info(`Severity: ${severity}`);
+    logger.info(`Title: ${title}`);
+    logger.info(`Message: ${message}`);
+    logger.info(`${'='.repeat(60)}\n`);
     
     // Send notifications based on severity
     const channels = this.getChannelsForSeverity(severity);
@@ -172,7 +174,7 @@ export class HumanOversightManager extends EventEmitter {
       try {
         await this.sendNotification(channel, alert);
       } catch (error: any) {
-        console.error(`Failed to send ${channel} notification:`, error.message);
+        logger.error(`Failed to send ${channel} notification:`, error.message);
       }
     }
     
@@ -237,7 +239,7 @@ export class HumanOversightManager extends EventEmitter {
     approval.approvedBy = approvedBy;
     approval.approvedAt = Date.now();
     
-    console.log(`✅ Trade ${approvalId} APPROVED by ${approvedBy}`);
+    logger.info(`✅ Trade ${approvalId} APPROVED by ${approvedBy}`);
     
     this.emit('tradeApproved', { approvalId, approvedBy });
     
@@ -263,9 +265,9 @@ export class HumanOversightManager extends EventEmitter {
     approval.rejectedAt = Date.now();
     approval.rejectionReason = reason;
     
-    console.log(`❌ Trade ${approvalId} REJECTED by ${rejectedBy}`);
+    logger.info(`❌ Trade ${approvalId} REJECTED by ${rejectedBy}`);
     if (reason) {
-      console.log(`   Reason: ${reason}`);
+      logger.info(`   Reason: ${reason}`);
     }
     
     this.emit('tradeRejected', { approvalId, rejectedBy, reason });
@@ -291,7 +293,7 @@ export class HumanOversightManager extends EventEmitter {
     alert.acknowledgedBy = acknowledgedBy;
     alert.acknowledgedAt = Date.now();
     
-    console.log(`✅ Alert ${alertId} acknowledged by ${acknowledgedBy}`);
+    logger.info(`✅ Alert ${alertId} acknowledged by ${acknowledgedBy}`);
     
     this.emit('alertAcknowledged', { alertId, acknowledgedBy });
     
@@ -303,18 +305,18 @@ export class HumanOversightManager extends EventEmitter {
    */
   async emergencyStop(triggeredBy: string, reason: string): Promise<void> {
     if (this.isEmergencyStopped) {
-      console.warn('System already in emergency stop state');
+      logger.warn('System already in emergency stop state');
       return;
     }
     
     this.isEmergencyStopped = true;
     
-    console.log(`\n${'='.repeat(60)}`);
-    console.log('🚨 EMERGENCY STOP TRIGGERED 🚨');
-    console.log(`${'='.repeat(60)}`);
-    console.log(`Triggered by: ${triggeredBy}`);
-    console.log(`Reason: ${reason}`);
-    console.log(`${'='.repeat(60)}\n`);
+    logger.info(`\n${'='.repeat(60)}`);
+    logger.info('🚨 EMERGENCY STOP TRIGGERED 🚨');
+    logger.info(`${'='.repeat(60)}`);
+    logger.info(`Triggered by: ${triggeredBy}`);
+    logger.info(`Reason: ${reason}`);
+    logger.info(`${'='.repeat(60)}\n`);
     
     // Send emergency alert to all channels
     await this.sendAlert(
@@ -336,17 +338,17 @@ export class HumanOversightManager extends EventEmitter {
    */
   async resumeFromEmergencyStop(resumedBy: string): Promise<void> {
     if (!this.isEmergencyStopped) {
-      console.warn('System not in emergency stop state');
+      logger.warn('System not in emergency stop state');
       return;
     }
     
     this.isEmergencyStopped = false;
     
-    console.log(`\n${'='.repeat(60)}`);
-    console.log('✅ EMERGENCY STOP CLEARED');
-    console.log(`${'='.repeat(60)}`);
-    console.log(`Resumed by: ${resumedBy}`);
-    console.log(`${'='.repeat(60)}\n`);
+    logger.info(`\n${'='.repeat(60)}`);
+    logger.info('✅ EMERGENCY STOP CLEARED');
+    logger.info(`${'='.repeat(60)}`);
+    logger.info(`Resumed by: ${resumedBy}`);
+    logger.info(`${'='.repeat(60)}\n`);
     
     await this.sendAlert(
       AlertType.EMERGENCY_STOP,
@@ -460,7 +462,7 @@ export class HumanOversightManager extends EventEmitter {
    * Send notification to channel
    */
   private async sendNotification(channel: string, alert: Alert): Promise<void> {
-    console.log(`Sending ${channel} notification for alert ${alert.id}...`);
+    logger.info(`Sending ${channel} notification for alert ${alert.id}...`);
     
     // Stub implementations
     // In production, these would call actual notification services
@@ -483,7 +485,7 @@ export class HumanOversightManager extends EventEmitter {
         break;
       
       default:
-        console.warn(`Unknown notification channel: ${channel}`);
+        logger.warn(`Unknown notification channel: ${channel}`);
     }
   }
   
@@ -512,7 +514,7 @@ export class HumanOversightManager extends EventEmitter {
     };
     
     // Stub: In production, send to Discord webhook
-    console.log(`Discord notification: ${JSON.stringify(embed, null, 2)}`);
+    logger.info(`Discord notification: ${JSON.stringify(embed, null, 2)}`);
   }
   
   /**
@@ -533,7 +535,7 @@ export class HumanOversightManager extends EventEmitter {
       `Time: ${new Date(alert.timestamp).toISOString()}`;
     
     // Stub: In production, send to Telegram API
-    console.log(`Telegram notification: ${message}`);
+    logger.info(`Telegram notification: ${message}`);
   }
   
   /**
@@ -555,7 +557,7 @@ export class HumanOversightManager extends EventEmitter {
       `Alert ID: ${alert.id}`;
     
     // Stub: In production, send via SMTP
-    console.log(`Email notification: ${subject}\n${body}`);
+    logger.info(`Email notification: ${subject}\n${body}`);
   }
   
   /**
@@ -574,7 +576,7 @@ export class HumanOversightManager extends EventEmitter {
       `${alert.message.substring(0, 100)}...`;
     
     // Stub: In production, send via Twilio
-    console.log(`SMS notification: ${message}`);
+    logger.info(`SMS notification: ${message}`);
   }
   
   /**
@@ -674,7 +676,7 @@ export class HumanOversightManager extends EventEmitter {
    * Shutdown oversight manager
    */
   async shutdown(): Promise<void> {
-    console.log('Shutting down Human Oversight Manager...');
+    logger.info('Shutting down Human Oversight Manager...');
     
     this.alerts.clear();
     this.pendingApprovals.clear();

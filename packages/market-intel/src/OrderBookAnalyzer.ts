@@ -1,3 +1,4 @@
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import {
   OrderBook,
@@ -15,6 +16,7 @@ import {
   MarketIntelTelemetryEvent
 } from './types';
 
+const logger = new Logger('OrderBookAnalyzer');
 export class OrderBookAnalyzer extends EventEmitter {
   private config: OrderBookConfig;
   private telemetry: TelemetryClient;
@@ -100,7 +102,7 @@ export class OrderBookAnalyzer extends EventEmitter {
         prediction
       };
     } catch (error) {
-      console.error('Order book analysis error:', error);
+      logger.error('Order book analysis error:', error);
       throw error;
     }
   }

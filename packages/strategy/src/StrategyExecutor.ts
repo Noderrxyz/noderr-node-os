@@ -1,3 +1,4 @@
+import { Logger } from '@noderr/utils/src';
 import { Worker, isMainThread, parentPort, workerData } from 'worker_threads';
 import { EventEmitter } from 'events';
 import * as os from 'os';
@@ -439,6 +440,7 @@ export interface ExecutorOptions {
   signalBufferSize?: number;
 }
 
+const logger = new Logger('StrategyExecutor');
 export interface StrategyConfig {
   id?: string;
   name: string;
@@ -523,8 +525,8 @@ export interface WorkerMessage {
  */
 export class StrategyExecutorBenchmark {
   static async runBenchmark(): Promise<void> {
-    console.log('\n🚀 Concurrent Strategy Executor Benchmark');
-    console.log('Target: 100+ concurrent strategies\n');
+    logger.info('\n🚀 Concurrent Strategy Executor Benchmark');
+    logger.info('Target: 100+ concurrent strategies\n');
     
     const executor = new StrategyExecutor({
       maxStrategies: 128,
@@ -593,7 +595,7 @@ export class StrategyExecutorBenchmark {
     fs.writeFileSync(scriptPath, strategyScript);
     
     // Load strategies
-    console.log('Loading strategies...');
+    logger.info('Loading strategies...');
     const numStrategies = 100;
     const strategies: StrategyConfig[] = [];
     
@@ -615,11 +617,11 @@ export class StrategyExecutorBenchmark {
     const loadEnd = process.hrtime.bigint();
     const loadTime = Number(loadEnd - loadStart) / 1_000_000;
     
-    console.log(`✅ Loaded ${strategyIds.length} strategies in ${loadTime.toFixed(2)}ms`);
-    console.log(`   Average load time: ${(loadTime / numStrategies).toFixed(2)}ms per strategy`);
+    logger.info(`✅ Loaded ${strategyIds.length} strategies in ${loadTime.toFixed(2)}ms`);
+    logger.info(`   Average load time: ${(loadTime / numStrategies).toFixed(2)}ms per strategy`);
     
     // Simulate market data
-    console.log('\nSimulating market data stream...');
+    logger.info('\nSimulating market data stream...');
     let marketDataCount = 0;
     let signalCount = 0;
     
@@ -645,33 +647,33 @@ export class StrategyExecutorBenchmark {
     // Get final statistics
     const stats = executor.getStats();
     
-    console.log('\n📊 Results:');
-    console.log(`  Active Strategies: ${stats.activeStrategies}`);
-    console.log(`  Market Data Updates: ${marketDataCount.toLocaleString()}`);
-    console.log(`  Total Signals: ${signalCount.toLocaleString()}`);
-    console.log(`  Signals/Second: ${(signalCount / 10).toFixed(2)}`);
-    console.log(`  Memory Usage: ${(stats.memoryUsage.heapUsed / 1024 / 1024).toFixed(2)} MB`);
-    console.log(`  CPU Usage: ${JSON.stringify(stats.cpuUsage)}`);
+    logger.info('\n📊 Results:');
+    logger.info(`  Active Strategies: ${stats.activeStrategies}`);
+    logger.info(`  Market Data Updates: ${marketDataCount.toLocaleString()}`);
+    logger.info(`  Total Signals: ${signalCount.toLocaleString()}`);
+    logger.info(`  Signals/Second: ${(signalCount / 10).toFixed(2)}`);
+    logger.info(`  Memory Usage: ${(stats.memoryUsage.heapUsed / 1024 / 1024).toFixed(2)} MB`);
+    logger.info(`  CPU Usage: ${JSON.stringify(stats.cpuUsage)}`);
     
-    console.log('\nTop 5 Performers:');
+    logger.info('\nTop 5 Performers:');
     stats.performance.topPerformers.forEach((id, i) => {
       const metrics = executor.getPerformance(id);
-      console.log(`  ${i + 1}. ${id}: ${metrics.totalSignals} signals`);
+      logger.info(`  ${i + 1}. ${id}: ${metrics.totalSignals} signals`);
     });
     
     // Cleanup
     await executor.stopAll();
     fs.unlinkSync(scriptPath);
     
-    console.log('\n📊 Performance Summary:');
-    console.log(`  Strategies/Core: ${(numStrategies / os.cpus().length).toFixed(1)}`);
-    console.log(`  Total Memory/Strategy: ${(stats.memoryUsage.heapUsed / numStrategies / 1024 / 1024).toFixed(2)} MB`);
-    console.log(`  Signal Generation Rate: ${stats.performance.signalRate.toFixed(2)} signals/sec`);
+    logger.info('\n📊 Performance Summary:');
+    logger.info(`  Strategies/Core: ${(numStrategies / os.cpus().length).toFixed(1)}`);
+    logger.info(`  Total Memory/Strategy: ${(stats.memoryUsage.heapUsed / numStrategies / 1024 / 1024).toFixed(2)} MB`);
+    logger.info(`  Signal Generation Rate: ${stats.performance.signalRate.toFixed(2)} signals/sec`);
     
     if (stats.activeStrategies >= 100) {
-      console.log('\n✅ SUCCESS: Running 100+ concurrent strategies!');
+      logger.info('\n✅ SUCCESS: Running 100+ concurrent strategies!');
     } else {
-      console.log(`\n⚠️  Only ${stats.activeStrategies} strategies running`);
+      logger.info(`\n⚠️  Only ${stats.activeStrategies} strategies running`);
     }
   }
 }

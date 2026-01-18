@@ -7,11 +7,13 @@
  * @module node-dashboard
  */
 
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import chalk from 'chalk';
 import boxen from 'boxen';
 import { ethers } from 'ethers';
 
+const logger = new Logger('NodeDashboard');
 export interface NodeStatus {
   nodeId: string;
   tier: string;
@@ -149,7 +151,7 @@ export class NodeDashboard extends EventEmitter {
    * Render header
    */
   private renderHeader() {
-    console.log(boxen(
+    logger.info(boxen(
       chalk.bold.cyan('NODERR PROTOCOL\n') +
       chalk.white('Node Operator Dashboard'),
       {
@@ -173,19 +175,19 @@ export class NodeDashboard extends EventEmitter {
     const uptimeHours = Math.floor((status.uptime % 86400) / 3600);
     const uptimeMinutes = Math.floor((status.uptime % 3600) / 60);
 
-    console.log(chalk.bold.white('NODE STATUS'));
-    console.log(chalk.gray('─'.repeat(60)));
-    console.log(`${chalk.white('Status:')}          ${statusColor(statusText)}`);
-    console.log(`${chalk.white('Tier:')}            ${chalk.cyan(status.tier)}`);
-    console.log(`${chalk.white('Node ID:')}         ${chalk.gray(status.nodeId.substring(0, 16))}...`);
-    console.log(`${chalk.white('Wallet:')}          ${chalk.gray(status.walletAddress.substring(0, 16))}...`);
-    console.log(`${chalk.white('Uptime:')}          ${chalk.cyan(`${uptimeDays}d ${uptimeHours}h ${uptimeMinutes}m`)}`);
+    logger.info(chalk.bold.white('NODE STATUS'));
+    logger.info(chalk.gray('─'.repeat(60)));
+    logger.info(`${chalk.white('Status:')}          ${statusColor(statusText)}`);
+    logger.info(`${chalk.white('Tier:')}            ${chalk.cyan(status.tier)}`);
+    logger.info(`${chalk.white('Node ID:')}         ${chalk.gray(status.nodeId.substring(0, 16))}...`);
+    logger.info(`${chalk.white('Wallet:')}          ${chalk.gray(status.walletAddress.substring(0, 16))}...`);
+    logger.info(`${chalk.white('Uptime:')}          ${chalk.cyan(`${uptimeDays}d ${uptimeHours}h ${uptimeMinutes}m`)}`);
     
     if (status.gpuHardwareId) {
-      console.log(`${chalk.white('GPU:')}             ${chalk.green('✓')} ${chalk.gray(status.gpuHardwareId.substring(0, 16))}...`);
+      logger.info(`${chalk.white('GPU:')}             ${chalk.green('✓')} ${chalk.gray(status.gpuHardwareId.substring(0, 16))}...`);
     }
     
-    console.log();
+    logger.info();
   }
 
   /**
@@ -200,15 +202,15 @@ export class NodeDashboard extends EventEmitter {
     const tfColor = metrics.trustFingerprint >= 0.90 ? chalk.green :
                     metrics.trustFingerprint >= 0.75 ? chalk.yellow : chalk.red;
 
-    console.log(chalk.bold.white('PERFORMANCE METRICS'));
-    console.log(chalk.gray('─'.repeat(60)));
-    console.log(`${chalk.white('Total Tasks:')}     ${chalk.cyan(metrics.totalTasks.toLocaleString())}`);
-    console.log(`${chalk.white('Completed:')}       ${chalk.green(metrics.completedTasks.toLocaleString())}`);
-    console.log(`${chalk.white('Failed:')}          ${chalk.red(metrics.failedTasks.toLocaleString())}`);
-    console.log(`${chalk.white('Success Rate:')}    ${successRateColor((metrics.successRate * 100).toFixed(2) + '%')}`);
-    console.log(`${chalk.white('Avg Response:')}    ${chalk.cyan(metrics.averageResponseTime.toFixed(0) + 'ms')}`);
-    console.log(`${chalk.white('Trust Score:')}     ${tfColor((metrics.trustFingerprint * 100).toFixed(2) + '%')}`);
-    console.log();
+    logger.info(chalk.bold.white('PERFORMANCE METRICS'));
+    logger.info(chalk.gray('─'.repeat(60)));
+    logger.info(`${chalk.white('Total Tasks:')}     ${chalk.cyan(metrics.totalTasks.toLocaleString())}`);
+    logger.info(`${chalk.white('Completed:')}       ${chalk.green(metrics.completedTasks.toLocaleString())}`);
+    logger.info(`${chalk.white('Failed:')}          ${chalk.red(metrics.failedTasks.toLocaleString())}`);
+    logger.info(`${chalk.white('Success Rate:')}    ${successRateColor((metrics.successRate * 100).toFixed(2) + '%')}`);
+    logger.info(`${chalk.white('Avg Response:')}    ${chalk.cyan(metrics.averageResponseTime.toFixed(0) + 'ms')}`);
+    logger.info(`${chalk.white('Trust Score:')}     ${tfColor((metrics.trustFingerprint * 100).toFixed(2) + '%')}`);
+    logger.info();
   }
 
   /**
@@ -220,12 +222,12 @@ export class NodeDashboard extends EventEmitter {
     const apyColor = earnings.estimatedAPY >= 15 ? chalk.green :
                      earnings.estimatedAPY >= 10 ? chalk.yellow : chalk.red;
 
-    console.log(chalk.bold.white('EARNINGS'));
-    console.log(chalk.gray('─'.repeat(60)));
-    console.log(`${chalk.white('Total Earned:')}    ${chalk.green(earnings.totalEarned)} ${chalk.gray('NODR')}`);
-    console.log(`${chalk.white('Pending:')}         ${chalk.yellow(earnings.pendingRewards)} ${chalk.gray('NODR')}`);
-    console.log(`${chalk.white('Estimated APY:')}   ${apyColor(earnings.estimatedAPY.toFixed(2) + '%')}`);
-    console.log();
+    logger.info(chalk.bold.white('EARNINGS'));
+    logger.info(chalk.gray('─'.repeat(60)));
+    logger.info(`${chalk.white('Total Earned:')}    ${chalk.green(earnings.totalEarned)} ${chalk.gray('NODR')}`);
+    logger.info(`${chalk.white('Pending:')}         ${chalk.yellow(earnings.pendingRewards)} ${chalk.gray('NODR')}`);
+    logger.info(`${chalk.white('Estimated APY:')}   ${apyColor(earnings.estimatedAPY.toFixed(2) + '%')}`);
+    logger.info();
   }
 
   /**
@@ -234,31 +236,31 @@ export class NodeDashboard extends EventEmitter {
   private renderAlerts() {
     const { alerts } = this.data;
 
-    console.log(chalk.bold.white('RECENT ALERTS'));
-    console.log(chalk.gray('─'.repeat(60)));
+    logger.info(chalk.bold.white('RECENT ALERTS'));
+    logger.info(chalk.gray('─'.repeat(60)));
 
     if (alerts.length === 0) {
-      console.log(chalk.gray('No recent alerts'));
+      logger.info(chalk.gray('No recent alerts'));
     } else {
       alerts.slice(0, 5).forEach(alert => {
         const icon = this.getAlertIcon(alert.severity);
         const color = this.getAlertColor(alert.severity);
         const time = new Date(alert.timestamp).toLocaleTimeString();
         
-        console.log(`${color(icon)} ${chalk.white(time)} - ${color(alert.message)}`);
+        logger.info(`${color(icon)} ${chalk.white(time)} - ${color(alert.message)}`);
       });
     }
 
-    console.log();
+    logger.info();
   }
 
   /**
    * Render footer
    */
   private renderFooter() {
-    console.log(chalk.gray('─'.repeat(60)));
-    console.log(chalk.gray(`Last updated: ${new Date().toLocaleString()}`));
-    console.log(chalk.gray('Press Ctrl+C to exit'));
+    logger.info(chalk.gray('─'.repeat(60)));
+    logger.info(chalk.gray(`Last updated: ${new Date().toLocaleString()}`));
+    logger.info(chalk.gray('Press Ctrl+C to exit'));
   }
 
   /**

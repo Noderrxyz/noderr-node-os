@@ -1,3 +1,4 @@
+import { Logger } from '@noderr/utils/src';
 import { Worker, isMainThread, parentPort, workerData, MessageChannel } from 'worker_threads';
 import * as os from 'os';
 import { EventEmitter } from 'events';
@@ -514,7 +515,7 @@ if (!isMainThread && workerData?.role === 'poolWorker') {
   let stolen = 0;
   
   // Set CPU affinity (platform-specific, requires native module in production)
-  console.log(`Worker ${workerId} started on CPU ${cpuId}`);
+  logger.info(`Worker ${workerId} started on CPU ${cpuId}`);
   
   // Notify ready
   parentPort!.postMessage({ type: 'ready' });
@@ -585,7 +586,7 @@ if (!isMainThread && workerData?.role === 'poolWorker') {
   });
   
   // Start processing
-  processLoop().catch(console.error);
+  processLoop().catch((err) => logger.error("Unhandled error", err));
 }
 
 /**
@@ -604,6 +605,7 @@ async function executeTask(task: Task): Promise<any> {
   }
 }
 
+const logger = new Logger('WorkerThreadPool');
 function processOrder(order: any): any {
   // Simulate order processing
   return {
@@ -703,8 +705,8 @@ export interface WorkerStats {
  */
 export class WorkerPoolBenchmark {
   static async runBenchmark(): Promise<void> {
-    console.log('\n🚀 Worker Thread Pool Benchmark');
-    console.log('Features: CPU Affinity, Work Stealing, Zero-Copy\n');
+    logger.info('\n🚀 Worker Thread Pool Benchmark');
+    logger.info('Features: CPU Affinity, Work Stealing, Zero-Copy\n');
     
     const pool = new WorkerThreadPool({
       workerCount: os.cpus().length,
@@ -729,7 +731,7 @@ export class WorkerPoolBenchmark {
       });
     }
     
-    console.log(`Submitting ${numTasks.toLocaleString()} tasks...`);
+    logger.info(`Submitting ${numTasks.toLocaleString()} tasks...`);
     const startTime = process.hrtime.bigint();
     
     // Submit all tasks
@@ -741,24 +743,24 @@ export class WorkerPoolBenchmark {
     
     const stats = pool.getStats();
     
-    console.log('\n📊 Results:');
-    console.log(`  Duration: ${duration.toFixed(2)}s`);
-    console.log(`  Throughput: ${throughput.toFixed(0).toLocaleString()} tasks/second`);
-    console.log(`  Active Workers: ${stats.activeWorkers}`);
-    console.log(`  CPU Usage: ${JSON.stringify(stats.cpuUsage)}`);
-    console.log(`  Memory: ${(stats.memoryUsage.heapUsed / 1024 / 1024).toFixed(2)} MB`);
+    logger.info('\n📊 Results:');
+    logger.info(`  Duration: ${duration.toFixed(2)}s`);
+    logger.info(`  Throughput: ${throughput.toFixed(0).toLocaleString()} tasks/second`);
+    logger.info(`  Active Workers: ${stats.activeWorkers}`);
+    logger.info(`  CPU Usage: ${JSON.stringify(stats.cpuUsage)}`);
+    logger.info(`  Memory: ${(stats.memoryUsage.heapUsed / 1024 / 1024).toFixed(2)} MB`);
     
-    console.log('\nWorker Stats:');
+    logger.info('\nWorker Stats:');
     stats.workerStats.forEach(w => {
-      console.log(`  Worker ${w.id}: ${w.tasksProcessed} processed, ${w.tasksStolen} stolen`);
+      logger.info(`  Worker ${w.id}: ${w.tasksProcessed} processed, ${w.tasksStolen} stolen`);
     });
     
     await pool.shutdown();
     
     if (throughput >= 50000) {
-      console.log('\n✅ SUCCESS: Achieved 50K+ tasks/second!');
+      logger.info('\n✅ SUCCESS: Achieved 50K+ tasks/second!');
     } else {
-      console.log(`\n⚠️  Performance: ${throughput.toFixed(0)} tasks/second`);
+      logger.info(`\n⚠️  Performance: ${throughput.toFixed(0)} tasks/second`);
     }
   }
 }

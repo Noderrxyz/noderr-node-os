@@ -1,9 +1,11 @@
+import { Logger } from '@noderr/utils/src';
 import Redis from 'ioredis';
 import * as winston from 'winston';
 import { VolumeTracker } from '../VolumeTracker';
 // import { ComplianceEngine } from '../../compliance/src/ComplianceEngine'; // TODO: Sprint 2+
 import { DistributedStateManager } from '../DistributedStateManager';
 
+const logger = new Logger('VolumeTrackerBenchmark');
 interface BenchmarkResult {
   operation: string;
   iterations: number;
@@ -34,24 +36,24 @@ export class VolumeTrackerPerformanceBenchmark {
   }
   
   async run(): Promise<void> {
-    console.log('🚀 Volume Tracker Performance Benchmark\n');
-    console.log('Target: -5ms latency improvement for daily volume checks\n');
+    logger.info('🚀 Volume Tracker Performance Benchmark\n');
+    logger.info('Target: -5ms latency improvement for daily volume checks\n');
     
     await this.redis.connect();
     
     try {
       // Benchmark old implementation
-      console.log('📊 Benchmarking OLD implementation (async state lookup)...');
+      logger.info('📊 Benchmarking OLD implementation (async state lookup)...');
       const oldResults = await this.benchmarkOldImplementation();
       this.printResults('OLD Implementation', oldResults);
       
       // Benchmark new implementation
-      console.log('\n📊 Benchmarking NEW implementation (Redis atomic ops)...');
+      logger.info('\n📊 Benchmarking NEW implementation (Redis atomic ops)...');
       const newResults = await this.benchmarkNewImplementation();
       this.printResults('NEW Implementation', newResults);
       
       // Compare results
-      console.log('\n🎯 PERFORMANCE COMPARISON:');
+      logger.info('\n🎯 PERFORMANCE COMPARISON:');
       this.compareResults(oldResults, newResults);
       
     } finally {
@@ -161,14 +163,14 @@ export class VolumeTrackerPerformanceBenchmark {
   }
   
   private printResults(title: string, result: BenchmarkResult): void {
-    console.log(`\n${title}:`);
-    console.log(`  Total iterations: ${result.iterations}`);
-    console.log(`  Total time: ${result.totalTime.toFixed(2)}ms`);
-    console.log(`  Average latency: ${result.avgLatency.toFixed(3)}ms`);
-    console.log(`  P50 latency: ${result.p50Latency.toFixed(3)}ms`);
-    console.log(`  P95 latency: ${result.p95Latency.toFixed(3)}ms`);
-    console.log(`  P99 latency: ${result.p99Latency.toFixed(3)}ms`);
-    console.log(`  Throughput: ${result.throughput.toFixed(0)} ops/sec`);
+    logger.info(`\n${title}:`);
+    logger.info(`  Total iterations: ${result.iterations}`);
+    logger.info(`  Total time: ${result.totalTime.toFixed(2)}ms`);
+    logger.info(`  Average latency: ${result.avgLatency.toFixed(3)}ms`);
+    logger.info(`  P50 latency: ${result.p50Latency.toFixed(3)}ms`);
+    logger.info(`  P95 latency: ${result.p95Latency.toFixed(3)}ms`);
+    logger.info(`  P99 latency: ${result.p99Latency.toFixed(3)}ms`);
+    logger.info(`  Throughput: ${result.throughput.toFixed(0)} ops/sec`);
   }
   
   private compareResults(oldResult: BenchmarkResult, newResult: BenchmarkResult): void {
@@ -176,14 +178,14 @@ export class VolumeTrackerPerformanceBenchmark {
     const p99Improvement = oldResult.p99Latency - newResult.p99Latency;
     const throughputImprovement = (newResult.throughput / oldResult.throughput - 1) * 100;
     
-    console.log(`  Average latency improvement: ${avgImprovement.toFixed(3)}ms (${(avgImprovement / oldResult.avgLatency * 100).toFixed(1)}%)`);
-    console.log(`  P99 latency improvement: ${p99Improvement.toFixed(3)}ms (${(p99Improvement / oldResult.p99Latency * 100).toFixed(1)}%)`);
-    console.log(`  Throughput improvement: ${throughputImprovement.toFixed(1)}%`);
+    logger.info(`  Average latency improvement: ${avgImprovement.toFixed(3)}ms (${(avgImprovement / oldResult.avgLatency * 100).toFixed(1)}%)`);
+    logger.info(`  P99 latency improvement: ${p99Improvement.toFixed(3)}ms (${(p99Improvement / oldResult.p99Latency * 100).toFixed(1)}%)`);
+    logger.info(`  Throughput improvement: ${throughputImprovement.toFixed(1)}%`);
     
     if (avgImprovement >= 5) {
-      console.log('\n✅ SUCCESS: Achieved target -5ms latency improvement!');
+      logger.info('\n✅ SUCCESS: Achieved target -5ms latency improvement!');
     } else {
-      console.log(`\n⚠️  WARNING: Only achieved -${avgImprovement.toFixed(3)}ms improvement (target: -5ms)`);
+      logger.info(`\n⚠️  WARNING: Only achieved -${avgImprovement.toFixed(3)}ms improvement (target: -5ms)`);
     }
   }
 }
@@ -191,5 +193,5 @@ export class VolumeTrackerPerformanceBenchmark {
 // Run benchmark if executed directly
 if (require.main === module) {
   const benchmark = new VolumeTrackerPerformanceBenchmark();
-  benchmark.run().catch(console.error);
+  benchmark.run().catch((err) => logger.error("Unhandled error", err));
 } 

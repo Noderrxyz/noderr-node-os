@@ -13,6 +13,7 @@
  * - Maintain reputation through consistent participation
  */
 
+import { Logger } from '@noderr/utils/src';
 import { ValidatorConsensus, ValidatorConsensusConfig } from './ValidatorConsensus';
 import { createLogger, format, transports } from 'winston';
 
@@ -119,9 +120,10 @@ async function main(): Promise<void> {
 // Run if this is the main module
 if (require.main === module) {
   main().catch(error => {
-    console.error('Fatal error:', error);
+    logger.error('Fatal error:', error);
     process.exit(1);
   });
 }
 
+const logger = new Logger('index');
 export default ValidatorConsensus;

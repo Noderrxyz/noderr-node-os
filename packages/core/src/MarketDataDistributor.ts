@@ -1,3 +1,4 @@
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import * as os from 'os';
 
@@ -452,6 +453,7 @@ export interface DistributorOptions {
   symbols?: string[];
 }
 
+const logger = new Logger('MarketDataDistributor');
 export interface MarketDataUpdate {
   symbol: string;
   sequence?: number;
@@ -520,7 +522,7 @@ export class HighPerformanceSubscriber implements MarketDataSubscriber {
       const expectedSeq = this.lastSequence + 1;
       if (update.sequence !== expectedSeq) {
         this.gaps++;
-        console.warn(`Sequence gap detected: expected ${expectedSeq}, got ${update.sequence}`);
+        logger.warn(`Sequence gap detected: expected ${expectedSeq}, got ${update.sequence}`);
       }
     }
     
@@ -535,7 +537,7 @@ export class HighPerformanceSubscriber implements MarketDataSubscriber {
   }
   
   onSnapshot(snapshot: MarketDataSnapshot): void {
-    console.log(`Received snapshot for ${snapshot.symbol}:`, snapshot);
+    logger.info(`Received snapshot for ${snapshot.symbol}:`, snapshot);
   }
   
   getStats() {
@@ -552,8 +554,8 @@ export class HighPerformanceSubscriber implements MarketDataSubscriber {
  */
 export class MarketDataBenchmark {
   static async runBenchmark(): Promise<void> {
-    console.log('\n🚀 Market Data Distributor Benchmark');
-    console.log('Target: 10M+ updates/second\n');
+    logger.info('\n🚀 Market Data Distributor Benchmark');
+    logger.info('Target: 10M+ updates/second\n');
     
     const distributor = new MarketDataDistributor({
       bufferSize: 100000,
@@ -575,7 +577,7 @@ export class MarketDataBenchmark {
     const numUpdates = 1_000_000;
     const updates: MarketDataUpdate[] = [];
     
-    console.log(`Generating ${numUpdates.toLocaleString()} market data updates...`);
+    logger.info(`Generating ${numUpdates.toLocaleString()} market data updates...`);
     
     for (let i = 0; i < numUpdates; i++) {
       const symbol = symbols[i % symbols.length];
@@ -595,7 +597,7 @@ export class MarketDataBenchmark {
     }
     
     // Benchmark single updates
-    console.log('\n1. Single Update Performance:');
+    logger.info('\n1. Single Update Performance:');
     const singleStart = process.hrtime.bigint();
     
     for (let i = 0; i < 100000; i++) {
@@ -606,11 +608,11 @@ export class MarketDataBenchmark {
     const singleDuration = Number(singleEnd - singleStart) / 1_000_000_000;
     const singleThroughput = 100000 / singleDuration;
     
-    console.log(`   Duration: ${singleDuration.toFixed(3)}s`);
-    console.log(`   Throughput: ${singleThroughput.toFixed(0).toLocaleString()} updates/second`);
+    logger.info(`   Duration: ${singleDuration.toFixed(3)}s`);
+    logger.info(`   Throughput: ${singleThroughput.toFixed(0).toLocaleString()} updates/second`);
     
     // Benchmark batch updates
-    console.log('\n2. Batch Update Performance:');
+    logger.info('\n2. Batch Update Performance:');
     const batchSize = 1000;
     const numBatches = Math.floor((numUpdates - 100000) / batchSize);
     const batchStart = process.hrtime.bigint();
@@ -625,34 +627,34 @@ export class MarketDataBenchmark {
     const batchDuration = Number(batchEnd - batchStart) / 1_000_000_000;
     const batchThroughput = (numBatches * batchSize) / batchDuration;
     
-    console.log(`   Duration: ${batchDuration.toFixed(3)}s`);
-    console.log(`   Throughput: ${batchThroughput.toFixed(0).toLocaleString()} updates/second`);
-    console.log(`   Batches: ${numBatches.toLocaleString()} x ${batchSize}`);
+    logger.info(`   Duration: ${batchDuration.toFixed(3)}s`);
+    logger.info(`   Throughput: ${batchThroughput.toFixed(0).toLocaleString()} updates/second`);
+    logger.info(`   Batches: ${numBatches.toLocaleString()} x ${batchSize}`);
     
     // Get statistics
     const stats = distributor.getStats();
-    console.log('\n3. Distribution Statistics:');
-    console.log(`   Total Updates: ${stats.updateCount.toLocaleString()}`);
-    console.log(`   Sequence Number: ${stats.sequenceNumber.toLocaleString()}`);
-    console.log(`   Conflated: ${stats.conflatedCount.toLocaleString()}`);
-    console.log(`   Memory: ${(stats.memoryUsage.heapUsed / 1024 / 1024).toFixed(2)} MB`);
+    logger.info('\n3. Distribution Statistics:');
+    logger.info(`   Total Updates: ${stats.updateCount.toLocaleString()}`);
+    logger.info(`   Sequence Number: ${stats.sequenceNumber.toLocaleString()}`);
+    logger.info(`   Conflated: ${stats.conflatedCount.toLocaleString()}`);
+    logger.info(`   Memory: ${(stats.memoryUsage.heapUsed / 1024 / 1024).toFixed(2)} MB`);
     
-    console.log('\n4. Buffer Statistics:');
+    logger.info('\n4. Buffer Statistics:');
     for (const [symbol, bufferStats] of Object.entries(stats.bufferStats)) {
-      console.log(`   ${symbol}:`);
-      console.log(`     Size: ${bufferStats.size.toLocaleString()}`);
-      console.log(`     Writes: ${bufferStats.writeCount.toLocaleString()}`);
-      console.log(`     Conflated: ${bufferStats.conflatedCount.toLocaleString()}`);
+      logger.info(`   ${symbol}:`);
+      logger.info(`     Size: ${bufferStats.size.toLocaleString()}`);
+      logger.info(`     Writes: ${bufferStats.writeCount.toLocaleString()}`);
+      logger.info(`     Conflated: ${bufferStats.conflatedCount.toLocaleString()}`);
     }
     
-    console.log('\n5. Subscriber Statistics:');
+    logger.info('\n5. Subscriber Statistics:');
     subscribers.forEach((sub, i) => {
       const subStats = sub.getStats();
-      console.log(`   Subscriber ${i}: ${subStats.updateCount.toLocaleString()} updates, ${subStats.gaps} gaps`);
+      logger.info(`   Subscriber ${i}: ${subStats.updateCount.toLocaleString()} updates, ${subStats.gaps} gaps`);
     });
     
     // Test conflation
-    console.log('\n6. Conflation Test:');
+    logger.info('\n6. Conflation Test:');
     distributor.setConflation(false);
     const noConflateStart = process.hrtime.bigint();
     
@@ -668,7 +670,7 @@ export class MarketDataBenchmark {
     const noConflateEnd = process.hrtime.bigint();
     const noConflateDuration = Number(noConflateEnd - noConflateStart) / 1_000_000;
     
-    console.log(`   Without conflation: ${noConflateDuration.toFixed(2)}ms for 10K updates`);
+    logger.info(`   Without conflation: ${noConflateDuration.toFixed(2)}ms for 10K updates`);
     
     distributor.setConflation(true);
     const conflateStart = process.hrtime.bigint();
@@ -685,21 +687,21 @@ export class MarketDataBenchmark {
     const conflateEnd = process.hrtime.bigint();
     const conflateDuration = Number(conflateEnd - conflateStart) / 1_000_000;
     
-    console.log(`   With conflation: ${conflateDuration.toFixed(2)}ms for 10K updates`);
-    console.log(`   Speedup: ${(noConflateDuration / conflateDuration).toFixed(2)}x`);
+    logger.info(`   With conflation: ${conflateDuration.toFixed(2)}ms for 10K updates`);
+    logger.info(`   Speedup: ${(noConflateDuration / conflateDuration).toFixed(2)}x`);
     
     // Summary
     const totalThroughput = Math.max(singleThroughput, batchThroughput);
-    console.log('\n📊 Performance Summary:');
-    console.log(`   Peak Throughput: ${totalThroughput.toFixed(0).toLocaleString()} updates/second`);
-    console.log(`   Latency: ${(1000000 / totalThroughput).toFixed(3)}μs per update`);
+    logger.info('\n📊 Performance Summary:');
+    logger.info(`   Peak Throughput: ${totalThroughput.toFixed(0).toLocaleString()} updates/second`);
+    logger.info(`   Latency: ${(1000000 / totalThroughput).toFixed(3)}μs per update`);
     
     if (totalThroughput >= 10_000_000) {
-      console.log('\n✅ SUCCESS: Achieved 10M+ updates/second!');
+      logger.info('\n✅ SUCCESS: Achieved 10M+ updates/second!');
     } else if (totalThroughput >= 1_000_000) {
-      console.log('\n⚠️  GOOD: Achieved 1M+ updates/second');
+      logger.info('\n⚠️  GOOD: Achieved 1M+ updates/second');
     } else {
-      console.log(`\n❌ NEEDS OPTIMIZATION: Only ${totalThroughput.toFixed(0)} updates/second`);
+      logger.info(`\n❌ NEEDS OPTIMIZATION: Only ${totalThroughput.toFixed(0)} updates/second`);
     }
   }
 }

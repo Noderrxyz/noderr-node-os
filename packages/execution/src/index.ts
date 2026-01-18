@@ -189,7 +189,7 @@ if (require.main === module) {
   getShutdownHandler(30000);  // 30 second global timeout
   
   startExecutionService().catch((error) => {
-    console.error('Fatal error starting Execution Service:', error);
+    logger.error('Fatal error starting Execution Service:', error);
     process.exit(1);
   });
 } 

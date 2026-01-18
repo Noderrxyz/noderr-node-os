@@ -1,3 +1,4 @@
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import {
   ArbitrageOpportunity,
@@ -9,6 +10,7 @@ import {
   MarketIntelTelemetryEvent
 } from './types';
 
+const logger = new Logger('ArbitrageScanner');
 interface PriceData {
   symbol: string;
   exchange: string;
@@ -107,7 +109,7 @@ export class ArbitrageScanner extends EventEmitter {
 
       return opportunities;
     } catch (error) {
-      console.error('Arbitrage scanning error:', error);
+      logger.error('Arbitrage scanning error:', error);
       throw error;
     }
   }

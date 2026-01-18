@@ -310,14 +310,14 @@ export class MarketDataRingBufferView {
  */
 export class RingBufferBenchmark {
   static async runBenchmark(logger: any): Promise<void> {
-    console.log('\n💍 Ring Buffer Performance Benchmark');
-    console.log('Target: -3ms market data access\n');
+    logger.info('\n💍 Ring Buffer Performance Benchmark');
+    logger.info('Target: -3ms market data access\n');
     
     const capacity = 100000;
     const iterations = 1000000;
     
     // Test with array-based storage
-    console.log('📊 Array-based storage:');
+    logger.info('📊 Array-based storage:');
     const arrayStorage: MarketDataPoint[] = [];
     const arrayWriteStart = process.hrtime.bigint();
     
@@ -361,7 +361,7 @@ export class RingBufferBenchmark {
     const arrayReadTime = Number(process.hrtime.bigint() - arrayReadStart) / 1_000_000;
     
     // Test with ring buffer
-    console.log('\n📊 Ring buffer storage:');
+    logger.info('\n📊 Ring buffer storage:');
     const ringBuffer = new MarketDataRingBuffer(capacity);
     const ringWriteStart = process.hrtime.bigint();
     
@@ -393,36 +393,32 @@ export class RingBufferBenchmark {
     const ringReadTime = Number(process.hrtime.bigint() - ringReadStart) / 1_000_000;
     
     // Results
-    console.log('\nResults:');
-    console.log('Array-based:');
-    console.log(`  Write time: ${arrayWriteTime.toFixed(2)}ms (${(iterations / (arrayWriteTime / 1000)).toFixed(0)} ops/sec)`);
-    console.log(`  Read time: ${arrayReadTime.toFixed(2)}ms (${(arrayReadTime / 10).toFixed(3)}ms per read)`);
+    logger.info('\nResults:');
+    logger.info('Array-based:');
+    logger.info(`  Write time: ${arrayWriteTime.toFixed(2)}ms (${(iterations / (arrayWriteTime / 1000)).toFixed(0)} ops/sec)`);
+    logger.info(`  Read time: ${arrayReadTime.toFixed(2)}ms (${(arrayReadTime / 10).toFixed(3)}ms per read)`);
     
-    console.log('\nRing buffer:');
-    console.log(`  Write time: ${ringWriteTime.toFixed(2)}ms (${(iterations / (ringWriteTime / 1000)).toFixed(0)} ops/sec)`);
-    console.log(`  Read time: ${ringReadTime.toFixed(2)}ms (${(ringReadTime / 10).toFixed(3)}ms per read)`);
+    logger.info('\nRing buffer:');
+    logger.info(`  Write time: ${ringWriteTime.toFixed(2)}ms (${(iterations / (ringWriteTime / 1000)).toFixed(0)} ops/sec)`);
+    logger.info(`  Read time: ${ringReadTime.toFixed(2)}ms (${(ringReadTime / 10).toFixed(3)}ms per read)`);
     
     const improvement = (arrayReadTime / 10) - (ringReadTime / 10);
-    console.log(`\n🎯 Read latency improvement: ${improvement.toFixed(3)}ms per read`);
+    logger.info(`\n🎯 Read latency improvement: ${improvement.toFixed(3)}ms per read`);
     
     if (improvement >= 3) {
-      console.log('✅ SUCCESS: Achieved target -3ms improvement!');
+      logger.info('✅ SUCCESS: Achieved target -3ms improvement!');
     } else {
-      console.log(`⚠️  WARNING: Only achieved ${improvement.toFixed(3)}ms improvement (target: 3ms)`);
+      logger.info(`⚠️  WARNING: Only achieved ${improvement.toFixed(3)}ms improvement (target: 3ms)`);
     }
     
-    console.log('\nRing buffer stats:', ringBuffer.getStats());
+    logger.info('\nRing buffer stats:', ringBuffer.getStats());
   }
 }
 
 // Run benchmark if executed directly
 if (require.main === module) {
-  const logger = {
-    info: (msg: string) => console.log(msg),
-    error: (msg: string) => console.error(msg),
-    warn: (msg: string) => console.warn(msg),
-    debug: (msg: string) => console.debug(msg)
-  };
+  import { Logger } from '@noderr/utils/src';
+  const logger = new Logger('RingBufferBenchmark');
   
-  RingBufferBenchmark.runBenchmark(logger as any).catch(console.error);
+  RingBufferBenchmark.runBenchmark(logger as any).catch((err) => logger.error("Unhandled error", err));
 } 

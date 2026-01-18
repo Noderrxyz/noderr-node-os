@@ -1,5 +1,7 @@
+import { Logger } from '@noderr/utils/src';
 import * as winston from 'winston';
 
+const logger = new Logger('BufferPool');
 export interface BufferPoolConfig {
   minSize: number;      // Minimum buffer size
   maxSize: number;      // Maximum buffer size
@@ -278,14 +280,14 @@ export class PooledMessageBuilder {
  */
 export class BufferPoolBenchmark {
   static async runBenchmark(logger: winston.Logger): Promise<void> {
-    console.log('\n🏊 Buffer Pool Performance Benchmark');
-    console.log('Target: -1ms network operation overhead\n');
+    logger.info('\n🏊 Buffer Pool Performance Benchmark');
+    logger.info('Target: -1ms network operation overhead\n');
     
     const iterations = 100000;
     const sizes = [64, 256, 1024, 4096, 16384];
     
     // Test without pooling
-    console.log('📊 Without pooling (allocate every time):');
+    logger.info('📊 Without pooling (allocate every time):');
     const withoutPoolStart = process.hrtime.bigint();
     
     for (let i = 0; i < iterations; i++) {
@@ -302,7 +304,7 @@ export class BufferPoolBenchmark {
     const withoutPoolTime = Number(process.hrtime.bigint() - withoutPoolStart) / 1_000_000;
     
     // Test with pooling
-    console.log('\n📊 With pooling (reuse buffers):');
+    logger.info('\n📊 With pooling (reuse buffers):');
     const pool = new BufferPool(logger);
     const withPoolStart = process.hrtime.bigint();
     
@@ -321,7 +323,7 @@ export class BufferPoolBenchmark {
     const withPoolTime = Number(process.hrtime.bigint() - withPoolStart) / 1_000_000;
     
     // Test message builder
-    console.log('\n📊 Message builder benchmark:');
+    logger.info('\n📊 Message builder benchmark:');
     const builderStart = process.hrtime.bigint();
     
     for (let i = 0; i < 10000; i++) {
@@ -340,24 +342,24 @@ export class BufferPoolBenchmark {
     const builderTime = Number(process.hrtime.bigint() - builderStart) / 1_000_000;
     
     // Results
-    console.log('\nResults:');
-    console.log(`Without pooling: ${withoutPoolTime.toFixed(2)}ms (${(withoutPoolTime / iterations * 1000).toFixed(3)}µs per operation)`);
-    console.log(`With pooling: ${withPoolTime.toFixed(2)}ms (${(withPoolTime / iterations * 1000).toFixed(3)}µs per operation)`);
-    console.log(`Message builder: ${builderTime.toFixed(2)}ms (${(builderTime / 10).toFixed(3)}ms per message)`);
+    logger.info('\nResults:');
+    logger.info(`Without pooling: ${withoutPoolTime.toFixed(2)}ms (${(withoutPoolTime / iterations * 1000).toFixed(3)}µs per operation)`);
+    logger.info(`With pooling: ${withPoolTime.toFixed(2)}ms (${(withPoolTime / iterations * 1000).toFixed(3)}µs per operation)`);
+    logger.info(`Message builder: ${builderTime.toFixed(2)}ms (${(builderTime / 10).toFixed(3)}ms per message)`);
     
     const improvement = (withoutPoolTime - withPoolTime) / iterations;
-    console.log(`\n🎯 Improvement: ${(improvement * 1000).toFixed(3)}µs per operation`);
+    logger.info(`\n🎯 Improvement: ${(improvement * 1000).toFixed(3)}µs per operation`);
     
     const stats = pool.getStats();
-    console.log('\nPool statistics:');
-    console.log(`  Hit rate: ${(stats.hitRate * 100).toFixed(1)}%`);
-    console.log(`  Total allocated: ${(stats.totalAllocated / 1024 / 1024).toFixed(2)}MB`);
-    console.log(`  Misses: ${stats.misses}`);
+    logger.info('\nPool statistics:');
+    logger.info(`  Hit rate: ${(stats.hitRate * 100).toFixed(1)}%`);
+    logger.info(`  Total allocated: ${(stats.totalAllocated / 1024 / 1024).toFixed(2)}MB`);
+    logger.info(`  Misses: ${stats.misses}`);
     
     if (improvement >= 0.001) { // 1µs = 0.001ms
-      console.log('\n✅ SUCCESS: Achieved target improvement!');
+      logger.info('\n✅ SUCCESS: Achieved target improvement!');
     } else {
-      console.log(`\n⚠️  WARNING: Only achieved ${(improvement * 1000).toFixed(3)}µs improvement`);
+      logger.info(`\n⚠️  WARNING: Only achieved ${(improvement * 1000).toFixed(3)}µs improvement`);
     }
     
     pool.clear();
@@ -372,5 +374,5 @@ if (require.main === module) {
     transports: [new winston.transports.Console()]
   });
   
-  BufferPoolBenchmark.runBenchmark(logger).catch(console.error);
+  BufferPoolBenchmark.runBenchmark(logger).catch((err) => logger.error("Unhandled error", err));
 } 

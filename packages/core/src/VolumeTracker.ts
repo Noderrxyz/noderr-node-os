@@ -1,6 +1,8 @@
+import { Logger } from '@noderr/utils/src';
 import Redis from 'ioredis';
 import * as winston from 'winston';
 
+const logger = new Logger('VolumeTracker');
 export interface VolumeTrackerConfig {
   redis: Redis;
   ttl: number; // TTL for daily volume keys in seconds
@@ -219,7 +221,7 @@ export class VolumeTracker {
 // Performance benchmark utility
 export class VolumeTrackerBenchmark {
   static async runBenchmark(tracker: VolumeTracker, iterations: number = 10000): Promise<void> {
-    console.log(`Running VolumeTracker benchmark with ${iterations} iterations...`);
+    logger.info(`Running VolumeTracker benchmark with ${iterations} iterations...`);
     
     const userIds = Array.from({ length: 100 }, (_, i) => `user-${i}`);
     const amounts = Array.from({ length: iterations }, () => Math.random() * 10000);
@@ -254,11 +256,11 @@ export class VolumeTrackerBenchmark {
     const incrementThroughput = iterations / (incrementTime / 1000);
     const readThroughput = iterations / (readTime / 1000);
     
-    console.log('Benchmark Results:');
-    console.log(`  Increment Latency: ${incrementLatency.toFixed(3)}ms (P99 target: <1ms)`);
-    console.log(`  Read Latency: ${readLatency.toFixed(3)}ms`);
-    console.log(`  Increment Throughput: ${incrementThroughput.toFixed(0)} ops/sec`);
-    console.log(`  Read Throughput: ${readThroughput.toFixed(0)} ops/sec`);
-    console.log(`  Metrics:`, tracker.getMetrics());
+    logger.info('Benchmark Results:');
+    logger.info(`  Increment Latency: ${incrementLatency.toFixed(3)}ms (P99 target: <1ms)`);
+    logger.info(`  Read Latency: ${readLatency.toFixed(3)}ms`);
+    logger.info(`  Increment Throughput: ${incrementThroughput.toFixed(0)} ops/sec`);
+    logger.info(`  Read Throughput: ${readThroughput.toFixed(0)} ops/sec`);
+    logger.info(`  Metrics:`, tracker.getMetrics());
   }
 } 

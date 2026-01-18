@@ -162,7 +162,7 @@ export class AdapterRegistry extends EventEmitter {
     // Emit event
     this.emit('adapter_enabled', { adapterId });
 
-    console.log(`[AdapterRegistry] Enabled adapter: ${adapterId}`);
+    logger.info(`[AdapterRegistry] Enabled adapter: ${adapterId}`);
   }
 
   /**
@@ -177,7 +177,7 @@ export class AdapterRegistry extends EventEmitter {
     }
 
     if (!registered.metadata.enabled) {
-      console.warn(`[AdapterRegistry] Adapter ${adapterId} is already disabled`);
+      logger.warn(`[AdapterRegistry] Adapter ${adapterId} is already disabled`);
       return;
     }
 
@@ -186,7 +186,7 @@ export class AdapterRegistry extends EventEmitter {
     // Emit event
     this.emit('adapter_disabled', { adapterId });
 
-    console.log(`[AdapterRegistry] Disabled adapter: ${adapterId}`);
+    logger.info(`[AdapterRegistry] Disabled adapter: ${adapterId}`);
   }
 
   /**
@@ -288,13 +288,13 @@ export class AdapterRegistry extends EventEmitter {
       registered.healthStatus = healthStatus;
 
       if (!healthStatus) {
-        console.warn(`[AdapterRegistry] Health check failed for adapter: ${adapterId}`);
+        logger.warn(`[AdapterRegistry] Health check failed for adapter: ${adapterId}`);
         this.emit('adapter_unhealthy', { adapterId });
       }
 
       return healthStatus;
     } catch (error) {
-      console.error(`[AdapterRegistry] Health check error for adapter ${adapterId}:`, error);
+      logger.error(`[AdapterRegistry] Health check error for adapter ${adapterId}:`, error);
       registered.healthStatus = false;
       this.emit('adapter_unhealthy', { adapterId, error });
       return false;

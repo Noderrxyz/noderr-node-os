@@ -1,6 +1,8 @@
+import { Logger } from '@noderr/utils/src';
 import * as winston from 'winston';
 import { Order, OrderStatus, OrderType, OrderSide, TimeInForce } from '@noderr/types';
 
+const logger = new Logger('OrderPool');
 export interface OrderPoolConfig {
   poolSize: number;
   maxPoolSize: number;
@@ -247,11 +249,11 @@ export function getGlobalOrderPool(logger: winston.Logger): OrderPool {
  */
 export class OrderPoolBenchmark {
   static async runBenchmark(logger: winston.Logger, iterations: number = 100000): Promise<void> {
-    console.log(`\n🏊 Order Pool Performance Benchmark`);
-    console.log(`Iterations: ${iterations}\n`);
+    logger.info(`\n🏊 Order Pool Performance Benchmark`);
+    logger.info(`Iterations: ${iterations}\n`);
     
     // Benchmark without pooling
-    console.log('📊 Without pooling (new objects):');
+    logger.info('📊 Without pooling (new objects):');
     const withoutPoolStart = process.hrtime.bigint();
     const withoutPoolLatencies: number[] = [];
     
@@ -282,7 +284,7 @@ export class OrderPoolBenchmark {
     const withoutPoolTime = Number(process.hrtime.bigint() - withoutPoolStart) / 1_000_000;
     
     // Benchmark with pooling
-    console.log('\n📊 With pooling (reused objects):');
+    logger.info('\n📊 With pooling (reused objects):');
     const pool = new OrderPool(logger, { preAllocate: true });
     const withPoolStart = process.hrtime.bigint();
     const withPoolLatencies: number[] = [];
@@ -310,33 +312,33 @@ export class OrderPoolBenchmark {
     withoutPoolLatencies.sort((a, b) => a - b);
     withPoolLatencies.sort((a, b) => a - b);
     
-    console.log('\nResults WITHOUT pooling:');
-    console.log(`  Total time: ${withoutPoolTime.toFixed(2)}ms`);
-    console.log(`  Avg latency: ${(withoutPoolTime / iterations).toFixed(4)}ms`);
-    console.log(`  P50 latency: ${withoutPoolLatencies[Math.floor(iterations * 0.5)].toFixed(4)}ms`);
-    console.log(`  P99 latency: ${withoutPoolLatencies[Math.floor(iterations * 0.99)].toFixed(4)}ms`);
+    logger.info('\nResults WITHOUT pooling:');
+    logger.info(`  Total time: ${withoutPoolTime.toFixed(2)}ms`);
+    logger.info(`  Avg latency: ${(withoutPoolTime / iterations).toFixed(4)}ms`);
+    logger.info(`  P50 latency: ${withoutPoolLatencies[Math.floor(iterations * 0.5)].toFixed(4)}ms`);
+    logger.info(`  P99 latency: ${withoutPoolLatencies[Math.floor(iterations * 0.99)].toFixed(4)}ms`);
     
-    console.log('\nResults WITH pooling:');
-    console.log(`  Total time: ${withPoolTime.toFixed(2)}ms`);
-    console.log(`  Avg latency: ${(withPoolTime / iterations).toFixed(4)}ms`);
-    console.log(`  P50 latency: ${withPoolLatencies[Math.floor(iterations * 0.5)].toFixed(4)}ms`);
-    console.log(`  P99 latency: ${withPoolLatencies[Math.floor(iterations * 0.99)].toFixed(4)}ms`);
+    logger.info('\nResults WITH pooling:');
+    logger.info(`  Total time: ${withPoolTime.toFixed(2)}ms`);
+    logger.info(`  Avg latency: ${(withPoolTime / iterations).toFixed(4)}ms`);
+    logger.info(`  P50 latency: ${withPoolLatencies[Math.floor(iterations * 0.5)].toFixed(4)}ms`);
+    logger.info(`  P99 latency: ${withPoolLatencies[Math.floor(iterations * 0.99)].toFixed(4)}ms`);
     
     const improvement = withoutPoolTime - withPoolTime;
     const p99Improvement = withoutPoolLatencies[Math.floor(iterations * 0.99)] - 
                           withPoolLatencies[Math.floor(iterations * 0.99)];
     
-    console.log('\n🎯 Performance Improvement:');
-    console.log(`  Total time saved: ${improvement.toFixed(2)}ms (${(improvement / withoutPoolTime * 100).toFixed(1)}%)`);
-    console.log(`  P99 latency improvement: ${p99Improvement.toFixed(4)}ms`);
+    logger.info('\n🎯 Performance Improvement:');
+    logger.info(`  Total time saved: ${improvement.toFixed(2)}ms (${(improvement / withoutPoolTime * 100).toFixed(1)}%)`);
+    logger.info(`  P99 latency improvement: ${p99Improvement.toFixed(4)}ms`);
     
-    console.log('\n📈 Pool Metrics:');
-    console.log(pool.getMetrics());
+    logger.info('\n📈 Pool Metrics:');
+    logger.info(pool.getMetrics());
     
     if (p99Improvement >= 0.002) { // 2 microseconds = 0.002ms
-      console.log('\n✅ SUCCESS: Achieved target GC pressure reduction!');
+      logger.info('\n✅ SUCCESS: Achieved target GC pressure reduction!');
     } else {
-      console.log('\n⚠️  WARNING: Improvement below target');
+      logger.info('\n⚠️  WARNING: Improvement below target');
     }
     
     pool.drain();
@@ -351,5 +353,5 @@ if (require.main === module) {
     transports: [new winston.transports.Console()]
   });
   
-  OrderPoolBenchmark.runBenchmark(logger).catch(console.error);
+  OrderPoolBenchmark.runBenchmark(logger).catch((err) => logger.error("Unhandled error", err));
 } 

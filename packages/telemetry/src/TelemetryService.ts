@@ -5,8 +5,9 @@
  * to provide comprehensive system monitoring.
  */
 
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
-import { Logger } from 'winston';
+import * as winston from 'winston';
 import * as http from 'http';
 import { 
   MetricExporter 
@@ -30,6 +31,7 @@ import {
   SpanData
 } from './types/telemetry';
 
+const logger = new Logger('TelemetryService');
 interface TelemetryServiceConfig {
   serviceName: string;
   environment: string;
@@ -243,7 +245,7 @@ export class TelemetryService extends EventEmitter {
   log(level: LogLevel, module: string, message: string, metadata?: Record<string, any>): void {
     if (!this.logBridge) {
       // Fallback to console
-      console.log(`[${level}] [${module}] ${message}`, metadata);
+      logger.info(`[${level}] [${module}] ${message}`, metadata);
       return;
     }
     

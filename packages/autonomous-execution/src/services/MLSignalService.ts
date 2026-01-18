@@ -8,6 +8,7 @@
  * @module MLSignalService
  */
 
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 
 // Types for ML predictions
@@ -25,6 +26,7 @@ export interface MLPrediction {
   reasoning: string;
 }
 
+const logger = new Logger('MLSignalService');
 export interface MLModelConfig {
   modelId: string;
   type: 'MOMENTUM' | 'MEAN_REVERSION' | 'ARBITRAGE' | 'MARKET_MAKING';
@@ -67,7 +69,7 @@ export class MLSignalService extends EventEmitter {
    * Initialize ML signal service
    */
   async initialize(): Promise<void> {
-    console.log('[MLSignalService] Initializing ML models...');
+    logger.info('[MLSignalService] Initializing ML models...');
     
     // Register default models
     await this.registerModel({
@@ -97,7 +99,7 @@ export class MLSignalService extends EventEmitter {
       enabled: true
     });
     
-    console.log(`[MLSignalService] Initialized ${this.models.size} ML models`);
+    logger.info(`[MLSignalService] Initialized ${this.models.size} ML models`);
     this.emit('initialized');
   }
   
@@ -108,7 +110,7 @@ export class MLSignalService extends EventEmitter {
    */
   async registerModel(config: MLModelConfig): Promise<void> {
     this.models.set(config.modelId, config);
-    console.log(`[MLSignalService] Registered model: ${config.modelId} (${config.type})`);
+    logger.info(`[MLSignalService] Registered model: ${config.modelId} (${config.type})`);
     this.emit('model-registered', config);
   }
   
@@ -135,7 +137,7 @@ export class MLSignalService extends EventEmitter {
       const historicalData = await this.getHistoricalData(symbol, 100);
       
       if (historicalData.length < 20) {
-        console.warn(`[MLSignalService] Insufficient data for ${symbol}`);
+        logger.warn(`[MLSignalService] Insufficient data for ${symbol}`);
         return null;
       }
       
@@ -173,7 +175,7 @@ export class MLSignalService extends EventEmitter {
       return prediction;
       
     } catch (error) {
-      console.error(`[MLSignalService] Error generating prediction for ${symbol}:`, error);
+      logger.error(`[MLSignalService] Error generating prediction for ${symbol}:`, error);
       return null;
     }
   }
@@ -422,12 +424,12 @@ export class MLSignalService extends EventEmitter {
    */
   async startGenerating(interval: number = 60000): Promise<void> {
     if (this.isRunning) {
-      console.warn('[MLSignalService] Signal generation already running');
+      logger.warn('[MLSignalService] Signal generation already running');
       return;
     }
     
     this.isRunning = true;
-    console.log(`[MLSignalService] Starting signal generation (interval: ${interval}ms)`);
+    logger.info(`[MLSignalService] Starting signal generation (interval: ${interval}ms)`);
     
     // Generate signals immediately
     await this.generateSignals();
@@ -455,7 +457,7 @@ export class MLSignalService extends EventEmitter {
       this.generationInterval = null;
     }
     
-    console.log('[MLSignalService] Signal generation stopped');
+    logger.info('[MLSignalService] Signal generation stopped');
     this.emit('generation-stopped');
   }
   
@@ -471,14 +473,14 @@ export class MLSignalService extends EventEmitter {
           const prediction = await this.generatePrediction(symbol);
           
           if (prediction) {
-            console.log(
+            logger.info(
               `[MLSignalService] 📊 Signal: ${prediction.action} ${prediction.symbol} ` +
               `@ ${prediction.price.toFixed(2)} (confidence: ${(prediction.confidence * 100).toFixed(0)}%)`
             );
             this.emit('new-signal', prediction);
           }
         } catch (error) {
-          console.error(`[MLSignalService] Error generating signal for ${symbol}:`, error);
+          logger.error(`[MLSignalService] Error generating signal for ${symbol}:`, error);
         }
       }
     }
@@ -646,7 +648,7 @@ export class MLSignalService extends EventEmitter {
     const model = this.models.get(modelId);
     if (model) {
       model.enabled = enabled;
-      console.log(`[MLSignalService] Model ${modelId} ${enabled ? 'enabled' : 'disabled'}`);
+      logger.info(`[MLSignalService] Model ${modelId} ${enabled ? 'enabled' : 'disabled'}`);
       this.emit('model-enabled-changed', { modelId, enabled });
     }
   }

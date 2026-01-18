@@ -7,10 +7,12 @@
  * @module OnChainSettlementManager
  */
 
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import { ethers } from 'ethers';
 import { TradingSignal } from '@noderr/oracle-consensus';
 
+const logger = new Logger('OnChainSettlementManager');
 export interface SettlementConfig {
   rpcUrl: string;
   chainId: number;
@@ -80,15 +82,15 @@ export class OnChainSettlementManager extends EventEmitter {
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
-      console.warn('Settlement manager already initialized');
+      logger.warn('Settlement manager already initialized');
       return;
     }
     
-    console.log('Initializing On-Chain Settlement Manager...');
+    logger.info('Initializing On-Chain Settlement Manager...');
     
     // Verify network connection
     const network = await this.provider.getNetwork();
-    console.log(`Connected to network: ${network.name} (Chain ID: ${network.chainId})`);
+    logger.info(`Connected to network: ${network.name} (Chain ID: ${network.chainId})`);
     
     if (Number(network.chainId) !== this.config.chainId) {
       throw new Error(
@@ -98,11 +100,11 @@ export class OnChainSettlementManager extends EventEmitter {
     
     // Verify wallet balance
     const balance = await this.provider.getBalance(this.wallet.address);
-    console.log(`Wallet address: ${this.wallet.address}`);
-    console.log(`Wallet balance: ${ethers.formatEther(balance)} ETH`);
+    logger.info(`Wallet address: ${this.wallet.address}`);
+    logger.info(`Wallet balance: ${ethers.formatEther(balance)} ETH`);
     
     if (balance === 0n) {
-      console.warn('⚠️  WARNING: Wallet has zero balance!');
+      logger.warn('⚠️  WARNING: Wallet has zero balance!');
     }
     
     // Verify OracleVerifier contract
@@ -113,18 +115,18 @@ export class OnChainSettlementManager extends EventEmitter {
       );
     }
     
-    console.log(`OracleVerifier contract: ${this.config.oracleVerifierAddress}`);
+    logger.info(`OracleVerifier contract: ${this.config.oracleVerifierAddress}`);
     
     // Check if wallet is registered as oracle
     try {
       const isRegistered = await this.oracleVerifier.isOracleRegistered(this.wallet.address);
-      console.log(`Oracle registration status: ${isRegistered ? 'REGISTERED' : 'NOT REGISTERED'}`);
+      logger.info(`Oracle registration status: ${isRegistered ? 'REGISTERED' : 'NOT REGISTERED'}`);
       
       if (!isRegistered) {
-        console.warn('⚠️  WARNING: Wallet is not registered as an Oracle!');
+        logger.warn('⚠️  WARNING: Wallet is not registered as an Oracle!');
       }
     } catch (error: any) {
-      console.warn(`Could not check oracle registration: ${error.message}`);
+      logger.warn(`Could not check oracle registration: ${error.message}`);
     }
     
     // Subscribe to contract events
@@ -132,7 +134,7 @@ export class OnChainSettlementManager extends EventEmitter {
     
     this.isInitialized = true;
     
-    console.log('On-Chain Settlement Manager initialized');
+    logger.info('On-Chain Settlement Manager initialized');
     
     this.emit('initialized');
   }
@@ -171,14 +173,14 @@ export class OnChainSettlementManager extends EventEmitter {
     
     this.settlements.set(settlement.id, settlement);
     
-    console.log(`\n${'='.repeat(60)}`);
-    console.log(`SUBMITTING SIGNAL ON-CHAIN: ${settlement.id}`);
-    console.log(`${'='.repeat(60)}`);
-    console.log(`Signal ID: ${signalId}`);
-    console.log(`Symbol: ${signal.symbol}`);
-    console.log(`Action: ${signal.action}`);
-    console.log(`Confidence: ${(signal.confidence * 100).toFixed(2)}%`);
-    console.log(`Oracles: ${oracles.length}`);
+    logger.info(`\n${'='.repeat(60)}`);
+    logger.info(`SUBMITTING SIGNAL ON-CHAIN: ${settlement.id}`);
+    logger.info(`${'='.repeat(60)}`);
+    logger.info(`Signal ID: ${signalId}`);
+    logger.info(`Symbol: ${signal.symbol}`);
+    logger.info(`Action: ${signal.action}`);
+    logger.info(`Confidence: ${(signal.confidence * 100).toFixed(2)}%`);
+    logger.info(`Oracles: ${oracles.length}`);
     
     try {
       // Estimate gas
@@ -189,13 +191,13 @@ export class OnChainSettlementManager extends EventEmitter {
         signatures
       );
       
-      console.log(`Estimated gas: ${gasEstimate.toString()}`);
+      logger.info(`Estimated gas: ${gasEstimate.toString()}`);
       
       // Get current gas price
       const feeData = await this.provider.getFeeData();
       const gasPrice = feeData.gasPrice || 0n;
       
-      console.log(`Gas price: ${ethers.formatUnits(gasPrice, 'gwei')} gwei`);
+      logger.info(`Gas price: ${ethers.formatUnits(gasPrice, 'gwei')} gwei`);
       
       // Check max gas price
       if (gasPrice > this.config.maxGasPrice) {
@@ -206,7 +208,7 @@ export class OnChainSettlementManager extends EventEmitter {
       }
       
       // Submit transaction
-      console.log('Submitting transaction...');
+      logger.info('Submitting transaction...');
       
       const tx = await this.oracleVerifier.submitSignal(
         signalId,
@@ -222,8 +224,8 @@ export class OnChainSettlementManager extends EventEmitter {
       settlement.txHash = tx.hash;
       settlement.status = 'SUBMITTED';
       
-      console.log(`Transaction submitted: ${tx.hash}`);
-      console.log(`Waiting for ${this.config.confirmations} confirmations...`);
+      logger.info(`Transaction submitted: ${tx.hash}`);
+      logger.info(`Waiting for ${this.config.confirmations} confirmations...`);
       
       this.emit('signalSubmitted', { settlement, txHash: tx.hash });
       
@@ -237,22 +239,22 @@ export class OnChainSettlementManager extends EventEmitter {
         settlement.effectiveGasPrice = receipt.gasPrice;
         settlement.confirmedAt = Date.now();
         
-        console.log(`✅ Transaction confirmed in block ${receipt.blockNumber}`);
-        console.log(`Gas used: ${receipt.gasUsed.toString()}`);
-        console.log(`Effective gas price: ${ethers.formatUnits(receipt.gasPrice, 'gwei')} gwei`);
-        console.log(`Total cost: ${ethers.formatEther(receipt.gasUsed * receipt.gasPrice)} ETH`);
+        logger.info(`✅ Transaction confirmed in block ${receipt.blockNumber}`);
+        logger.info(`Gas used: ${receipt.gasUsed.toString()}`);
+        logger.info(`Effective gas price: ${ethers.formatUnits(receipt.gasPrice, 'gwei')} gwei`);
+        logger.info(`Total cost: ${ethers.formatEther(receipt.gasUsed * receipt.gasPrice)} ETH`);
         
         this.emit('signalConfirmed', { settlement, receipt });
       } else {
         settlement.status = 'REVERTED';
         settlement.error = 'Transaction reverted';
         
-        console.log(`❌ Transaction reverted`);
+        logger.info(`❌ Transaction reverted`);
         
         this.emit('signalReverted', { settlement });
       }
       
-      console.log(`${'='.repeat(60)}\n`);
+      logger.info(`${'='.repeat(60)}\n`);
       
       return settlement.id;
       
@@ -260,8 +262,8 @@ export class OnChainSettlementManager extends EventEmitter {
       settlement.status = 'FAILED';
       settlement.error = error.message;
       
-      console.error(`❌ Transaction failed: ${error.message}`);
-      console.log(`${'='.repeat(60)}\n`);
+      logger.error(`❌ Transaction failed: ${error.message}`);
+      logger.info(`${'='.repeat(60)}\n`);
       
       this.emit('signalFailed', { settlement, error });
       
@@ -296,12 +298,12 @@ export class OnChainSettlementManager extends EventEmitter {
   private subscribeToEvents(): void {
     // Listen for ConsensusReached events
     this.oracleVerifier.on('ConsensusReached', (signalId, confidence, timestamp, event) => {
-      console.log(`\n📡 ConsensusReached event received`);
-      console.log(`Signal ID: ${signalId}`);
-      console.log(`Confidence: ${Number(confidence) / 100}%`);
-      console.log(`Timestamp: ${new Date(Number(timestamp) * 1000).toISOString()}`);
-      console.log(`Block: ${event.log.blockNumber}`);
-      console.log(`Transaction: ${event.log.transactionHash}\n`);
+      logger.info(`\n📡 ConsensusReached event received`);
+      logger.info(`Signal ID: ${signalId}`);
+      logger.info(`Confidence: ${Number(confidence) / 100}%`);
+      logger.info(`Timestamp: ${new Date(Number(timestamp) * 1000).toISOString()}`);
+      logger.info(`Block: ${event.log.blockNumber}`);
+      logger.info(`Transaction: ${event.log.transactionHash}\n`);
       
       this.emit('consensusReached', {
         signalId,
@@ -314,14 +316,14 @@ export class OnChainSettlementManager extends EventEmitter {
     
     // Listen for SignalSubmitted events
     this.oracleVerifier.on('SignalSubmitted', (signalId, submitter, event) => {
-      console.log(`\n📡 SignalSubmitted event received`);
-      console.log(`Signal ID: ${signalId}`);
-      console.log(`Submitter: ${submitter}`);
-      console.log(`Block: ${event.log.blockNumber}`);
-      console.log(`Transaction: ${event.log.transactionHash}\n`);
+      logger.info(`\n📡 SignalSubmitted event received`);
+      logger.info(`Signal ID: ${signalId}`);
+      logger.info(`Submitter: ${submitter}`);
+      logger.info(`Block: ${event.log.blockNumber}`);
+      logger.info(`Transaction: ${event.log.transactionHash}\n`);
     });
     
-    console.log('Subscribed to OracleVerifier contract events');
+    logger.info('Subscribed to OracleVerifier contract events');
   }
   
   /**
@@ -423,7 +425,7 @@ export class OnChainSettlementManager extends EventEmitter {
    * Shutdown settlement manager
    */
   async shutdown(): Promise<void> {
-    console.log('Shutting down On-Chain Settlement Manager...');
+    logger.info('Shutting down On-Chain Settlement Manager...');
     
     // Unsubscribe from events
     this.oracleVerifier.removeAllListeners();
@@ -431,7 +433,7 @@ export class OnChainSettlementManager extends EventEmitter {
     // Wait for pending settlements
     const pending = this.getPendingSettlements();
     if (pending.length > 0) {
-      console.log(`Waiting for ${pending.length} pending settlements...`);
+      logger.info(`Waiting for ${pending.length} pending settlements...`);
       
       // Wait up to 5 minutes
       const timeout = Date.now() + 5 * 60 * 1000;
@@ -444,7 +446,7 @@ export class OnChainSettlementManager extends EventEmitter {
     this.settlements.clear();
     this.isInitialized = false;
     
-    console.log('On-Chain Settlement Manager shut down');
+    logger.info('On-Chain Settlement Manager shut down');
     
     this.emit('shutdown');
   }

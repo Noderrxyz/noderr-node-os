@@ -49,9 +49,9 @@ export class RiskManager extends EventEmitter {
    * Initialize ML risk adapter
    */
   async initialize(): Promise<void> {
-    console.log('[RiskManager] Initializing ML risk assessment...');
+    logger.info('[RiskManager] Initializing ML risk assessment...');
     await this.mlRiskAdapter.initialize();
-    console.log('[RiskManager] ML risk assessment initialized');
+    logger.info('[RiskManager] ML risk assessment initialized');
   }
 
   /**
@@ -65,13 +65,13 @@ export class RiskManager extends EventEmitter {
 
     // Listen for risk limit breaches
     this.mlRiskAdapter.on('risk-limit-breach', (breach: any) => {
-      console.warn('[RiskManager] ML detected risk limit breach:', breach);
+      logger.warn('[RiskManager] ML detected risk limit breach:', breach);
       this.emit('ml_risk_breach', breach);
     });
 
     // Listen for allocation updates
     this.mlRiskAdapter.on('ml-allocation-updated', (allocation: any) => {
-      console.log('[RiskManager] ML allocation updated');
+      logger.info('[RiskManager] ML allocation updated');
       this.emit('ml_allocation_updated', allocation);
     });
   }
@@ -80,11 +80,11 @@ export class RiskManager extends EventEmitter {
    * Handle ML emergency action
    */
   private handleMLEmergencyAction(action: MLEmergencyAction): void {
-    console.error('[RiskManager] 🚨 ML EMERGENCY ACTION 🚨');
-    console.error('[RiskManager] Type:', action.type);
-    console.error('[RiskManager] Severity:', action.severity);
-    console.error('[RiskManager] Reason:', action.reason);
-    console.error('[RiskManager] Affected adapters:', action.affectedAdapters);
+    logger.error('[RiskManager] 🚨 ML EMERGENCY ACTION 🚨');
+    logger.error('[RiskManager] Type:', action.type);
+    logger.error('[RiskManager] Severity:', action.severity);
+    logger.error('[RiskManager] Reason:', action.reason);
+    logger.error('[RiskManager] Affected adapters:', action.affectedAdapters);
 
     // Auto-execute critical actions
     if (action.autoExecute && action.severity === 'CRITICAL') {
@@ -220,13 +220,13 @@ export class RiskManager extends EventEmitter {
         }
 
         // ML checks passed
-        console.log(`[RiskManager] ML validation passed for ${adapterId} (risk score: ${mlRiskScore.riskScore.toFixed(0)}/100)`);
+        logger.info(`[RiskManager] ML validation passed for ${adapterId} (risk score: ${mlRiskScore.riskScore.toFixed(0)}/100)`);
         return { valid: true, mlRiskScore };
 
       } catch (error) {
-        console.error('[RiskManager] ML validation error:', error);
+        logger.error('[RiskManager] ML validation error:', error);
         // On ML error, fall back to rule-based validation only
-        console.warn('[RiskManager] Falling back to rule-based validation only');
+        logger.warn('[RiskManager] Falling back to rule-based validation only');
         return { valid: true };
       }
     }
@@ -270,7 +270,7 @@ export class RiskManager extends EventEmitter {
    */
   emergencyPause(reason: string): void {
     if (this.isPaused) {
-      console.warn('[RiskManager] System is already paused');
+      logger.warn('[RiskManager] System is already paused');
       return;
     }
 
@@ -279,7 +279,7 @@ export class RiskManager extends EventEmitter {
 
     this.emit('emergency_pause', { reason, timestamp: Date.now() });
 
-    console.error(`[RiskManager] EMERGENCY PAUSE: ${reason}`);
+    logger.error(`[RiskManager] EMERGENCY PAUSE: ${reason}`);
   }
 
   /**
@@ -289,7 +289,7 @@ export class RiskManager extends EventEmitter {
    */
   resume(authorizedBy: string): void {
     if (!this.isPaused) {
-      console.warn('[RiskManager] System is not paused');
+      logger.warn('[RiskManager] System is not paused');
       return;
     }
 
@@ -303,7 +303,7 @@ export class RiskManager extends EventEmitter {
       timestamp: Date.now(),
     });
 
-    console.log(`[RiskManager] System resumed by ${authorizedBy}`);
+    logger.info(`[RiskManager] System resumed by ${authorizedBy}`);
   }
 
   /**
@@ -481,7 +481,7 @@ export class RiskManager extends EventEmitter {
    */
   setMLEnabled(enabled: boolean): void {
     this.mlEnabled = enabled;
-    console.log(`[RiskManager] ML risk assessment ${enabled ? 'enabled' : 'disabled'}`);
+    logger.info(`[RiskManager] ML risk assessment ${enabled ? 'enabled' : 'disabled'}`);
     this.emit('ml_enabled_changed', { enabled });
   }
 
@@ -516,7 +516,7 @@ export class RiskManager extends EventEmitter {
 
     this.emit('risk_parameters_updated', { newParameters });
 
-    console.log('[RiskManager] Risk parameters updated');
+    logger.info('[RiskManager] Risk parameters updated');
   }
 
   /**

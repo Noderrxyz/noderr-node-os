@@ -127,7 +127,7 @@ export async function startOracleConsensusService(): Promise<void> {
 if (require.main === module) {
   getShutdownHandler(30000);
   startOracleConsensusService().catch((error) => {
-    console.error('Fatal error starting Oracle Consensus Service:', error);
+    logger.error('Fatal error starting Oracle Consensus Service:', error);
     process.exit(1);
   });
 }

@@ -5,6 +5,7 @@
  * to create a fully autonomous, self-governing trading system operating at the 0.001% level.
  */
 
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import { Logger } from 'winston';
 import { SystemOrchestrator } from './SystemOrchestrator';
@@ -58,6 +59,7 @@ interface IMetricsCollector {
   recordMetric(name: string, value: number, labels?: any): void;
 }
 
+const logger = new Logger('EliteSystemIntegrator');
 export class EliteSystemIntegrator extends EventEmitter {
   private logger: Logger;
   private orchestrator: SystemOrchestrator;
@@ -1129,7 +1131,7 @@ export class EliteSystemIntegrator extends EventEmitter {
 
 // Export validation function
 export async function validateEliteSystemIntegration(): Promise<boolean> {
-  console.log('🔍 Validating Elite System Integration...');
+  logger.info('🔍 Validating Elite System Integration...');
   
   const checks = [
     { name: 'Meta-Governance Module', path: '../../../meta-governance/src/index' },
@@ -1140,13 +1142,13 @@ export async function validateEliteSystemIntegration(): Promise<boolean> {
   for (const check of checks) {
     try {
       await import(check.path);
-      console.log(`✅ ${check.name} - OK`);
+      logger.info(`✅ ${check.name} - OK`);
     } catch (error) {
-      console.error(`❌ ${check.name} - FAILED`);
+      logger.error(`❌ ${check.name} - FAILED`);
       return false;
     }
   }
   
-  console.log('✅ All Elite System components validated successfully');
+  logger.info('✅ All Elite System components validated successfully');
   return true;
 } 

@@ -1,3 +1,4 @@
+import { Logger } from '@noderr/utils/src';
 import { createHash } from 'crypto';
 import { Redis } from 'ioredis';
 
@@ -21,6 +22,7 @@ import { Redis } from 'ioredis';
  * - Baseline updates require multi-sig governance approval
  */
 
+const logger = new Logger('pcr-baseline.service');
 export interface PCRValues {
   pcr0: string;  // BIOS/UEFI firmware
   pcr1: string;  // BIOS/UEFI configuration
@@ -344,11 +346,11 @@ export class PCRBaselineService {
  * const result = await pcrService.verifyAttestation(profile, pcrValues);
  * 
  * if (result.recommendation === 'ACCEPT') {
- *   console.log('Attestation verified successfully');
+ *   logger.info('Attestation verified successfully');
  * } else if (result.recommendation === 'REVIEW') {
- *   console.log('Attestation requires manual review:', result.deviations);
+ *   logger.info('Attestation requires manual review:', result.deviations);
  * } else {
- *   console.log('Attestation rejected:', result.deviations);
+ *   logger.info('Attestation rejected:', result.deviations);
  * }
  * ```
  */

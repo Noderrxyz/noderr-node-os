@@ -1,7 +1,9 @@
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import * as winston from 'winston';
 import { performance } from 'perf_hooks';
 
+const logger = new Logger('LoadTestingFramework');
 export interface LoadTestConfig {
   name: string;
   duration: number; // seconds
@@ -418,7 +420,7 @@ class VirtualUser {
   start(): void {
     this.active = true;
     this.runScenarios().catch(err => {
-      console.error(`Virtual user ${this.id} error:`, err);
+      logger.error(`Virtual user ${this.id} error:`, err);
     });
   }
   

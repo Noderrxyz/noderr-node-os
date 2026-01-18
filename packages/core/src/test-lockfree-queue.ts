@@ -1,7 +1,8 @@
+import { Logger } from '@noderr/utils/src';
 import { LockFreeOrderQueue, OrderEncoder, LockFreeQueueBenchmark } from './LockFreeOrderQueue';
 
 async function testBasicOperations() {
-  console.log('🧪 Testing Lock-Free Order Queue Basic Operations\n');
+  logger.info('🧪 Testing Lock-Free Order Queue Basic Operations\n');
   
   const queue = new LockFreeOrderQueue(100);
   
@@ -20,11 +21,11 @@ async function testBasicOperations() {
   
   const encoded1 = OrderEncoder.encode(order1);
   const enqueued = queue.enqueue(encoded1);
-  console.log(`✅ Enqueue successful: ${enqueued}`);
+  logger.info(`✅ Enqueue successful: ${enqueued}`);
   
   const dequeued = queue.dequeue();
-  console.log(`✅ Dequeue successful: ${dequeued !== null}`);
-  console.log(`   Order ID High: ${dequeued?.orderIdHigh}`);
+  logger.info(`✅ Dequeue successful: ${dequeued !== null}`);
+  logger.info(`   Order ID High: ${dequeued?.orderIdHigh}`);
   
   // Test batch operations
   const orders = [];
@@ -37,20 +38,20 @@ async function testBasicOperations() {
   }
   
   const batchEnqueued = queue.enqueueBatch(orders);
-  console.log(`\n✅ Batch enqueue: ${batchEnqueued} orders`);
+  logger.info(`\n✅ Batch enqueue: ${batchEnqueued} orders`);
   
   const batchDequeued = queue.dequeueBatch(25);
-  console.log(`✅ Batch dequeue: ${batchDequeued.length} orders`);
+  logger.info(`✅ Batch dequeue: ${batchDequeued.length} orders`);
   
   const stats = queue.getStats();
-  console.log('\n📊 Queue Stats:');
-  console.log(`   Size: ${stats.size}`);
-  console.log(`   Capacity: ${stats.capacity}`);
-  console.log(`   Sequence: ${stats.sequence}`);
+  logger.info('\n📊 Queue Stats:');
+  logger.info(`   Size: ${stats.size}`);
+  logger.info(`   Capacity: ${stats.capacity}`);
+  logger.info(`   Sequence: ${stats.sequence}`);
 }
 
 async function testConcurrentAccess() {
-  console.log('\n\n🧪 Testing Concurrent Access\n');
+  logger.info('\n\n🧪 Testing Concurrent Access\n');
   
   const queue = new LockFreeOrderQueue(10000);
   const numProducers = 4;
@@ -81,7 +82,7 @@ async function testConcurrentAccess() {
       }
       
       if (i % 100 === 0) {
-        console.log(`Producer ${id}: ${i} orders sent`);
+        logger.info(`Producer ${id}: ${i} orders sent`);
       }
     }
     return ordersPerProducer;
@@ -97,7 +98,7 @@ async function testConcurrentAccess() {
       if (order) {
         consumed++;
         if (consumed % 100 === 0) {
-          console.log(`Consumer ${id}: ${consumed} orders processed`);
+          logger.info(`Consumer ${id}: ${consumed} orders processed`);
         }
       }
     }
@@ -126,26 +127,26 @@ async function testConcurrentAccess() {
   const duration = (Date.now() - startTime) / 1000;
   const throughput = (totalProduced + totalConsumed) / 2 / duration;
   
-  console.log('\n📊 Concurrent Test Results:');
-  console.log(`   Duration: ${duration.toFixed(2)}s`);
-  console.log(`   Total Produced: ${totalProduced}`);
-  console.log(`   Total Consumed: ${totalConsumed}`);
-  console.log(`   Throughput: ${throughput.toFixed(0)} orders/second`);
+  logger.info('\n📊 Concurrent Test Results:');
+  logger.info(`   Duration: ${duration.toFixed(2)}s`);
+  logger.info(`   Total Produced: ${totalProduced}`);
+  logger.info(`   Total Consumed: ${totalConsumed}`);
+  logger.info(`   Throughput: ${throughput.toFixed(0)} orders/second`);
   
   const finalStats = queue.getStats();
-  console.log(`   Final Queue Size: ${finalStats.size}`);
+  logger.info(`   Final Queue Size: ${finalStats.size}`);
 }
 
 async function runAllTests() {
-  console.log('🚀 Lock-Free Order Queue Test Suite\n');
-  console.log('=' .repeat(50));
+  logger.info('🚀 Lock-Free Order Queue Test Suite\n');
+  logger.info('=' .repeat(50));
   
   await testBasicOperations();
   await testConcurrentAccess();
   
-  console.log('\n' + '=' .repeat(50));
-  console.log('\n✅ All tests completed!\n');
+  logger.info('\n' + '=' .repeat(50));
+  logger.info('\n✅ All tests completed!\n');
 }
 
 // Run tests
-runAllTests().catch(console.error); 
+runAllTests().catch((err) => logger.error("Unhandled error", err)); 

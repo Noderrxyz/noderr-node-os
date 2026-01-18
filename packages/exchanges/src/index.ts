@@ -256,7 +256,7 @@ if (require.main === module) {
   getShutdownHandler(30000);  // 30 second global timeout
   
   startExchangeService().catch((error) => {
-    console.error('Fatal error starting Exchange Connectivity Service:', error);
+    logger.error('Fatal error starting Exchange Connectivity Service:', error);
     process.exit(1);
   });
 }

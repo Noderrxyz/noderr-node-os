@@ -4,6 +4,7 @@
  * Implements adversarial example detection and robust model training
  */
 
+const logger = new Logger('adversarial-robustness');
 export interface Prediction {
   signal: 'BUY' | 'SELL' | 'HOLD';
   confidence: number;
@@ -132,7 +133,7 @@ export class AdversarialRobustness {
 
     // Test robustness
     const robustness = await this.testAdversarialRobustness(model);
-    console.log(`Model robustness score: ${robustness}`);
+    logger.info(`Model robustness score: ${robustness}`);
   }
 
   /**
@@ -300,7 +301,7 @@ export class ModelExtractionProtection {
     // Soft limit: max queries per minute (detect extraction attempts)
     const recentQueries = queries.filter(q => q.timestamp > oneMinuteAgo);
     if (recentQueries.length >= this.maxQueriesPerMinute) {
-      console.warn(`High query rate detected for user ${userId}`);
+      logger.warn(`High query rate detected for user ${userId}`);
     }
 
     // Update log

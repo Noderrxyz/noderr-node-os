@@ -1,3 +1,4 @@
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import * as net from 'net';
 import * as tls from 'tls';
@@ -840,6 +841,7 @@ export interface ConnectorConfig {
   maxRetries?: number;
 }
 
+const logger = new Logger('NonBlockingExchangeConnector');
 export interface ExchangeConfig {
   name: string;
   endpoints: string[];
@@ -978,8 +980,8 @@ interface BreakerState {
  */
 export class ExchangeConnectorBenchmark {
   static async runBenchmark(): Promise<void> {
-    console.log('\n🚀 Non-Blocking Exchange Connector Benchmark');
-    console.log('Features: Async I/O, Retry Queue, Multiplexing\n');
+    logger.info('\n🚀 Non-Blocking Exchange Connector Benchmark');
+    logger.info('Features: Async I/O, Retry Queue, Multiplexing\n');
     
     const connector = new NonBlockingExchangeConnector({
       exchanges: [
@@ -1013,7 +1015,7 @@ export class ExchangeConnectorBenchmark {
     });
     
     // Simulate order flow
-    console.log('Simulating order flow...');
+    logger.info('Simulating order flow...');
     const orders: Order[] = [];
     const numOrders = 1000;
     
@@ -1062,46 +1064,46 @@ export class ExchangeConnectorBenchmark {
     const duration = Number(endTime - startTime) / 1_000_000_000;
     const throughput = numOrders / duration;
     
-    console.log('\n📊 Results:');
-    console.log(`  Duration: ${duration.toFixed(2)}s`);
-    console.log(`  Orders Sent: ${sent}`);
-    console.log(`  Errors: ${errors}`);
-    console.log(`  Throughput: ${throughput.toFixed(0)} orders/second`);
-    console.log(`  Latency: ${(duration * 1000 / numOrders).toFixed(2)}ms per order`);
+    logger.info('\n📊 Results:');
+    logger.info(`  Duration: ${duration.toFixed(2)}s`);
+    logger.info(`  Orders Sent: ${sent}`);
+    logger.info(`  Errors: ${errors}`);
+    logger.info(`  Throughput: ${throughput.toFixed(0)} orders/second`);
+    logger.info(`  Latency: ${(duration * 1000 / numOrders).toFixed(2)}ms per order`);
     
     // Get statistics
     const stats = connector.getStats();
-    console.log('\nConnection Statistics:');
+    logger.info('\nConnection Statistics:');
     for (const [exchange, poolStats] of Object.entries(stats.connections)) {
-      console.log(`  ${exchange}:`);
-      console.log(`    Active: ${poolStats.activeConnections}/${poolStats.maxConnections}`);
+      logger.info(`  ${exchange}:`);
+      logger.info(`    Active: ${poolStats.activeConnections}/${poolStats.maxConnections}`);
     }
     
-    console.log('\nRate Limiter:');
+    logger.info('\nRate Limiter:');
     for (const [exchange, limits] of Object.entries(stats.rateLimiter)) {
-      console.log(`  ${exchange}: ${limits.tokens.toFixed(0)}/${limits.burst} tokens`);
+      logger.info(`  ${exchange}: ${limits.tokens.toFixed(0)}/${limits.burst} tokens`);
     }
     
-    console.log('\nCircuit Breaker:');
+    logger.info('\nCircuit Breaker:');
     for (const [exchange, breaker] of Object.entries(stats.circuitBreaker)) {
-      console.log(`  ${exchange}: ${breaker.status} (${breaker.failures} failures)`);
+      logger.info(`  ${exchange}: ${breaker.status} (${breaker.failures} failures)`);
     }
     
-    console.log(`\nPending Requests: ${stats.pendingRequests}`);
-    console.log(`Retry Queue Size: ${stats.retryQueueSize}`);
+    logger.info(`\nPending Requests: ${stats.pendingRequests}`);
+    logger.info(`Retry Queue Size: ${stats.retryQueueSize}`);
     
     // Cleanup
     await connector.shutdown();
     
-    console.log('\n📊 Performance Summary:');
-    console.log(`  Orders/Second: ${throughput.toFixed(0)}`);
-    console.log(`  Success Rate: ${((sent / numOrders) * 100).toFixed(2)}%`);
-    console.log(`  P99 Latency: <${(duration * 1000 / numOrders * 2).toFixed(0)}ms (estimated)`);
+    logger.info('\n📊 Performance Summary:');
+    logger.info(`  Orders/Second: ${throughput.toFixed(0)}`);
+    logger.info(`  Success Rate: ${((sent / numOrders) * 100).toFixed(2)}%`);
+    logger.info(`  P99 Latency: <${(duration * 1000 / numOrders * 2).toFixed(0)}ms (estimated)`);
     
     if (throughput >= 1000 && errors < numOrders * 0.01) {
-      console.log('\n✅ SUCCESS: Achieved 1000+ orders/second with <1% errors!');
+      logger.info('\n✅ SUCCESS: Achieved 1000+ orders/second with <1% errors!');
     } else {
-      console.log(`\n⚠️  Performance: ${throughput.toFixed(0)} orders/second, ${((errors / numOrders) * 100).toFixed(2)}% errors`);
+      logger.info(`\n⚠️  Performance: ${throughput.toFixed(0)} orders/second, ${((errors / numOrders) * 100).toFixed(2)}% errors`);
     }
   }
 }

@@ -6,7 +6,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { Logger } from 'winston';
+import * as winston from 'winston';
 import { WebClient as SlackClient } from '@slack/web-api';
 import nodemailer from 'nodemailer';
 import * as https from 'https';

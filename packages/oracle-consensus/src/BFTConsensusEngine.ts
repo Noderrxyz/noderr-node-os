@@ -15,10 +15,12 @@
  * @module BFTConsensusEngine
  */
 
+import { Logger } from '@noderr/utils/src';
 import { ethers } from 'ethers';
 import { EventEmitter } from 'events';
 import { OracleLotterySelector, CommitteeSelection } from './OracleLotterySelector';
 
+const logger = new Logger('BFTConsensusEngine');
 export interface ConsensusConfig {
   oracleVerifierAddress: string;
   provider: ethers.Provider;
@@ -119,7 +121,7 @@ export class BFTConsensusEngine extends EventEmitter {
    * Initialize consensus engine
    */
   async initialize(): Promise<void> {
-    console.log('Initializing BFT Consensus Engine...');
+    logger.info('Initializing BFT Consensus Engine...');
     
     // Load oracle registry
     await this.loadOracleRegistry();
@@ -128,15 +130,15 @@ export class BFTConsensusEngine extends EventEmitter {
     if (this.lotterySelector) {
       const oracleList = Array.from(this.oracleRegistry.values());
       this.lotterySelector.updateOraclePool(oracleList);
-      console.log('Lottery selector initialized with oracle pool');
+      logger.info('Lottery selector initialized with oracle pool');
     }
     
     // Get current round ID from contract
     // In production, this would query the contract for the latest round
     this.currentRoundId = 1;
     
-    console.log(`Initialized with ${this.oracleRegistry.size} active oracles`);
-    console.log(`Lottery selection: ${this.config.enableLottery ? 'ENABLED' : 'DISABLED'}`);
+    logger.info(`Initialized with ${this.oracleRegistry.size} active oracles`);
+    logger.info(`Lottery selection: ${this.config.enableLottery ? 'ENABLED' : 'DISABLED'}`);
     
     this.emit('initialized', {
       oracles: this.oracleRegistry.size,
@@ -211,7 +213,7 @@ export class BFTConsensusEngine extends EventEmitter {
     this.currentRoundId++;
     const roundId = this.currentRoundId;
     
-    console.log(`Starting consensus round ${roundId}`);
+    logger.info(`Starting consensus round ${roundId}`);
     
     // Select committee via lottery if enabled
     let committeeSelection: CommitteeSelection | null = null;
@@ -230,11 +232,11 @@ export class BFTConsensusEngine extends EventEmitter {
       
       this.committeeSelections.set(roundId, committeeSelection);
       
-      console.log(
+      logger.info(
         `Committee selected: ${committeeSelection.committeeSize} oracles ` +
         `from pool of ${this.oracleRegistry.size}`
       );
-      console.log(`Selected oracles: ${committeeSelection.selectedOracles.join(', ')}`);
+      logger.info(`Selected oracles: ${committeeSelection.selectedOracles.join(', ')}`);
     }
     
     // Calculate total weight (committee only if lottery enabled)
@@ -291,17 +293,17 @@ export class BFTConsensusEngine extends EventEmitter {
     const signature = await this.config.signer.signMessage(ethers.getBytes(dataHash));
     
     // Submit to smart contract
-    console.log(`Submitting data for round ${roundId}...`);
+    logger.info(`Submitting data for round ${roundId}...`);
     
     try {
       const tx = await this.contract.submitData(roundId, dataHash, signature);
       await tx.wait();
       
-      console.log(`Data submitted for round ${roundId}`);
+      logger.info(`Data submitted for round ${roundId}`);
       
       this.emit('dataSubmitted', { roundId, dataHash });
     } catch (error) {
-      console.error(`Failed to submit data for round ${roundId}:`, error);
+      logger.error(`Failed to submit data for round ${roundId}:`, error);
       throw error;
     }
   }
@@ -313,14 +315,14 @@ export class BFTConsensusEngine extends EventEmitter {
     const round = this.activeRounds.get(roundId);
     
     if (!round) {
-      console.warn(`Received submission for unknown round ${roundId}`);
+      logger.warn(`Received submission for unknown round ${roundId}`);
       return;
     }
     
     const oracleInfo = this.oracleRegistry.get(oracle.toLowerCase());
     
     if (!oracleInfo) {
-      console.warn(`Received submission from unknown oracle ${oracle}`);
+      logger.warn(`Received submission from unknown oracle ${oracle}`);
       return;
     }
     
@@ -335,7 +337,7 @@ export class BFTConsensusEngine extends EventEmitter {
     
     round.submissions.push(submission);
     
-    console.log(`Submission received for round ${roundId} from ${oracle}`);
+    logger.info(`Submission received for round ${roundId} from ${oracle}`);
     
     this.emit('submissionReceived', { roundId, oracle, dataHash });
     
@@ -385,7 +387,7 @@ export class BFTConsensusEngine extends EventEmitter {
       round.consensusWeight = leadingWeight;
       round.finalized = true;
       
-      console.log(`Consensus reached for round ${roundId}: ${leadingHash}`);
+      logger.info(`Consensus reached for round ${roundId}: ${leadingHash}`);
       
       this.emit('consensusReached', {
         roundId,
@@ -403,7 +405,7 @@ export class BFTConsensusEngine extends EventEmitter {
     const round = this.activeRounds.get(roundId);
     
     if (!round) {
-      console.warn(`Consensus reached for unknown round ${roundId}`);
+      logger.warn(`Consensus reached for unknown round ${roundId}`);
       return;
     }
     
@@ -411,7 +413,7 @@ export class BFTConsensusEngine extends EventEmitter {
     round.consensusWeight = weight;
     round.finalized = true;
     
-    console.log(`Consensus finalized on-chain for round ${roundId}`);
+    logger.info(`Consensus finalized on-chain for round ${roundId}`);
     
     this.emit('consensusFinalized', {
       roundId,
@@ -424,7 +426,7 @@ export class BFTConsensusEngine extends EventEmitter {
    * Handle consensus failed event from smart contract
    */
   private handleConsensusFailed(roundId: number, reason: string): void {
-    console.error(`Consensus failed for round ${roundId}: ${reason}`);
+    logger.error(`Consensus failed for round ${roundId}: ${reason}`);
     
     this.emit('consensusFailed', { roundId, reason });
   }
@@ -439,12 +441,12 @@ export class BFTConsensusEngine extends EventEmitter {
       return;
     }
     
-    console.log(`Finalizing round ${roundId} (submission window closed)`);
+    logger.info(`Finalizing round ${roundId} (submission window closed)`);
     
     if (round.consensusHash) {
-      console.log(`Round ${roundId} finalized with consensus: ${round.consensusHash}`);
+      logger.info(`Round ${roundId} finalized with consensus: ${round.consensusHash}`);
     } else {
-      console.warn(`Round ${roundId} finalized without consensus`);
+      logger.warn(`Round ${roundId} finalized without consensus`);
       
       this.emit('consensusFailed', {
         roundId,
@@ -480,7 +482,7 @@ export class BFTConsensusEngine extends EventEmitter {
         timestamp: Date.now(),
       };
     } catch (error) {
-      console.error(`Failed to get consensus result for round ${roundId}:`, error);
+      logger.error(`Failed to get consensus result for round ${roundId}:`, error);
       return null;
     }
   }
@@ -504,12 +506,12 @@ export class BFTConsensusEngine extends EventEmitter {
    * Refresh oracle registry
    */
   async refreshOracleRegistry(): Promise<void> {
-    console.log('Refreshing oracle registry...');
+    logger.info('Refreshing oracle registry...');
     
     this.oracleRegistry.clear();
     await this.loadOracleRegistry();
     
-    console.log(`Oracle registry refreshed: ${this.oracleRegistry.size} active oracles`);
+    logger.info(`Oracle registry refreshed: ${this.oracleRegistry.size} active oracles`);
     
     this.emit('registryRefreshed', { oracles: this.oracleRegistry.size });
   }
@@ -538,7 +540,7 @@ export class BFTConsensusEngine extends EventEmitter {
    * Shutdown consensus engine
    */
   async shutdown(): Promise<void> {
-    console.log('Shutting down BFT Consensus Engine...');
+    logger.info('Shutting down BFT Consensus Engine...');
     
     // Remove event listeners
     this.contract.removeAllListeners();

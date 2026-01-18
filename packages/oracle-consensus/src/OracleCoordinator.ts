@@ -15,9 +15,11 @@
  * @module OracleCoordinator
  */
 
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import { BFTConsensusEngine, ConsensusResult } from './BFTConsensusEngine';
 
+const logger = new Logger('OracleCoordinator');
 export interface TradingSignal {
   symbol: string;
   action: 'BUY' | 'SELL' | 'HOLD';
@@ -66,11 +68,11 @@ export class OracleCoordinator extends EventEmitter {
    * Initialize coordinator
    */
   async initialize(): Promise<void> {
-    console.log('Initializing Oracle Coordinator...');
+    logger.info('Initializing Oracle Coordinator...');
     
     await this.consensusEngine.initialize();
     
-    console.log('Oracle Coordinator initialized');
+    logger.info('Oracle Coordinator initialized');
     
     this.emit('initialized');
   }
@@ -103,7 +105,7 @@ export class OracleCoordinator extends EventEmitter {
     
     this.pendingRequests.set(requestId, request);
     
-    console.log(`Requesting consensus for ${signal.symbol} ${signal.action}`);
+    logger.info(`Requesting consensus for ${signal.symbol} ${signal.action}`);
     
     try {
       // Start consensus round
@@ -133,7 +135,7 @@ export class OracleCoordinator extends EventEmitter {
       return response;
       
     } catch (error) {
-      console.error(`Consensus request failed:`, error);
+      logger.error(`Consensus request failed:`, error);
       
       const response: ConsensusResponse = {
         requestId,
@@ -181,7 +183,7 @@ export class OracleCoordinator extends EventEmitter {
    * Handle consensus reached event
    */
   private handleConsensusReached(event: any): void {
-    console.log(`Consensus reached for round ${event.roundId}`);
+    logger.info(`Consensus reached for round ${event.roundId}`);
     
     this.emit('consensusReached', event);
   }
@@ -190,7 +192,7 @@ export class OracleCoordinator extends EventEmitter {
    * Handle consensus failed event
    */
   private handleConsensusFailed(event: any): void {
-    console.error(`Consensus failed for round ${event.roundId}: ${event.reason}`);
+    logger.error(`Consensus failed for round ${event.roundId}: ${event.reason}`);
     
     this.emit('consensusFailed', event);
   }
@@ -260,7 +262,7 @@ export class OracleCoordinator extends EventEmitter {
    * Shutdown coordinator
    */
   async shutdown(): Promise<void> {
-    console.log('Shutting down Oracle Coordinator...');
+    logger.info('Shutting down Oracle Coordinator...');
     
     await this.consensusEngine.shutdown();
     

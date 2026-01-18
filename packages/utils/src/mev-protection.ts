@@ -4,6 +4,7 @@
  * Implements order batching, encrypted mempools, and sandwich attack prevention
  */
 
+const logger = new Logger('mev-protection');
 export interface Order {
   id: string;
   symbol: string;
@@ -220,22 +221,22 @@ export class MEVProtection {
 
   private async submitToMEVProtectedRPC(batch: OrderBatch): Promise<void> {
     // In production, this would submit to MEV-protected RPC
-    console.log('Submitting batch to MEV-protected RPC:', batch.id);
+    logger.info('Submitting batch to MEV-protected RPC:', batch.id);
   }
 
   private async executeOrder(order: Order): Promise<void> {
     // In production, this would execute the order
-    console.log('Executing order:', order.id);
+    logger.info('Executing order:', order.id);
   }
 
   private async alertOperations(alert: any): Promise<void> {
     // In production, this would send alert to operations
-    console.log('Alert:', alert);
+    logger.info('Alert:', alert);
   }
 
   private async submitToMempool(encrypted: any): Promise<void> {
     // In production, this would submit to mempool
-    console.log('Submitted encrypted order to mempool');
+    logger.info('Submitted encrypted order to mempool');
   }
 
   private async waitForBlockCommitment(): Promise<void> {
@@ -286,7 +287,7 @@ export class MEVBundle {
   async submitBundle(): Promise<string> {
     const bundle = this.getBundle();
     // In production, submit to Flashbots API
-    console.log('Submitting MEV bundle:', bundle);
+    logger.info('Submitting MEV bundle:', bundle);
     return 'bundle-id';
   }
 

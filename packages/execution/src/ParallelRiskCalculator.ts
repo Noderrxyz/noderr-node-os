@@ -1,3 +1,4 @@
+import { Logger } from '@noderr/utils/src';
 import { Worker, isMainThread, parentPort, workerData } from 'worker_threads';
 import * as os from 'os';
 import { EventEmitter } from 'events';
@@ -208,7 +209,7 @@ export class ParallelRiskCalculator extends EventEmitter {
   private async calculateGreeksGPU(positions: OptionPosition[]): Promise<Greeks[]> {
     // WebGL/WebGPU implementation for massive parallel computation
     // This is a placeholder - actual implementation would use GPU.js or WebGPU
-    console.log('GPU Greek calculation for', positions.length, 'positions');
+    logger.info('GPU Greek calculation for', positions.length, 'positions');
     
     // Simulate GPU calculation
     return positions.map(pos => ({
@@ -804,6 +805,7 @@ export interface RiskCalculatorOptions {
   metricsSize?: number;
 }
 
+const logger = new Logger('ParallelRiskCalculator');
 export interface RiskWorkerOptions {
   id: number;
   marketDataBuffer: SharedArrayBuffer;
@@ -949,8 +951,8 @@ declare const SIMD: any;
  */
 export class ParallelRiskBenchmark {
   static async runBenchmark(): Promise<void> {
-    console.log('\n🚀 Parallel Risk Calculator Benchmark');
-    console.log('Features: SIMD, Worker Threads, GPU Support\n');
+    logger.info('\n🚀 Parallel Risk Calculator Benchmark');
+    logger.info('Features: SIMD, Worker Threads, GPU Support\n');
     
     const calculator = new ParallelRiskCalculator({
       workerCount: os.cpus().length,
@@ -981,35 +983,35 @@ export class ParallelRiskBenchmark {
       });
     }
     
-    console.log(`Portfolio: ${portfolio.positions.length} positions`);
+    logger.info(`Portfolio: ${portfolio.positions.length} positions`);
     
     // Benchmark portfolio risk calculation
-    console.log('\n1. Portfolio Risk Calculation:');
+    logger.info('\n1. Portfolio Risk Calculation:');
     const riskStart = process.hrtime.bigint();
     const riskMetrics = await calculator.calculatePortfolioRisk(portfolio);
     const riskEnd = process.hrtime.bigint();
     const riskTime = Number(riskEnd - riskStart) / 1_000_000;
     
-    console.log(`   Time: ${riskTime.toFixed(2)}ms`);
-    console.log(`   Total Value: $${riskMetrics.totalValue.toFixed(2)}`);
-    console.log(`   VaR (95%): $${riskMetrics.var.toFixed(2)}`);
-    console.log(`   CVaR: $${riskMetrics.cvar.toFixed(2)}`);
-    console.log(`   Sharpe Ratio: ${riskMetrics.sharpeRatio.toFixed(3)}`);
+    logger.info(`   Time: ${riskTime.toFixed(2)}ms`);
+    logger.info(`   Total Value: $${riskMetrics.totalValue.toFixed(2)}`);
+    logger.info(`   VaR (95%): $${riskMetrics.var.toFixed(2)}`);
+    logger.info(`   CVaR: $${riskMetrics.cvar.toFixed(2)}`);
+    logger.info(`   Sharpe Ratio: ${riskMetrics.sharpeRatio.toFixed(3)}`);
     
     // Benchmark VaR calculation
-    console.log('\n2. Monte Carlo VaR (100K simulations):');
+    logger.info('\n2. Monte Carlo VaR (100K simulations):');
     const varStart = process.hrtime.bigint();
     const varResult = await calculator.calculateVaR(portfolio, 0.95, 1, 100000);
     const varEnd = process.hrtime.bigint();
     const varTime = Number(varEnd - varStart) / 1_000_000;
     
-    console.log(`   Time: ${varTime.toFixed(2)}ms`);
-    console.log(`   VaR (95%): $${varResult.var.toFixed(2)}`);
-    console.log(`   CVaR: $${varResult.cvar.toFixed(2)}`);
-    console.log(`   Simulations/sec: ${(100000 / (varTime / 1000)).toFixed(0)}`);
+    logger.info(`   Time: ${varTime.toFixed(2)}ms`);
+    logger.info(`   VaR (95%): $${varResult.var.toFixed(2)}`);
+    logger.info(`   CVaR: $${varResult.cvar.toFixed(2)}`);
+    logger.info(`   Simulations/sec: ${(100000 / (varTime / 1000)).toFixed(0)}`);
     
     // Benchmark stress testing
-    console.log('\n3. Stress Testing:');
+    logger.info('\n3. Stress Testing:');
     const scenarios: StressScenario[] = [
       { name: 'Market Crash', shocks: new Map(symbols.map(s => [s, -0.2])) },
       { name: 'Tech Selloff', shocks: new Map([['AAPL', -0.3], ['GOOGL', -0.3], ['MSFT', -0.3]]) },
@@ -1021,13 +1023,13 @@ export class ParallelRiskBenchmark {
     const stressEnd = process.hrtime.bigint();
     const stressTime = Number(stressEnd - stressStart) / 1_000_000;
     
-    console.log(`   Time: ${stressTime.toFixed(2)}ms`);
+    logger.info(`   Time: ${stressTime.toFixed(2)}ms`);
     stressResults.forEach(result => {
-      console.log(`   ${result.scenario}: ${(result.lossPercent * 100).toFixed(2)}% loss`);
+      logger.info(`   ${result.scenario}: ${(result.lossPercent * 100).toFixed(2)}% loss`);
     });
     
     // Benchmark Greeks calculation (for options)
-    console.log('\n4. Greeks Calculation (100 options):');
+    logger.info('\n4. Greeks Calculation (100 options):');
     const options: OptionPosition[] = [];
     for (let i = 0; i < 100; i++) {
       options.push({
@@ -1048,19 +1050,19 @@ export class ParallelRiskBenchmark {
     const greeksEnd = process.hrtime.bigint();
     const greeksTime = Number(greeksEnd - greeksStart) / 1_000_000;
     
-    console.log(`   Time: ${greeksTime.toFixed(2)}ms`);
-    console.log(`   Options/sec: ${(100 / (greeksTime / 1000)).toFixed(0)}`);
+    logger.info(`   Time: ${greeksTime.toFixed(2)}ms`);
+    logger.info(`   Options/sec: ${(100 / (greeksTime / 1000)).toFixed(0)}`);
     
     // Summary
-    console.log('\n📊 Performance Summary:');
-    console.log(`   Portfolio Risk: ${(1000 / (riskTime / 1000)).toFixed(0)} portfolios/sec`);
-    console.log(`   Monte Carlo VaR: ${(100000 / (varTime / 1000)).toFixed(0)} simulations/sec`);
-    console.log(`   Stress Tests: ${(scenarios.length / (stressTime / 1000)).toFixed(0)} scenarios/sec`);
-    console.log(`   Greeks: ${(100 / (greeksTime / 1000)).toFixed(0)} options/sec`);
+    logger.info('\n📊 Performance Summary:');
+    logger.info(`   Portfolio Risk: ${(1000 / (riskTime / 1000)).toFixed(0)} portfolios/sec`);
+    logger.info(`   Monte Carlo VaR: ${(100000 / (varTime / 1000)).toFixed(0)} simulations/sec`);
+    logger.info(`   Stress Tests: ${(scenarios.length / (stressTime / 1000)).toFixed(0)} scenarios/sec`);
+    logger.info(`   Greeks: ${(100 / (greeksTime / 1000)).toFixed(0)} options/sec`);
     
     await calculator.shutdown();
     
-    console.log('\n✅ Parallel risk calculation complete!');
+    logger.info('\n✅ Parallel risk calculation complete!');
   }
 }
 

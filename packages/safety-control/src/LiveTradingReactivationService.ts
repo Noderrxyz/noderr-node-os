@@ -1,13 +1,15 @@
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import { SafetyController } from './SafetyController';
 import * as fs from 'fs';
 import * as path from 'path';
 
+const logger = new Logger('LiveTradingReactivationService');
 const createLogger = (name: string) => ({
-  info: (message: string, meta?: any) => console.log(`[${name}] INFO:`, message, meta || ''),
-  error: (message: string, error?: any) => console.error(`[${name}] ERROR:`, message, error || ''),
-  debug: (message: string, meta?: any) => console.debug(`[${name}] DEBUG:`, message, meta || ''),
-  warn: (message: string, meta?: any) => console.warn(`[${name}] WARN:`, message, meta || '')
+  info: (message: string, meta?: any) => logger.info(`[${name}] INFO:`, message, meta || ''),
+  error: (message: string, error?: any) => logger.error(`[${name}] ERROR:`, message, error || ''),
+  debug: (message: string, meta?: any) => logger.debug(`[${name}] DEBUG:`, message, meta || ''),
+  warn: (message: string, meta?: any) => logger.warn(`[${name}] WARN:`, message, meta || '')
 });
 
 interface ReactivationCriteria {

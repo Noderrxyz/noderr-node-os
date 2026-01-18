@@ -7,6 +7,7 @@
  * @module ExecutionService
  */
 
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 
 /**
@@ -80,7 +81,7 @@ export class ExecutionService extends EventEmitter {
    * Initialize execution service
    */
   async initialize(): Promise<void> {
-    console.log('[ExecutionService] Initializing execution engines...');
+    logger.info('[ExecutionService] Initializing execution engines...');
     
     // In production, would initialize connections to:
     // - TWAPAlgorithm
@@ -89,7 +90,7 @@ export class ExecutionService extends EventEmitter {
     // - Exchange connectors
     // - MEV protection (Flashbots)
     
-    console.log('[ExecutionService] Execution engines initialized');
+    logger.info('[ExecutionService] Execution engines initialized');
     this.emit('initialized');
   }
   
@@ -102,8 +103,8 @@ export class ExecutionService extends EventEmitter {
   async execute(plan: ExecutionPlan): Promise<ExecutionResult> {
     const executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    console.log(`[ExecutionService] Starting execution ${executionId}`);
-    console.log(`[ExecutionService] ${plan.side} ${plan.quantity} ${plan.symbol} via ${plan.algorithm}`);
+    logger.info(`[ExecutionService] Starting execution ${executionId}`);
+    logger.info(`[ExecutionService] ${plan.side} ${plan.quantity} ${plan.symbol} via ${plan.algorithm}`);
     
     this.activeExecutions.set(executionId, plan);
     
@@ -142,13 +143,13 @@ export class ExecutionService extends EventEmitter {
       this.recordExecution(plan, result);
       
       if (result.success) {
-        console.log(
+        logger.info(
           `[ExecutionService] ✅ Execution complete: ` +
           `${result.executedQuantity.toFixed(6)} @ ${result.averagePrice.toFixed(2)} ` +
           `(slippage: ${(result.slippage * 100).toFixed(3)}%)`
         );
       } else {
-        console.error(`[ExecutionService] ❌ Execution failed: ${result.error}`);
+        logger.error(`[ExecutionService] ❌ Execution failed: ${result.error}`);
       }
       
       this.emit('execution-complete', { plan, result });
@@ -156,7 +157,7 @@ export class ExecutionService extends EventEmitter {
       return result;
       
     } catch (error) {
-      console.error('[ExecutionService] Execution error:', error);
+      logger.error('[ExecutionService] Execution error:', error);
       
       const result: ExecutionResult = {
         success: false,
@@ -185,14 +186,14 @@ export class ExecutionService extends EventEmitter {
    * Splits order into equal slices over time period.
    */
   private async executeTWAP(plan: ExecutionPlan): Promise<ExecutionResult> {
-    console.log('[ExecutionService] Executing TWAP algorithm...');
+    logger.info('[ExecutionService] Executing TWAP algorithm...');
     
     // Calculate slice parameters
     const sliceDuration = 60000; // 1 minute per slice
     const numSlices = Math.ceil(plan.timeLimit / sliceDuration);
     const quantityPerSlice = plan.quantity / numSlices;
     
-    console.log(`[ExecutionService] TWAP: ${numSlices} slices of ${quantityPerSlice.toFixed(6)} each`);
+    logger.info(`[ExecutionService] TWAP: ${numSlices} slices of ${quantityPerSlice.toFixed(6)} each`);
     
     const fills: Fill[] = [];
     let totalQuantity = 0;
@@ -239,7 +240,7 @@ export class ExecutionService extends EventEmitter {
    * Weights order slices by expected volume profile.
    */
   private async executeVWAP(plan: ExecutionPlan): Promise<ExecutionResult> {
-    console.log('[ExecutionService] Executing VWAP algorithm...');
+    logger.info('[ExecutionService] Executing VWAP algorithm...');
     
     // Generate U-shaped volume profile (high at open/close, low overnight)
     const volumeProfile = this.generateVolumeProfile(10);
@@ -290,7 +291,7 @@ export class ExecutionService extends EventEmitter {
    * Executes as percentage of market volume.
    */
   private async executePOV(plan: ExecutionPlan): Promise<ExecutionResult> {
-    console.log('[ExecutionService] Executing POV algorithm...');
+    logger.info('[ExecutionService] Executing POV algorithm...');
     
     const targetParticipationRate = 0.10; // 10% of market volume
     const fills: Fill[] = [];
@@ -346,7 +347,7 @@ export class ExecutionService extends EventEmitter {
    * Shows small visible quantity, hides rest.
    */
   private async executeIceberg(plan: ExecutionPlan): Promise<ExecutionResult> {
-    console.log('[ExecutionService] Executing Iceberg algorithm...');
+    logger.info('[ExecutionService] Executing Iceberg algorithm...');
     
     const visibleQuantity = plan.quantity * 0.10; // Show 10% at a time
     const numSlices = Math.ceil(plan.quantity / visibleQuantity);
@@ -395,7 +396,7 @@ export class ExecutionService extends EventEmitter {
    * Routes order to best venues for optimal execution.
    */
   private async executeSmartRouting(plan: ExecutionPlan): Promise<ExecutionResult> {
-    console.log('[ExecutionService] Executing Smart Order Routing...');
+    logger.info('[ExecutionService] Executing Smart Order Routing...');
     
     // Simulate routing to multiple venues
     const venues = ['Binance', 'Coinbase', 'Uniswap', 'Curve'];

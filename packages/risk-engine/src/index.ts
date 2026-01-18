@@ -177,7 +177,7 @@ export async function startRiskEngineService(): Promise<void> {
 if (require.main === module) {
   getShutdownHandler(30000);
   startRiskEngineService().catch((error) => {
-    console.error('Fatal error starting Risk Engine Service:', error);
+    logger.error('Fatal error starting Risk Engine Service:', error);
     process.exit(1);
   });
 }

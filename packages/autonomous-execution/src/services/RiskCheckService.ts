@@ -8,6 +8,7 @@
  * @module RiskCheckService
  */
 
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import type { MLPrediction } from './MLSignalService';
 
@@ -121,9 +122,9 @@ export class RiskCheckService extends EventEmitter {
    * Initialize risk check service
    */
   async initialize(): Promise<void> {
-    console.log('[RiskCheckService] Initializing risk validation...');
-    console.log('[RiskCheckService] Risk limits:', this.riskLimits);
-    console.log('[RiskCheckService] Risk validation initialized');
+    logger.info('[RiskCheckService] Initializing risk validation...');
+    logger.info('[RiskCheckService] Risk limits:', this.riskLimits);
+    logger.info('[RiskCheckService] Risk validation initialized');
     this.emit('initialized');
   }
   
@@ -138,7 +139,7 @@ export class RiskCheckService extends EventEmitter {
     prediction: MLPrediction,
     portfolio: PortfolioState
   ): Promise<RiskAssessment> {
-    console.log(`[RiskCheckService] Validating prediction: ${prediction.action} ${prediction.symbol}`);
+    logger.info(`[RiskCheckService] Validating prediction: ${prediction.action} ${prediction.symbol}`);
     
     const reasons: string[] = [];
     let approved = true;
@@ -250,10 +251,10 @@ export class RiskCheckService extends EventEmitter {
     // Record result
     if (approved) {
       this.recordApproval(prediction, assessment);
-      console.log(`[RiskCheckService] ✅ Prediction approved (risk score: ${riskScore.toFixed(0)}/100)`);
+      logger.info(`[RiskCheckService] ✅ Prediction approved (risk score: ${riskScore.toFixed(0)}/100)`);
     } else {
       this.recordRejection(prediction, reasons.join('; '));
-      console.log(`[RiskCheckService] ❌ Prediction rejected: ${reasons[0]}`);
+      logger.info(`[RiskCheckService] ❌ Prediction rejected: ${reasons[0]}`);
     }
     
     this.emit('risk-assessment-complete', assessment);
@@ -363,9 +364,9 @@ export class RiskCheckService extends EventEmitter {
     this.circuitBreaker.reason = reason;
     this.circuitBreaker.triggeredAt = Date.now();
     
-    console.error('[RiskCheckService] 🚨 CIRCUIT BREAKER TRIGGERED 🚨');
-    console.error('[RiskCheckService] Reason:', reason);
-    console.error('[RiskCheckService] Cooldown:', this.circuitBreaker.cooldownPeriod / 1000 / 60, 'minutes');
+    logger.error('[RiskCheckService] 🚨 CIRCUIT BREAKER TRIGGERED 🚨');
+    logger.error('[RiskCheckService] Reason:', reason);
+    logger.error('[RiskCheckService] Cooldown:', this.circuitBreaker.cooldownPeriod / 1000 / 60, 'minutes');
     
     this.emit('circuit-breaker-triggered', {
       reason,
@@ -378,7 +379,7 @@ export class RiskCheckService extends EventEmitter {
    * Reset circuit breaker
    */
   private resetCircuitBreaker(): void {
-    console.log('[RiskCheckService] Circuit breaker reset');
+    logger.info('[RiskCheckService] Circuit breaker reset');
     this.circuitBreaker.triggered = false;
     this.circuitBreaker.reason = '';
     this.circuitBreaker.triggeredAt = 0;
@@ -390,7 +391,7 @@ export class RiskCheckService extends EventEmitter {
    * Manually reset circuit breaker (admin override)
    */
   forceResetCircuitBreaker(): void {
-    console.warn('[RiskCheckService] Circuit breaker force reset by admin');
+    logger.warn('[RiskCheckService] Circuit breaker force reset by admin');
     this.resetCircuitBreaker();
   }
   
@@ -475,7 +476,7 @@ export class RiskCheckService extends EventEmitter {
       ...newLimits
     };
     
-    console.log('[RiskCheckService] Risk limits updated:', newLimits);
+    logger.info('[RiskCheckService] Risk limits updated:', newLimits);
     this.emit('risk-limits-updated', this.riskLimits);
   }
   

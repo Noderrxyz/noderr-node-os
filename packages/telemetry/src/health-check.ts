@@ -3,20 +3,22 @@
  * Health check for Docker HEALTHCHECK directive
  */
 
+import { Logger } from '@noderr/utils/src';
 import { healthCheckRegistry } from './health-check-enhanced';
 
+const logger = new Logger('health-check');
 export async function healthCheck(): Promise<boolean> {
   try {
     const result = await healthCheckRegistry.runAll();
     
     if (!result.healthy) {
-      console.error('Health check failed:', JSON.stringify(result, null, 2));
+      logger.error('Health check failed:', JSON.stringify(result, null, 2));
       return false;
     }
     
     return true;
   } catch (error) {
-    console.error('Health check error:', error);
+    logger.error('Health check error:', error);
     return false;
   }
 }
@@ -26,7 +28,7 @@ if (require.main === module) {
   healthCheck().then((healthy) => {
     process.exit(healthy ? 0 : 1);
   }).catch((error) => {
-    console.error('Health check exception:', error);
+    logger.error('Health check exception:', error);
     process.exit(1);
   });
 }

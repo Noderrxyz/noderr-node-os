@@ -1,4 +1,7 @@
 import * as path from 'path';
+import { Logger } from '@noderr/utils/src';
+
+const logger = new Logger('StrategyBacktester');
 
 /**
  * Mock Strategy Backtester for Testnet Simulation.
@@ -20,7 +23,7 @@ export async function runInitialBacktest(
     annualizedReturn: number;
     backtestFile: string;
 }> {
-    console.log(`Running initial backtest for strategy at: ${strategyPath}`);
+    logger.info('Running initial backtest for strategy', { strategyPath });
 
     // MEDIUM FIX #18: Make results deterministic for testing when requested
     // In testnet mode, use deterministic values; in production, these would come from real backtests
@@ -36,7 +39,11 @@ export async function runInitialBacktest(
     // Simulate the time taken for a comprehensive backtest
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    console.log(`Backtest complete. Mock Sharpe Ratio: ${mockResults.sharpeRatio.toFixed(2)}`);
+    logger.info('Backtest complete', { 
+        sharpeRatio: mockResults.sharpeRatio.toFixed(2),
+        maxDrawdown: mockResults.maxDrawdown.toFixed(4),
+        annualizedReturn: mockResults.annualizedReturn.toFixed(4)
+    });
 
     // Institutional-grade check: Reject strategies that don't meet minimum performance
     if (mockResults.sharpeRatio < 1.5 || mockResults.maxDrawdown > 0.10) {

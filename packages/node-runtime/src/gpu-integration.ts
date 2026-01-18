@@ -5,6 +5,7 @@
  * For Oracle nodes (required) and Guardian nodes (optional bonus)
  */
 
+import { Logger } from '@noderr/utils/src';
 import { getGPUHardwareId } from '@noderr/gpu-service-mvs';
 
 /**
@@ -17,21 +18,21 @@ import { getGPUHardwareId } from '@noderr/gpu-service-mvs';
  */
 export async function getNodeGpuId(): Promise<string | null> {
   try {
-    console.log('🔍 Detecting GPU for node registration...');
+    logger.info('🔍 Detecting GPU for node registration...');
     
     const gpuHardwareId = await getGPUHardwareId();
     
     if (!gpuHardwareId) {
-      console.warn('⚠️  No GPU detected on this system.');
+      logger.warn('⚠️  No GPU detected on this system.');
       return null;
     }
     
-    console.log(`✅ GPU detected`);
-    console.log(`   Hardware ID: ${gpuHardwareId}`);
+    logger.info(`✅ GPU detected`);
+    logger.info(`   Hardware ID: ${gpuHardwareId}`);
     
     return gpuHardwareId;
   } catch (error) {
-    console.warn('⚠️  GPU detection failed:', (error as Error).message);
+    logger.warn('⚠️  GPU detection failed:', (error as Error).message);
     return null;
   }
 }

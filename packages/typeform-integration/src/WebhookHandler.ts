@@ -1,3 +1,4 @@
+import { Logger } from '@noderr/utils/src';
 import { TypeformClient, TypeformResponse } from './TypeformClient';
 import { ApplicationService } from './ApplicationService';
 import { UserApplication } from '@noderr/types';
@@ -21,7 +22,7 @@ export class WebhookHandler {
     );
 
     if (existing) {
-      console.log(`Application already exists for response ${payload.form_response.token}`);
+      logger.info(`Application already exists for response ${payload.form_response.token}`);
       return existing;
     }
 
@@ -39,7 +40,7 @@ export class WebhookHandler {
     // Create application in database
     const created = await this.applicationService.createApplication(application);
 
-    console.log(`Created application ${created.id} for ${created.email}`);
+    logger.info(`Created application ${created.id} for ${created.email}`);
 
     // TODO: Send notification email to applicant
     // TODO: Send notification to admin panel
@@ -62,6 +63,7 @@ export class WebhookHandler {
   }
 }
 
+const logger = new Logger('WebhookHandler');
 export interface WebhookPayload {
   event_id: string;
   event_type: 'form_response';
