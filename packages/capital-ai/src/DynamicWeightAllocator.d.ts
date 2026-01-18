@@ -99,3 +99,4 @@ export declare class DynamicWeightAllocator extends EventEmitter {
     destroy(): void;
 }
 export {};
+//# sourceMappingURL=DynamicWeightAllocator.d.ts.map

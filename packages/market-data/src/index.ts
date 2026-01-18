@@ -14,6 +14,7 @@
 
 import { Logger } from '@noderr/utils';
 import { getShutdownHandler, onShutdown } from '@noderr/utils';
+import { eventBus, EventTopics } from '@noderr/core';
 
 export { MarketDataRingBuffer, MarketDataRingBufferView, RingBufferBenchmark, MarketDataPoint } from './RingBuffer';
 export { HistoricalDataLoader, OHLCVData, HistoricalDataConfig } from './HistoricalDataLoader';
@@ -82,10 +83,22 @@ export class MarketDataService {
     const loader = new HistoricalDataLoader();
     const replayEngine = new DataReplayEngine(loader);
     
-    // Forward ticks to subscribers
-    replayEngine.on('tick', (tick) => {
-      this.logger.debug('Market data tick', tick);
-      // TODO: Emit to subscribers
+    // Forward ticks to subscribers and publish to event bus
+    replayEngine.on('tick', (tick) => {      this.logger.debug('Market data tick', tick);
+      
+      // Publish to event bus for other services
+      eventBus.publish(EventTopics.MARKET_DATA_TICK, {
+        symbol: tick.symbol,
+        price: tick.close,
+        open: tick.open,
+        high: tick.high,
+        low: tick.low,
+        close: tick.close,
+        volume: tick.volume,
+        timestamp: tick.timestamp,
+        bid: tick.bid,
+        ask: tick.ask
+      }, 'market-data');
     });
     
     replayEngine.on('completed', () => {
@@ -100,6 +113,15 @@ export class MarketDataService {
       speed: config.speed,
       spread: 0.001 // 0.1% bid-ask spread
     });
+    
+    // Publish system ready event
+    eventBus.publish(EventTopics.SYSTEM_READY, {
+      service: 'market-data',
+      mode: 'simulation',
+      symbols: config.symbols,
+      interval: config.interval,
+      speed: config.speed
+    }, 'market-data');
   }
   
   /**

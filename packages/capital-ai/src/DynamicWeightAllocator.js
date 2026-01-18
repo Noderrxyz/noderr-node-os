@@ -9,12 +9,16 @@ const createLogger = (name) => ({
     warn: (message, meta) => console.warn(`[${name}] WARN:`, message, meta || '')
 });
 class DynamicWeightAllocator extends events_1.EventEmitter {
+    logger;
+    strategies;
+    currentAllocation = null;
+    marketRegime;
+    optimizationConstraints;
+    correlationMatrix = [];
+    rebalanceInterval = null;
+    performanceWindow = 252; // Trading days
     constructor() {
         super();
-        this.currentAllocation = null;
-        this.correlationMatrix = [];
-        this.rebalanceInterval = null;
-        this.performanceWindow = 252; // Trading days
         this.logger = createLogger('DynamicWeightAllocator');
         this.strategies = new Map();
         this.marketRegime = {
@@ -481,3 +485,4 @@ class DynamicWeightAllocator extends events_1.EventEmitter {
     }
 }
 exports.DynamicWeightAllocator = DynamicWeightAllocator;
+//# sourceMappingURL=DynamicWeightAllocator.js.map

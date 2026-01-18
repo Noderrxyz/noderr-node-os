@@ -122,3 +122,4 @@ export declare class PortfolioSentinel extends EventEmitter {
     destroy(): void;
 }
 export {};
+//# sourceMappingURL=PortfolioSentinel.d.ts.map

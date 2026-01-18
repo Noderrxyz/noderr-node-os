@@ -9,11 +9,17 @@ const createLogger = (name) => ({
     warn: (message, meta) => console.warn(`[${name}] WARN:`, message, meta || '')
 });
 class PortfolioSentinel extends events_1.EventEmitter {
+    logger;
+    portfolioState;
+    constraints;
+    rebalanceTriggers;
+    capitalFlows;
+    emergencyActions;
+    updateInterval = null;
+    frozen = false;
+    highWaterMark = 0;
     constructor() {
         super();
-        this.updateInterval = null;
-        this.frozen = false;
-        this.highWaterMark = 0;
         this.logger = createLogger('PortfolioSentinel');
         this.rebalanceTriggers = new Map();
         this.capitalFlows = [];
@@ -485,3 +491,4 @@ class PortfolioSentinel extends events_1.EventEmitter {
     }
 }
 exports.PortfolioSentinel = PortfolioSentinel;
+//# sourceMappingURL=PortfolioSentinel.js.map

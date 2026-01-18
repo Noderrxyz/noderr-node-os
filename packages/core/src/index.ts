@@ -12,6 +12,10 @@ export type {
   SystemAlert 
 } from './SystemOrchestrator';
 
+// Simulation Event Bus for testnet
+export { SimulationEventBus, eventBus, EventTopics } from './SimulationEventBus';
+export type { SimulationEvent } from './SimulationEventBus';
+
 // Re-export key components for direct access (TODO: Sprint 2+)
 // export { PositionReconciliation } from '../../execution-engine/src/PositionReconciliation';
 // export { OrderLifecycleManager } from '../../execution-engine/src/OrderLifecycleManager';

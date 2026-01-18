@@ -6,26 +6,21 @@
  */
 
 // Core
-// TODO: Fix type errors in these files (Phase 1.5 refinement)
-// export { SystemOrchestrator } from './core/SystemOrchestrator';
-// export { EliteSystemIntegrator, validateEliteSystemIntegration } from './core/EliteSystemIntegrator';
+export { SystemOrchestrator } from './core/SystemOrchestrator';
+export { EliteSystemIntegrator, validateEliteSystemIntegration } from './core/EliteSystemIntegrator';
 
 // Message Bus
-// TODO: Fix type errors (Phase 1.5 refinement)
-// export { MessageBus } from './bus/MessageBus';
-// export { DeadLetterQueue } from './bus/DeadLetterQueue';
+export { MessageBus } from './bus/MessageBus';
+export { DeadLetterQueue } from './bus/DeadLetterQueue';
 
 // Health Monitoring
-// TODO: Fix type errors (Phase 1.5 refinement)
-// export { HealthMonitor } from './health/HealthMonitor';
+export { HealthMonitor } from './health/HealthMonitor';
 
 // Recovery
-// TODO: Fix type errors (Phase 1.5 refinement)
-// export { RecoveryManager } from './recovery/RecoveryManager';
+export { RecoveryManager } from './recovery/RecoveryManager';
 
 // Configuration
-// TODO: Fix type errors (Phase 1.5 refinement)
-// export { ConfigurationService } from './config/ConfigurationService';
+export { ConfigurationService } from './config/ConfigurationService';
 
 // Re-export winston for consistency
 export { Logger } from 'winston';

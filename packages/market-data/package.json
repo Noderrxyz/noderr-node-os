@@ -13,7 +13,8 @@
   "dependencies": {
     "@noderr/utils": "workspace:*",
     "@noderr/types": "workspace:*",
-    "@noderr/telemetry": "workspace:*"
+    "@noderr/telemetry": "workspace:*",
+    "@noderr/core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
