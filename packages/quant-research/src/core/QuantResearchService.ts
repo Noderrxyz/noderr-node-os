@@ -212,7 +212,7 @@ export class QuantResearchService extends EventEmitter implements IQuantResearch
     const monteCarloResults = await this.monteCarloSim.simulate({
       strategy: config.strategy,
       parameters: result.bestParameters,
-      simulations: 1000,
+      numSimulations: 1000,
       timeHorizon: 252 // 1 year
     });
     

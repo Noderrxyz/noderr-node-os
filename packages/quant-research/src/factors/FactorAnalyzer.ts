@@ -114,7 +114,7 @@ export class FactorAnalyzer extends EventEmitter {
     // Calculate risk attribution
     const riskAttribution = this.calculateRiskAttribution(
       exposures,
-      model.correlationMatrix
+      model.correlationMatrix || []
     );
     
     // Generate insights
@@ -156,12 +156,10 @@ export class FactorAnalyzer extends EventEmitter {
         );
         
         correlations.push({
-          factor1: factors[i].id,
-          factor2: factors[j].id,
+          factorId1: factors[i].id,
+          factorId2: factors[j].id,
           correlation,
-          pValue: this.calculateCorrelationPValue(correlation, factorData[i].values.length),
-          period: '1Y', // Default period
-          isSignificant: Math.abs(correlation) > 0.3
+          pValue: this.calculateCorrelationPValue(correlation, factorData[i].values.length)
         });
       }
     }
@@ -250,8 +248,8 @@ export class FactorAnalyzer extends EventEmitter {
       let highlyCorrelated = false;
       for (const selected of finalFactors) {
         const corr = correlations.find(c => 
-          (c.factor1 === factor.id && c.factor2 === selected.id) ||
-          (c.factor2 === factor.id && c.factor1 === selected.id)
+          (c.factorId1 === factor.id && c.factorId2 === selected.id) ||
+          (c.factorId2 === factor.id && c.factorId1 === selected.id)
         );
         
         if (corr && Math.abs(corr.correlation) > 0.8) {
@@ -449,7 +447,7 @@ export class FactorAnalyzer extends EventEmitter {
         exposure: coefficient,
         tStatistic: coefficient / regression.standardErrors[factor.id],
         pValue,
-        contribution: coefficient * model.weights[factor.id],
+        contribution: coefficient * (Array.isArray(model.weights) ? 1 : (model.weights[factor.id] || 1)),
         isSignificant: pValue < 0.05
       });
     }
@@ -565,17 +563,17 @@ export class FactorAnalyzer extends EventEmitter {
     
     // Performance insights
     const topPerformers = performance
-      .sort((a, b) => b.sharpeRatio - a.sharpeRatio)
+      .sort((a, b) => (b.sharpeRatio || 0) - (a.sharpeRatio || 0))
       .slice(0, 3);
     
     for (const perf of topPerformers) {
-      insights.push(`Factor ${perf.factorId}: Sharpe ${perf.sharpeRatio.toFixed(2)}, IC ${perf.informationRatio.toFixed(2)}`);
+      insights.push(`Factor ${perf.factorId}: Sharpe ${(perf.sharpeRatio || 0).toFixed(2)}, IC ${(perf.informationRatio || 0).toFixed(2)}`);
     }
     
     // Risk insights
     const concentratedRisks = Object.entries(riskAttribution.riskAttribution)
-      .filter(([_, risk]) => risk > 0.3)
-      .map(([factorId, risk]) => ({ factorId, risk }));
+      .filter(([_, risk]) => (risk as number) > 0.3)
+      .map(([factorId, risk]) => ({ factorId, risk: risk as number }));
     
     if (concentratedRisks.length > 0) {
       insights.push(`Risk concentration warning: ${concentratedRisks[0].factorId} contributes ${(concentratedRisks[0].risk * 100).toFixed(1)}% of risk`);

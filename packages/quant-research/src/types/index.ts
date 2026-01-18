@@ -356,9 +356,9 @@ export interface FactorModel {
   id: string;
   name: string;
   factors: Factor[];
-  weights: number[];
+  weights: number[] | { [factorId: string]: number };
   correlationMatrix?: number[][];
-  method: 'linear' | 'nonlinear' | 'ml';
+  method?: 'linear' | 'nonlinear' | 'ml';
   performance: FactorPerformance | any;
   principalComponents?: number[][];
   explainedVariance?: number[];
@@ -377,15 +377,20 @@ export interface Factor {
 
 export interface FactorPerformance {
   factorId?: string;
-  ic: number; // Information Coefficient
-  icir: number; // IC Information Ratio
-  factorReturns: number[];
-  returns?: number[];
-  factorSharpe: number;
+  ic?: number; // Information Coefficient
+  icir?: number; // IC Information Ratio
+  factorReturns?: number[];
+  returns?: number | number[];
+  factorSharpe?: number;
   sharpeRatio?: number;
   informationRatio?: number;
-  turnover: number;
-  capacity: number;
+  turnover?: number;
+  capacity?: number;
+  volatility?: number;
+  maxDrawdown?: number;
+  correlation?: number;
+  stability?: number;
+  significance?: number;
 }
 
 // Portfolio Construction
@@ -544,7 +549,12 @@ export interface RiskModel {
 
 // Additional exports for FactorAnalyzer
 export interface FactorExposure {
-  [factorId: string]: number;
+  factorId: string;
+  exposure: number;
+  tStatistic?: number;
+  pValue?: number;
+  contribution?: number;
+  isSignificant?: boolean;
 }
 
 export interface FactorResilience {
@@ -564,11 +574,13 @@ export interface FactorCorrelation {
 }
 
 export interface FactorAnalysisResult {
+  modelId?: string;
   factors: Factor[];
   correlations: FactorCorrelation[];
   performance: FactorPerformance[];
   exposures?: FactorExposure[];
   timestamp: Date;
+  insights?: string[];
 }
 
 
