@@ -399,6 +399,7 @@ export interface Portfolio {
   objective: PortfolioObjective;
   rebalanceFrequency: string;
   performance?: PortfolioPerformance;
+  metrics?: any;
 }
 
 export interface Asset {
@@ -575,14 +576,20 @@ export interface ConfidenceInterval {
   lower: number;
   upper: number;
   level: number;
+  mean?: number;
 }
 
 
 export enum DistributionType {
   NORMAL = 'normal',
   LOG_NORMAL = 'log_normal',
+  LOGNORMAL = 'log_normal',
   STUDENT_T = 't',
-  HISTORICAL = 'historical'
+  HISTORICAL = 'historical',
+  GUMBEL = 'gumbel',
+  LEVY = 'levy',
+  EMPIRICAL = 'empirical',
+  REGIME_SWITCHING = 'regime_switching'
 }
 
 export interface MonteCarloConfig {
@@ -594,9 +601,17 @@ export interface MonteCarloConfig {
   volatility?: number;
   confidenceLevel?: number;
   seed?: number;
+  strategy?: any;
+  parameters?: any;
+  initialCapital?: number;
+  correlationMatrix?: number[][];
+  ruinThreshold?: number;
+  targetReturn?: number;
+  maxDrawdown?: number;
 }
 
 export interface SimulationPath {
+  id?: string;
   path: number[];
   finalValue: number;
   totalReturn: number;
@@ -605,18 +620,28 @@ export interface SimulationPath {
 }
 
 export interface MonteCarloResult {
+  config?: MonteCarloConfig;
   paths: SimulationPath[];
-  statistics: {
-    mean: number;
-    median: number;
-    stdDev: number;
-    min: number;
-    max: number;
-  };
-  confidenceIntervals: {
+  statistics: any;
+  confidenceInterval?: any;
+  confidenceIntervals?: {
     [key: string]: ConfidenceInterval;
   };
-  percentiles: { [key: string]: number };
+  percentiles?: { [key: string]: number };
   probabilities?: { [key: string]: number };
   tailRisk?: any;
+  convergenceMetrics?: any;
 }
+
+
+export interface PortfolioMetrics {
+  totalReturn: number;
+  sharpeRatio: number;
+  volatility: number;
+  maxDrawdown: number;
+  beta?: number;
+  alpha?: number;
+}
+
+
+export type OptimizationConstraints = OptimizationConstraint[];
