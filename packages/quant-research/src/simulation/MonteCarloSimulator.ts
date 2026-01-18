@@ -708,4 +708,4 @@ export class MonteCarloSimulator extends EventEmitter {
     this.logger.info('Shutting down MonteCarloSimulator');
     this.clearCache();
   }
-} 
+}
