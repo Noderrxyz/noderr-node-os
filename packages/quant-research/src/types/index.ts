@@ -37,10 +37,10 @@ export enum StrategyType {
 
 export interface StrategyParameters {
   // Common parameters
-  lookbackPeriod: number;
-  rebalanceFrequency: string; // '1m', '5m', '1h', '1d'
-  minVolume: number;
-  maxPositions: number;
+  lookbackPeriod?: number;
+  rebalanceFrequency?: string; // '1m', '5m', '1h', '1d'
+  minVolume?: number;
+  maxPositions?: number;
   
   // Strategy-specific parameters
   [key: string]: any;
@@ -313,14 +313,14 @@ export interface ResearchDataset {
   name: string;
   description: string;
   symbols: string[];
-  timeframe: string;
+  timeframe?: string;
   frequency?: string;
   startDate: Date;
   endDate: Date;
-  features: Feature[];
-  size: number;
-  format: 'csv' | 'parquet' | 'hdf5' | 'pickle';
-  path: string;
+  features?: Feature[];
+  size?: number;
+  format?: 'csv' | 'parquet' | 'hdf5' | 'pickle';
+  path?: string;
   data?: HistoricalData;
   metadata?: { [key: string]: any };
 }
@@ -403,6 +403,7 @@ export interface Portfolio {
   constraints: PortfolioConstraint[] | OptimizationConstraints;
   objective: PortfolioObjective;
   rebalanceFrequency: string;
+  lastRebalance?: Date;
   performance?: PortfolioPerformance;
   metrics?: PortfolioMetrics;
 }
@@ -579,6 +580,7 @@ export interface FactorAnalysisResult {
   correlations: FactorCorrelation[];
   performance: FactorPerformance[];
   exposures?: FactorExposure[];
+  regression?: any;
   timestamp: Date;
   insights?: string[];
 }
@@ -682,6 +684,7 @@ export interface OptimizationConstraints {
 export interface AlphaDecayResult {
   signal: string;
   decayMetrics: DecayMetrics;
+  decayRate?: number;
   regimeAnalysis: RegimeAnalysis;
   signalStrength: SignalStrength;
 }
@@ -690,12 +693,16 @@ export interface DecayMetrics {
   halfLife: number;
   decayRate: number;
   persistenceScore: number;
+  significantDecay?: boolean;
+  decayByMetric?: { [key: string]: number };
 }
 
 export interface RegimeAnalysis {
   regime: string;
   confidence: number;
   characteristics: { [key: string]: any };
+  regimeStability?: number;
+  currentRegime?: string;
 }
 
 export interface SignalStrength {
