@@ -251,8 +251,8 @@ export { MLClient };
 // Main Entry Point for ML Service
 // ============================================================================
 
-import { Logger } from '@noderr/utils';
-import { getShutdownHandler, onShutdown } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
+import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
 
 let mlService: MLService | null = null;
 

@@ -117,7 +117,7 @@ export class NodeOnboardingCLI {
         borderColor: 'cyan'
       }
     ));
-    logger.info();
+    console.log('');
   }
 
   /**
@@ -150,9 +150,9 @@ export class NodeOnboardingCLI {
       }
     ]);
 
-    logger.info();
+    console.log('');
     logger.info(chalk.cyan(`✓ Selected: ${chalk.bold(tier)}`));
-    logger.info();
+    console.log('');
 
     return tier;
   }
@@ -216,9 +216,9 @@ export class NodeOnboardingCLI {
       wallet = ethers.Wallet.fromPhrase(mnemonic, this.provider);
     }
 
-    logger.info();
+    console.log('');
     logger.info(chalk.cyan(`✓ Wallet connected: ${chalk.bold(wallet.address)}`));
-    logger.info();
+    console.log('');
 
     return wallet;
   }
@@ -246,7 +246,7 @@ export class NodeOnboardingCLI {
 
       logger.info(chalk.cyan(`Your balance: ${chalk.bold(balanceFormatted)} NODR`));
       logger.info(chalk.cyan(`Required: ${chalk.bold(required.toLocaleString())} NODR`));
-      logger.info();
+      console.log('');
 
       if (parseFloat(balanceFormatted) < required) {
         throw new Error(
@@ -255,7 +255,7 @@ export class NodeOnboardingCLI {
       }
 
       logger.info(chalk.green('✓ Staking requirement met'));
-      logger.info();
+      console.log('');
     } catch (error) {
       spinner.stop();
       throw error;
@@ -285,7 +285,7 @@ export class NodeOnboardingCLI {
           // Guardian - GPU optional
           logger.info(chalk.yellow('⚠ No GPU detected'));
           logger.info(chalk.yellow('Guardian nodes can run without GPU, but you won\'t receive GPU bonus rewards.'));
-          logger.info();
+          console.log('');
 
           const { proceed } = await inquirer.prompt([
             {
@@ -305,7 +305,7 @@ export class NodeOnboardingCLI {
       }
 
       logger.info(chalk.green(`✓ GPU detected: ${gpuId.substring(0, 16)}...`));
-      logger.info();
+      console.log('');
 
       return gpuId;
     } catch (error) {
@@ -333,7 +333,7 @@ export class NodeOnboardingCLI {
       };
 
       spinner.succeed('TPM attestation generated');
-      logger.info();
+      console.log('');
 
       return attestation;
     } catch (error) {
@@ -380,7 +380,7 @@ export class NodeOnboardingCLI {
       const result = await response.json();
 
       spinner.succeed('Node registered successfully');
-      logger.info();
+      console.log('');
 
       return {
         utilityNFTId: result.utilityNFTId,
@@ -407,12 +407,12 @@ export class NodeOnboardingCLI {
         borderColor: 'green'
       }
     ));
-    logger.info();
+    console.log('');
     logger.info(chalk.cyan('Next steps:'));
     logger.info(chalk.white('1. Start your node client'));
     logger.info(chalk.white('2. Monitor your node dashboard'));
     logger.info(chalk.white('3. Start earning rewards!'));
-    logger.info();
+    console.log('');
   }
 
   /**
@@ -429,7 +429,7 @@ export class NodeOnboardingCLI {
         borderColor: 'red'
       }
     ));
-    logger.info();
+    console.log('');
   }
 }
 

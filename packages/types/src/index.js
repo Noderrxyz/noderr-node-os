@@ -60,6 +60,8 @@ var ExecutionErrorCode;
     ExecutionErrorCode["UNKNOWN"] = "UNKNOWN";
 })(ExecutionErrorCode || (exports.ExecutionErrorCode = ExecutionErrorCode = {}));
 class ExecutionError extends Error {
+    code;
+    details;
     constructor(message, code, details) {
         super(message);
         this.code = code;
@@ -169,6 +171,12 @@ var MessageType;
     MessageType["EVENT"] = "event";
     MessageType["QUERY"] = "query";
     MessageType["RESPONSE"] = "response";
+    MessageType["MODULE_RESET"] = "module_reset";
+    MessageType["MODULE_FAILOVER"] = "module_failover";
+    MessageType["MODULE_ROLLBACK"] = "module_rollback";
+    MessageType["MODULE_SCALE"] = "module_scale";
+    MessageType["MODULE_ALERT"] = "module_alert";
+    MessageType["MODULE_ERROR"] = "module_error";
 })(MessageType || (exports.MessageType = MessageType = {}));
 var MessagePriority;
 (function (MessagePriority) {

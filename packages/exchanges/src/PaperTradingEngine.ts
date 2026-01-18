@@ -13,7 +13,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 
 export interface Order {
   id: string;

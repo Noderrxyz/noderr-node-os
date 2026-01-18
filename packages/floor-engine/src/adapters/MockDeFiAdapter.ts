@@ -1,7 +1,7 @@
 import { IDeFiAdapter } from '../IDeFiAdapter';
 import { BigNumberish } from 'ethers';
 import { simulateTransaction } from '../DeFiAdapterUtils';
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 
 // MEDIUM FIX #41: Use Logger instead of console.log
 const logger = new Logger('MockDeFiAdapter');

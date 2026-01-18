@@ -18,13 +18,13 @@ export * from './TradeReporting';
 // Main Entry Point
 // ============================================================================
 
-import { Logger } from '@noderr/utils';
-import { getShutdownHandler, onShutdown } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
+import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
 
+const logger = new Logger('ComplianceService');
 let complianceService: any | null = null;
 
 export async function startComplianceService(): Promise<void> {
-  const logger = new Logger('ComplianceService');
   
   try {
     logger.info('Starting Compliance Service...');

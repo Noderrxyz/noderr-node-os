@@ -11,8 +11,9 @@
  * - Alternative data sources
  */
 
-import { Logger } from '@noderr/utils';
-import { getShutdownHandler, onShutdown } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
+import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
+nconst logger = new Logger('data-connectors');
 
 /**
  * Data Connectors Service

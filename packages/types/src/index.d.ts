@@ -403,6 +403,7 @@ export interface RiskParameters {
     maxAllocationPerProtocol?: number;
     maxAllocationPerChain?: number;
     maxSlippageBps?: number;
+    maxMLRiskScore?: number;
 }
 export declare enum AdapterCategory {
     LENDING = "lending",
@@ -420,6 +421,7 @@ export interface AdapterMetadata {
     riskScore: number;
     riskLevel?: string;
     apy: number;
+    historicalAPY?: number;
     tvl: number;
     lastUpdate: number;
     enabled?: boolean;
@@ -644,7 +646,13 @@ export declare enum MessageType {
     COMMAND = "command",
     EVENT = "event",
     QUERY = "query",
-    RESPONSE = "response"
+    RESPONSE = "response",
+    MODULE_RESET = "module_reset",
+    MODULE_FAILOVER = "module_failover",
+    MODULE_ROLLBACK = "module_rollback",
+    MODULE_SCALE = "module_scale",
+    MODULE_ALERT = "module_alert",
+    MODULE_ERROR = "module_error"
 }
 export declare enum MessagePriority {
     LOW = 0,
@@ -706,10 +714,11 @@ export interface RecoveryStrategy {
     enabled: boolean;
 }
 export interface RecoveryTrigger {
-    type: 'health' | 'metric' | 'error' | 'manual';
+    type: 'health' | 'metric' | 'error' | 'manual' | 'error_rate' | 'latency' | 'memory' | 'cpu' | 'custom';
     condition: string;
     threshold?: number;
     duration?: number;
+    comparison?: '>' | '<' | '>=' | '<=' | '==' | '!=';
 }
 export interface ModuleRegistration {
     name: string;

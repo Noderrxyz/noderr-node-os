@@ -11,11 +11,12 @@
  * - Graceful shutdown handling
  * - JWT token refresh
  */
-
 import { Logger } from '@noderr/utils/src';
 import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
+
+const logger = new Logger('heartbeat-client');
 
 // Configuration from environment variables
 const config = {

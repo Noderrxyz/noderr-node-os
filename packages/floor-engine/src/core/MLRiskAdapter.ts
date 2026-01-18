@@ -15,7 +15,7 @@ import { EventEmitter } from 'events';
 import { DynamicWeightAllocator, PortfolioSentinel } from '@noderr/capital-ai';
 import type { AdapterMetadata, FloorPosition } from '../types';
 import { AdapterCategory } from '@noderr/types';
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 
 // LOW FIX: Use Logger instead of console
 const logger = new Logger('MLRiskAdapter');

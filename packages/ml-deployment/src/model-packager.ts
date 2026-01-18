@@ -21,6 +21,7 @@ import path from 'path';
 import tar from 'tar';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { createClient } from '@supabase/supabase-js';
+nconst logger = new Logger('ml-deployment');
 
 // Initialize S3 client
 const s3Client = new S3Client({

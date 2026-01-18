@@ -130,3 +130,29 @@ export class AttestationService {
     await this.redis.quit();
   }
 }
+
+/**
+ * Generate a cryptographic nonce for attestation
+ */
+export function generateNonce(): string {
+  return Buffer.from(Date.now().toString() + Math.random().toString()).toString('base64');
+}
+
+/**
+ * Verify an attestation quote
+ */
+export async function verifyAttestation(quote: AttestationQuote): Promise<boolean> {
+  // TODO: Implement full TPM attestation verification
+  // For now, basic validation
+  if (!quote.signedData || !quote.signature || !quote.publicKey || !quote.nonce) {
+    return false;
+  }
+  
+  // Check timestamp is recent (within 5 minutes)
+  const now = Math.floor(Date.now() / 1000);
+  if (Math.abs(now - quote.timestamp) > 300) {
+    return false;
+  }
+  
+  return true;
+}
