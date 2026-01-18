@@ -187,6 +187,8 @@ export class AlphaDecayAnalyzer extends EventEmitter {
       return {
         overallDecayRate: 0,
         halfLife: Infinity,
+        decayRate: 0,
+        persistenceScore: 1,
         decayCoefficient: 0,
         r2: 0,
         significantDecay: false,
@@ -223,6 +225,8 @@ export class AlphaDecayAnalyzer extends EventEmitter {
     return {
       overallDecayRate,
       halfLife,
+      decayRate: overallDecayRate,
+      persistenceScore: 1 - overallDecayRate,
       decayCoefficient: overallDecayRate,
       r2,
       significantDecay: r2 > 0.5 && overallDecayRate > 0.001,
@@ -335,6 +339,9 @@ export class AlphaDecayAnalyzer extends EventEmitter {
   private detectRegimeChanges(windows: TimeWindow[]): RegimeAnalysis {
     if (windows.length < 3) {
       return {
+        regime: 'unknown',
+        confidence: 0,
+        characteristics: {},
         regimes: [],
         currentRegime: 'unknown',
         transitionProbabilities: {},
@@ -390,9 +397,13 @@ export class AlphaDecayAnalyzer extends EventEmitter {
     const avgRegimeDuration = regimes.reduce((sum, r) => sum + r.duration, 0) / regimes.length;
     const regimeStability = Math.min(1, avgRegimeDuration / windows.length);
     
+    const currentRegime = regimes[regimes.length - 1]?.type || 'unknown';
     return {
+      regime: currentRegime,
+      confidence: regimeStability,
+      characteristics: regimes[regimes.length - 1] || {},
       regimes,
-      currentRegime: regimes[regimes.length - 1]?.type || 'unknown',
+      currentRegime,
       transitionProbabilities,
       regimeStability
     };

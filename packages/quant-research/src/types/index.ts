@@ -667,6 +667,7 @@ export interface PortfolioMetrics {
   sharpeRatio: number;
   sortinoRatio?: number;
   calmarRatio?: number;
+  valueAtRisk95?: number;
   volatility: number;
   maxDrawdown: number;
   beta?: number;
@@ -723,4 +724,5 @@ export interface SignalStrength {
   stability: number;
   signal?: string;
   initialStrength?: number;
+  currentStrength?: number;
 }
