@@ -843,6 +843,9 @@ importers:
 
   packages/floor-engine:
     dependencies:
+      '@noderr/capital-ai':
+        specifier: workspace:*
+        version: link:../capital-ai
       '@noderr/types':
         specifier: workspace:*
         version: link:../types

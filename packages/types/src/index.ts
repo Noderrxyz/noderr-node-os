@@ -470,6 +470,7 @@ export interface RiskParameters {
   maxAllocationPerProtocol?: number;
   maxAllocationPerChain?: number;
   maxSlippageBps?: number;
+  maxMLRiskScore?: number;
 }
 
 export enum AdapterCategory {
@@ -489,6 +490,7 @@ export interface AdapterMetadata {
   riskScore: number;
   riskLevel?: string;
   apy: number;
+  historicalAPY?: number;
   tvl: number;
   lastUpdate: number;
   enabled?: boolean;

@@ -17,7 +17,8 @@ export enum AdapterCategory {
   LENDING = 'lending',
   STAKING = 'staking',
   YIELD = 'yield',
-  RESTAKING = 'restaking'
+  RESTAKING = 'restaking',
+  LIQUIDITY = 'liquidity'
 }
 
 /**
@@ -29,6 +30,7 @@ export type RiskLevel = 'low' | 'medium' | 'high';
  * Adapter metadata for registration
  */
 export interface AdapterMetadata {
+  id: string;
   name: string;
   version: string;
   protocol: string;
@@ -38,6 +40,7 @@ export interface AdapterMetadata {
   enabled: boolean;
   maxAllocation: bigint; // Maximum capital per adapter
   description?: string;
+  historicalAPY?: number;
 }
 
 /**
@@ -220,6 +223,7 @@ export interface RiskParameters {
   allowedTokens: string[]; // Whitelist of tokens
   allowedProtocols: string[]; // Whitelist of protocols
   emergencyPauseEnabled: boolean;
+  maxMLRiskScore?: number; // Maximum ML-generated risk score (0-100)
 }
 
 /**

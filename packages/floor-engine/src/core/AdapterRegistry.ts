@@ -335,6 +335,8 @@ export class AdapterRegistry extends EventEmitter {
       lending: 0,
       staking: 0,
       yield: 0,
+      restaking: 0,
+      liquidity: 0,
     };
 
     const byProtocol: Record<string, number> = {};

@@ -425,7 +425,8 @@ export class RiskManager extends EventEmitter {
       throw new Error('ML risk assessment is disabled');
     }
 
-    const adapters = this.adapterRegistry.getAllAdapters();
+    const adapterIds = this.adapterRegistry.getAllAdapters();
+    const adapters = adapterIds.map(id => this.adapterRegistry.getAdapter(id)?.metadata).filter((m): m is AdapterMetadata => m !== undefined);
     return await this.mlRiskAdapter.getAllocationRecommendations(
       adapters,
       totalCapital,

@@ -9,13 +9,6 @@ const createLogger = (name) => ({
     warn: (message, meta) => console.warn(`[${name}] WARN:`, message, meta || '')
 });
 class CapitalStrategyDashboard extends events_1.EventEmitter {
-    logger;
-    widgets;
-    capitalUsageHistory;
-    alphaAttributions;
-    dashboardMetrics;
-    updateIntervals;
-    dataProviders;
     constructor() {
         super();
         this.logger = createLogger('CapitalStrategyDashboard');
@@ -599,4 +592,3 @@ class CapitalStrategyDashboard extends events_1.EventEmitter {
     }
 }
 exports.CapitalStrategyDashboard = CapitalStrategyDashboard;
-//# sourceMappingURL=CapitalStrategyDashboard.js.map

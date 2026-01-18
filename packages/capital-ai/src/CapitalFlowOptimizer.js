@@ -9,15 +9,9 @@ const createLogger = (name) => ({
     warn: (message, meta) => console.warn(`[${name}] WARN:`, message, meta || '')
 });
 class CapitalFlowOptimizer extends events_1.EventEmitter {
-    logger;
-    venues;
-    activeFlows;
-    flowHistory;
-    flowMetrics;
-    liquidityUpdateInterval = null;
-    mevDetector;
     constructor() {
         super();
+        this.liquidityUpdateInterval = null;
         this.logger = createLogger('CapitalFlowOptimizer');
         this.venues = new Map();
         this.activeFlows = new Map();
@@ -472,4 +466,3 @@ class MEVDetector {
         return Math.min(1, risk);
     }
 }
-//# sourceMappingURL=CapitalFlowOptimizer.js.map

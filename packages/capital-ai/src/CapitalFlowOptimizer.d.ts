@@ -89,4 +89,3 @@ export declare class CapitalFlowOptimizer extends EventEmitter {
     destroy(): void;
 }
 export {};
-//# sourceMappingURL=CapitalFlowOptimizer.d.ts.map

@@ -12,9 +12,9 @@
  */
 
 import { EventEmitter } from 'events';
-import { DynamicWeightAllocator } from '../../../capital-ai/src/DynamicWeightAllocator';
-import { PortfolioSentinel } from '../../../capital-ai/src/PortfolioSentinel';
+import { DynamicWeightAllocator, PortfolioSentinel } from '@noderr/capital-ai';
 import type { AdapterMetadata, FloorPosition } from '../types';
+import { AdapterCategory } from '@noderr/types';
 
 /**
  * ML-generated risk score for an adapter
@@ -236,8 +236,12 @@ export class MLRiskAdapter extends EventEmitter {
         await this.registerOrUpdateStrategy(strategy);
       }
       
-      // Trigger ML optimization
-      const allocation = await this.weightAllocator.optimizeAllocation();
+      // Get current ML allocation (optimization happens automatically via updateStrategy)
+      const allocation = this.weightAllocator.getCurrentAllocation();
+      
+      if (!allocation) {
+        throw new Error('No allocation available from ML model');
+      }
       
       // Convert ML allocation weights to capital amounts
       const recommendations: MLAllocationRecommendation[] = [];
@@ -300,20 +304,27 @@ export class MLRiskAdapter extends EventEmitter {
     
     try {
       // Update portfolio state in sentinel
-      await this.portfolioSentinel.updatePositions(
-        positions.map(p => ({
-          symbol: p.adapterId,
-          quantity: Number(p.value),
-          avgEntryPrice: 1,
-          currentPrice: 1,
-          marketValue: Number(p.value),
-          unrealizedPnL: 0,
-          realizedPnL: 0,
-          weight: Number(p.value) / Number(totalValue),
-          strategy: p.adapterId
-        })),
-        Number(totalValue)
-      );
+      // Note: updatePosition is called for each position individually
+      const mappedPositions = positions.map(p => ({
+        symbol: p.adapterId,
+        quantity: Number(p.value),
+        avgEntryPrice: 1,
+        currentPrice: 1,
+        marketValue: Number(p.value),
+        unrealizedPnL: 0,
+        realizedPnL: 0,
+        weight: Number(p.value) / Number(totalValue),
+        strategy: p.adapterId
+      }));
+      
+      for (const position of mappedPositions) {
+        await this.portfolioSentinel.updatePosition(
+          position.symbol,
+          position.quantity,
+          position.currentPrice,
+          position.strategy
+        );
+      }
       
       // Sentinel will automatically trigger emergency actions if limits breached
       
@@ -384,7 +395,7 @@ export class MLRiskAdapter extends EventEmitter {
   ): MLStrategy['performance'] {
     // For lending protocols, use conservative estimates
     const baseAPY = metadata.historicalAPY || 5;
-    const volatility = metadata.category === 'LENDING' ? 0.05 : 0.15;
+    const volatility = metadata.category === AdapterCategory.LENDING ? 0.05 : 0.15;
     
     return {
       sharpeRatio: baseAPY / (volatility * 10), // Rough Sharpe estimate
