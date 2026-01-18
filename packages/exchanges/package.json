@@ -1,0 +1,26 @@
+{
+  "name": "@noderr/exchanges",
+  "version": "1.0.0",
+  "description": "Exchange connectivity service with paper trading engine for testnet simulation",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@noderr/utils": "workspace:*",
+    "@noderr/types": "workspace:*",
+    "@noderr/telemetry": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

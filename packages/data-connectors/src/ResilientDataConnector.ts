@@ -183,7 +183,7 @@ export abstract class ResilientDataConnector extends EventEmitter {
           resolve();
         });
         
-        ws.on('error', (error) => {
+        ws.on('error', (error: Error) => {
           clearTimeout(timeout);
           this.recordConnectionAttempt(attemptStart, false, error.message);
           reject(error);

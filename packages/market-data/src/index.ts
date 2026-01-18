@@ -15,7 +15,7 @@
 import { Logger } from '@noderr/utils';
 import { getShutdownHandler, onShutdown } from '@noderr/utils';
 
-export { RingBuffer } from './RingBuffer';
+export { MarketDataRingBuffer, MarketDataRingBufferView, RingBufferBenchmark, MarketDataPoint } from './RingBuffer';
 
 /**
  * Market Data Service

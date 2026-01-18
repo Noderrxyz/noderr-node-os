@@ -54,9 +54,9 @@ export class ChainlinkOracle extends EventEmitter {
     super();
     this.logger = createLogger('ChainlinkOracle');
     this.config = {
-      updateInterval: 10000, // 10 seconds default
-      priceDeviationThreshold: 0.02, // 2% deviation threshold
-      ...config
+      ...config,
+      updateInterval: config.updateInterval || 10000, // 10 seconds default
+      priceDeviationThreshold: config.priceDeviationThreshold || 0.02 // 2% deviation threshold
     };
     
     this.initializeFeedMappings();

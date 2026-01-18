@@ -1,7 +1,21 @@
 import { Worker, isMainThread, parentPort, workerData } from 'worker_threads';
 import { EventEmitter } from 'events';
 import * as os from 'os';
-import { MarketDataUpdate } from '../../core/src/MarketDataDistributor';
+// TODO: Import from @noderr/core once it builds
+export interface MarketDataUpdate {
+  symbol: string;
+  sequence?: number;
+  timestamp?: bigint;
+  bidPrice?: number;
+  bidSize?: number;
+  askPrice?: number;
+  askSize?: number;
+  lastPrice?: number;
+  volume?: number;
+  isSnapshot?: boolean;
+  isTrade?: boolean;
+  isQuote?: boolean;
+}
 
 /**
  * Concurrent Strategy Executor

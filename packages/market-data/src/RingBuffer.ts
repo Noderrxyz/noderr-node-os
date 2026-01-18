@@ -1,4 +1,3 @@
-import * as winston from 'winston';
 
 export interface MarketDataPoint {
   symbol: string;
@@ -290,7 +289,7 @@ export class MarketDataRingBufferView {
  * Benchmark for ring buffer performance
  */
 export class RingBufferBenchmark {
-  static async runBenchmark(logger: winston.Logger): Promise<void> {
+  static async runBenchmark(logger: any): Promise<void> {
     console.log('\n💍 Ring Buffer Performance Benchmark');
     console.log('Target: -3ms market data access\n');
     
@@ -398,11 +397,12 @@ export class RingBufferBenchmark {
 
 // Run benchmark if executed directly
 if (require.main === module) {
-  const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.simple(),
-    transports: [new winston.transports.Console()]
-  });
+  const logger = {
+    info: (msg: string) => console.log(msg),
+    error: (msg: string) => console.error(msg),
+    warn: (msg: string) => console.warn(msg),
+    debug: (msg: string) => console.debug(msg)
+  };
   
-  RingBufferBenchmark.runBenchmark(logger).catch(console.error);
+  RingBufferBenchmark.runBenchmark(logger as any).catch(console.error);
 } 
