@@ -743,8 +743,8 @@ export class WalkForwardOptimizer extends EventEmitter {
     if (performances.length === 0) return 0;
     
     // Calculate consistency of performance
-    const mean = performances.reduce((a, b) => a + b, 0) / performances.length;
-    const variance = performances.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / performances.length;
+    const mean = performances.reduce((a: number, b: number) => a + b, 0) / performances.length;
+    const variance = performances.reduce((sum: number, p: number) => sum + Math.pow(p - mean, 2), 0) / performances.length;
     const std = Math.sqrt(variance);
     
     // Lower std relative to mean indicates more robust
@@ -752,7 +752,7 @@ export class WalkForwardOptimizer extends EventEmitter {
     const consistency = 1 / (1 + cv);
     
     // Check if all windows are profitable
-    const profitableWindows = performances.filter(p => p > 0).length;
+    const profitableWindows = performances.filter((p: number) => p > 0).length;
     const profitability = profitableWindows / performances.length;
     
     // Combined robustness score

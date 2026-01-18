@@ -567,8 +567,10 @@ export class PortfolioOptimizer extends EventEmitter {
     const diversificationRatio = weightedAvgVol / result.expectedRisk;
     
     return {
+      totalReturn: result.expectedReturn,
       expectedReturn: result.expectedReturn,
       expectedRisk: result.expectedRisk,
+      volatility: result.expectedRisk,
       sharpeRatio: result.sharpeRatio,
       sortinoRatio: result.sharpeRatio * 1.2, // Simplified
       calmarRatio: result.expectedReturn / (result.expectedRisk * 2), // Simplified
@@ -576,16 +578,7 @@ export class PortfolioOptimizer extends EventEmitter {
       valueAtRisk95: result.expectedRisk * 1.645,
       conditionalVaR95: result.expectedRisk * 2.063,
       beta: 1, // Simplified
-      alpha: result.expectedReturn - 0.08, // Simplified
-      trackingError: 0.05, // Simplified
-      informationRatio: (result.expectedReturn - 0.08) / 0.05,
-      treynorRatio: result.expectedReturn / 1,
-      jensenAlpha: result.expectedReturn - 0.08,
-      m2Ratio: result.sharpeRatio * 0.15 + 0.02,
-      diversificationRatio,
-      concentrationRisk: herfindahlIndex,
-      liquidityScore: 0.9, // Simplified
-      turnover: 0.2 // Simplified
+      alpha: result.expectedReturn - 0.08 // Simplified
     };
   }
   

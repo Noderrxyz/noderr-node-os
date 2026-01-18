@@ -486,7 +486,7 @@ export interface IQuantResearchService {
   
   // Factor Analysis
   createFactorModel(factors: Factor[]): Promise<FactorModel>;
-  analyzeFactors(model: FactorModel, data: any): Promise<FactorPerformance>;
+  analyzeFactors(model: FactorModel, data: any): Promise<FactorAnalysisResult>;
   
   // Portfolio Construction
   constructPortfolio(config: Portfolio): Promise<Portfolio>;
@@ -668,6 +668,7 @@ export interface PortfolioMetrics {
   sortinoRatio?: number;
   calmarRatio?: number;
   valueAtRisk95?: number;
+  conditionalVaR95?: number;
   volatility: number;
   maxDrawdown: number;
   beta?: number;
@@ -693,6 +694,7 @@ export interface AlphaDecayResult {
   strategyId?: string;
   decayMetrics: DecayMetrics;
   decayRate?: number;
+  halfLife?: number;
   regimeAnalysis: RegimeAnalysis;
   signalStrength: SignalStrength;
 }
@@ -725,4 +727,5 @@ export interface SignalStrength {
   signal?: string;
   initialStrength?: number;
   currentStrength?: number;
+  trend?: string;
 }

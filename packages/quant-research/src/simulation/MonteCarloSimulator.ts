@@ -175,13 +175,13 @@ export class MonteCarloSimulator extends EventEmitter {
     
     return {
       id: pathId.toString(),
+      path: values,
       values,
       returns,
-      timestamps,
+      timestamps: timestamps.map(d => d.getTime()),
       finalValue: values[values.length - 1],
       totalReturn: (values[values.length - 1] - values[0]) / values[0],
       maxDrawdown: metrics.maxDrawdown,
-      sharpeRatio: metrics.sharpeRatio,
       volatility: metrics.volatility
     };
   }

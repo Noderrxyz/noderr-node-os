@@ -120,9 +120,14 @@ export class FactorAnalyzer extends EventEmitter {
     // Generate insights
     const insights = this.generateInsights(regression, performance, riskAttribution);
     
+    // Calculate correlations for the result
+    const correlations = await this.calculateCorrelations(model.factors);
+    
     const result: FactorAnalysisResult = {
       modelId: model.id,
       timestamp: new Date(),
+      factors: model.factors,
+      correlations,
       regression,
       exposures,
       performance,

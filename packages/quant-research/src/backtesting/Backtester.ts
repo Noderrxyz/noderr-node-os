@@ -531,7 +531,7 @@ export class Backtester extends EventEmitter {
    */
   private calculateIndicators(symbol: string, index: number): any {
     const data = this.data.get(symbol)!;
-    const lookback = this.config!.strategy.parameters.lookbackPeriod;
+    const lookback = this.config!.strategy.parameters.lookbackPeriod || 20;
     
     // Simple indicators for demonstration
     const prices = data.slice(Math.max(0, index - lookback), index + 1).map(d => d.close);

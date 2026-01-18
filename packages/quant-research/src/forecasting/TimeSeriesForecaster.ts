@@ -353,6 +353,9 @@ export class TimeSeriesForecaster {
    * Forecast with LSTM model
    */
   private async forecastLSTM(model: TimeSeriesModel, steps: number): Promise<number[]> {
+    if (!model.fittedParameters) {
+      throw new Error('Model not fitted');
+    }
     const lastValue = model.fittedParameters.lastValue as number;
     const forecast: number[] = [];
     
@@ -370,6 +373,9 @@ export class TimeSeriesForecaster {
    * Forecast with Prophet model
    */
   private async forecastProphet(model: TimeSeriesModel, steps: number): Promise<number[]> {
+    if (!model.fittedParameters) {
+      throw new Error('Model not fitted');
+    }
     const trend = model.fittedParameters.trend as number[];
     const seasonal = model.fittedParameters.seasonal as number[];
     const lastIndex = model.fittedParameters.lastIndex as number;

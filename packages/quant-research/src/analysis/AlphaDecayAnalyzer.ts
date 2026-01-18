@@ -75,16 +75,13 @@ export class AlphaDecayAnalyzer extends EventEmitter {
     const signalPatterns = this.generateSignalPatterns(windows, backtestResult);
     
     const result: AlphaDecayResult = {
+      signal: backtestResult.strategyId || 'unknown',
       strategyId: backtestResult.strategyId,
       decayRate: decayMetrics.overallDecayRate,
       halfLife: decayMetrics.halfLife,
-      metrics: decayMetrics,
-      signalAnalysis,
-      regimeAnalysis,
-      crowdingAnalysis,
-      retrainingFrequency,
-      signalPatterns,
-      recommendations: this.generateRecommendations(decayMetrics, regimeAnalysis)
+      decayMetrics: decayMetrics,
+      signalStrength: signalAnalysis[0] || { strength: 0, confidence: 0, stability: 0 },
+      regimeAnalysis: regimeAnalysis
     };
     
     // Cache result
@@ -322,11 +319,12 @@ export class AlphaDecayAnalyzer extends EventEmitter {
       
       signalStrengths.push({
         signal,
+        strength: strengthByWindow.reduce((a, b) => a + b, 0) / strengthByWindow.length,
+        confidence: this.calculateConsistency(strengthByWindow),
+        stability: this.calculateConsistency(strengthByWindow),
         initialStrength: strengthByWindow[0] || 0,
         currentStrength: strengthByWindow[strengthByWindow.length - 1] || 0,
-        trend: decay.lambda > 0 ? 'declining' : 'stable',
-        effectiveness: strengthByWindow.reduce((a, b) => a + b, 0) / strengthByWindow.length,
-        consistency: this.calculateConsistency(strengthByWindow)
+        trend: decay.lambda > 0 ? 'declining' : 'stable'
       });
     }
     
@@ -449,7 +447,9 @@ export class AlphaDecayAnalyzer extends EventEmitter {
     
     // Retrain when performance drops by 20%
     const acceptableDecay = 0.2;
-    const daysToDecay = -Math.log(1 - acceptableDecay) / decayMetrics.decayCoefficient;
+    const daysToDecay = decayMetrics.decayCoefficient 
+      ? -Math.log(1 - acceptableDecay) / decayMetrics.decayCoefficient
+      : 90;
     
     // Add safety margin
     return Math.max(7, Math.floor(daysToDecay * 0.7));
@@ -518,14 +518,14 @@ export class AlphaDecayAnalyzer extends EventEmitter {
       );
     }
     
-    if (decayMetrics.decayByMetric.sharpeRatio.lambda > 0.01) {
+    if (decayMetrics.decayByMetric?.sharpeRatio?.lambda > 0.01) {
       recommendations.push(
         'Sharpe ratio showing rapid decay. Review risk management and position sizing.'
       );
     }
     
     // Regime-based recommendations
-    if (regimeAnalysis.regimeStability < 0.5) {
+    if (regimeAnalysis.regimeStability !== undefined && regimeAnalysis.regimeStability < 0.5) {
       recommendations.push(
         'Frequent regime changes detected. Consider adaptive strategies or regime-specific models.'
       );

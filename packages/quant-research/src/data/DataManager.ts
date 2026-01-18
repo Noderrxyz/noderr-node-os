@@ -410,7 +410,7 @@ export class DataManager {
       symbols: dataset.symbols,
       startDate: dataset.startDate,
       endDate: dataset.endDate,
-      frequency: dataset.frequency
+      frequency: dataset.frequency || '1d'
     });
   }
 
@@ -470,4 +470,23 @@ export class DataManager {
   getAvailableDatasets(): ResearchDataset[] {
     return Array.from(this.datasets.values());
   }
-} 
+
+  /**
+   * Export results to file
+   */
+  async exportResults(result: any): Promise<void> {
+    this.logger.info(`Exporting results for ${result.strategyId || 'unknown'}`);
+    // In production, would export to JSON/CSV files
+    // For now, just log that we're exporting
+  }
+
+  /**
+   * Shutdown the data manager
+   */
+  async shutdown(): Promise<void> {
+    this.logger.info('Shutting down DataManager');
+    this.clearCache();
+    this.datasets.clear();
+    this.historicalData.clear();
+  }
+}

@@ -20,6 +20,8 @@ import {
   FactorModel,
   Factor,
   FactorPerformance,
+  FactorAnalysisResult,
+  OptimizationConstraints,
   Portfolio,
   PortfolioObjective,
   TimeSeriesModel,
@@ -173,7 +175,7 @@ export class QuantResearchService extends EventEmitter implements IQuantResearch
     
     // Analyze alpha decay
     const alphaDecay = await this.alphaDecayAnalyzer.analyze(result);
-    result.riskMetrics.alphaDecay = alphaDecay.decayRate;
+    result.riskMetrics.alphaDecay = alphaDecay.decayRate || 0;
     
     // Store result
     this.activeBacktests.set(config.strategy.id, result);
@@ -213,7 +215,9 @@ export class QuantResearchService extends EventEmitter implements IQuantResearch
       strategy: config.strategy,
       parameters: result.bestParameters,
       numSimulations: 1000,
-      timeHorizon: 252 // 1 year
+      timeHorizon: 252, // 1 year
+      initialValue: 100000,
+      distribution: 'normal' as any
     });
     
     result.robustnessScore = monteCarloResults.confidenceInterval.p95;
@@ -274,13 +278,13 @@ export class QuantResearchService extends EventEmitter implements IQuantResearch
     const correlations = await this.factorAnalyzer.calculateCorrelations(factors);
     
     // Warn about high correlations
-    for (let i = 0; i < factors.length; i++) {
-      for (let j = i + 1; j < factors.length; j++) {
-        if (Math.abs(correlations[i][j]) > 0.7) {
-          this.logger.warn(
-            `High correlation detected between ${factors[i].name} and ${factors[j].name}: ${correlations[i][j]}`
-          );
-        }
+    for (const corr of correlations) {
+      if (Math.abs(corr.correlation) > 0.7) {
+        const factor1 = factors.find(f => f.id === corr.factorId1);
+        const factor2 = factors.find(f => f.id === corr.factorId2);
+        this.logger.warn(
+          `High correlation detected between ${factor1?.name} and ${factor2?.name}: ${corr.correlation}`
+        );
       }
     }
     
@@ -290,7 +294,7 @@ export class QuantResearchService extends EventEmitter implements IQuantResearch
   /**
    * Analyze factors
    */
-  async analyzeFactors(model: FactorModel, data: any): Promise<FactorPerformance> {
+  async analyzeFactors(model: FactorModel, data: any): Promise<FactorAnalysisResult> {
     return await this.factorAnalyzer.analyze(model, data);
   }
   
@@ -309,9 +313,15 @@ export class QuantResearchService extends EventEmitter implements IQuantResearch
     );
     
     // Calculate optimal weights
+    const constraints: OptimizationConstraints = Array.isArray(config.constraints) 
+      ? {} 
+      : (config.constraints || {});
+    
     const optimizedPortfolio = await this.portfolioOptimizer.optimize(
-      config,
-      assetData
+      config.assets,
+      config.objective || 'max_sharpe' as any,
+      constraints,
+      { type: 'sample_covariance' } as any
     );
     
     // Run backtest on portfolio
@@ -551,6 +561,10 @@ export class QuantResearchService extends EventEmitter implements IQuantResearch
    */
   private validatePortfolioConstraints(portfolio: Portfolio): void {
     // Check weight constraints
+    if (!portfolio.weights) {
+      return; // No weights to validate yet
+    }
+    
     const totalWeight = portfolio.weights.reduce((sum, w) => sum + w, 0);
     if (Math.abs(totalWeight - 1.0) > 0.001) {
       throw new Error('Portfolio weights must sum to 1.0');
