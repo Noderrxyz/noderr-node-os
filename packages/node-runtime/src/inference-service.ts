@@ -243,7 +243,7 @@ export class InferenceService {
       
       return result;
       
-    } catch (error: unknown) {
+    } catch (error: any) {
       const executionTime = Date.now() - startTime;
       
       logger.error('❌ Inference failed:', error);

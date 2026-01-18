@@ -154,14 +154,14 @@ export async function verifyNFTOwnership(
       walletAddress,
     };
 
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('❌ NFT verification failed:', error);
     
     return {
       isValid: false,
       hasNFT: false,
       error: 'Verification failed',
-      details: error.message || 'Unknown error during NFT verification',
+      details: (error as Error).message || 'Unknown error during NFT verification',
     };
   }
 }

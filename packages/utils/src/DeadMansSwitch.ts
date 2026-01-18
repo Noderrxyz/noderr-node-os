@@ -305,7 +305,7 @@ export class DeadMansSwitch extends EventEmitter {
         success: true
       });
       
-    } catch (error: unknown) {
+    } catch (error: any) {
       this.logger.error('Dead man\'s switch action failed', error);
       
       this.emit('action-failed', {

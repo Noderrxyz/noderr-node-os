@@ -187,7 +187,7 @@ export class RewardDistributor {
         blockNumber: receipt.blockNumber,
         gasUsed: receipt.gasUsed,
       };
-    } catch (error: unknown) {
+    } catch (error: any) {
       this.logger.error('Merkle epoch creation failed', {
         error: error.message,
         description,
@@ -256,7 +256,7 @@ export class RewardDistributor {
   ): Promise<boolean> {
     try {
       return await this.contract.verifyMerkleProof(epochId, address, amount, proof);
-    } catch (error: unknown) {
+    } catch (error: any) {
       this.logger.error('Proof verification failed', {
         error: error.message,
         epochId,
@@ -320,7 +320,7 @@ export class RewardDistributor {
         blockNumber: receipt.blockNumber,
         gasUsed: receipt.gasUsed,
       };
-    } catch (error: unknown) {
+    } catch (error: any) {
       this.logger.error('Reward claim failed', {
         error: error.message,
         epochId,
@@ -396,7 +396,7 @@ export class RewardDistributor {
         blockNumber: receipt.blockNumber,
         gasUsed: receipt.gasUsed,
       };
-    } catch (error: unknown) {
+    } catch (error: any) {
       this.logger.error('Batch claim failed', {
         error: error.message,
         epochId,

@@ -12,6 +12,7 @@
     "test:auth-api": "pnpm --filter @noderr/auth-api test"
   },
   "devDependencies": {
+    "@jest/globals": "^30.2.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/jest": "^29.5.14",
     "@types/node": "^20.19.26",

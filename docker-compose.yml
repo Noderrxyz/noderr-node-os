@@ -91,7 +91,7 @@ services:
     volumes:
       - ./config:/app/config:ro
       - node_logs:/app/logs
-      - node_state:/app/data/state:/app/logs
+      - node_state:/app/data/state
     ports:
       - "8080:8080"
       - "50052:50052"
@@ -151,7 +151,7 @@ volumes:
     driver: local
   node_data:
     driver: local
-   node_logs:
+  node_logs:
     driver: local
   node_state:
     driver: local

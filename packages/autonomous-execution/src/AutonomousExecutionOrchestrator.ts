@@ -390,7 +390,7 @@ export class AutonomousExecutionOrchestrator extends EventEmitter {
       
       this.completeTrade(tradeId);
       
-    } catch (error: unknown) {
+    } catch (error: any) {
       logger.error(`[${tradeId}] Trade flow failed:`, error);
       trade.status = 'FAILED';
       trade.error = error.message;

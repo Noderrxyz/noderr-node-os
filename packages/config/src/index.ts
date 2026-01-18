@@ -304,7 +304,7 @@ export class ConfigService extends EventEmitter {
     try {
       const content = await fs.readFile(filePath, 'utf-8');
       return JSON.parse(content);
-    } catch (error: unknown) {
+    } catch (error: any) {
       if (error.code === 'ENOENT') {
         this.logger.warn(`Configuration file not found: ${filename}`);
         return {};
