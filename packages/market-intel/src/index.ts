@@ -28,12 +28,14 @@ export type {
 
 import { Logger } from '@noderr/utils';
 import { getShutdownHandler, onShutdown } from '@noderr/utils';
+import { TelemetryClient } from '@noderr/telemetry';
 import { MarketIntelService } from './MarketIntelService';
 
 let marketIntelService: MarketIntelService | null = null;
 
 export async function startMarketIntelService(): Promise<void> {
   const logger = new Logger('MarketIntelService');
+  const telemetry = new TelemetryClient();
   
   try {
     logger.info('Starting Market Intelligence Service...');
@@ -45,7 +47,7 @@ export async function startMarketIntelService(): Promise<void> {
       enableArbitrage: process.env.ENABLE_ARBITRAGE !== 'false',
       enableWhaleTracking: process.env.ENABLE_WHALE_TRACKING !== 'false',
       enableSentiment: process.env.ENABLE_SENTIMENT !== 'false',
-    });
+    }, telemetry);
     
     // Start monitoring
     await marketIntelService.start();
