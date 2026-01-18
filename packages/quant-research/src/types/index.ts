@@ -361,6 +361,7 @@ export interface FactorModel {
 }
 
 export interface Factor {
+  id: string;
   name: string;
   category: 'value' | 'momentum' | 'quality' | 'sentiment' | 'technical' | 'macro';
   calculation: string; // Formula or description
@@ -370,10 +371,13 @@ export interface Factor {
 }
 
 export interface FactorPerformance {
+  factorId?: string;
   ic: number; // Information Coefficient
   icir: number; // IC Information Ratio
   factorReturns: number[];
   factorSharpe: number;
+  sharpeRatio?: number;
+  informationRatio?: number;
   turnover: number;
   capacity: number;
 }
@@ -384,6 +388,7 @@ export interface Portfolio {
   name: string;
   assets: Asset[];
   weights: number[];
+  totalValue?: number;
   constraints: PortfolioConstraint[];
   objective: PortfolioObjective;
   rebalanceFrequency: string;
@@ -391,10 +396,13 @@ export interface Portfolio {
 }
 
 export interface Asset {
+  id?: string;
   symbol: string;
   type: 'spot' | 'perpetual' | 'option' | 'defi';
   weight: number;
   targetWeight?: number;
+  expectedReturn?: number;
+  volatility?: number;
   constraints?: AssetConstraint;
 }
 
@@ -516,3 +524,13 @@ export interface ForecastResult {
   };
   model: TimeSeriesModel;
 } 
+// Risk Model
+export interface RiskModel {
+  id: string;
+  name: string;
+  type: 'parametric' | 'historical' | 'monte_carlo';
+  parameters: { [key: string]: any };
+  covarianceMatrix?: number[][];
+  expectedReturns?: number[];
+  riskFactors?: Factor[];
+}
