@@ -52,6 +52,7 @@ COPY packages/guardian-consensus ./packages/guardian-consensus
 COPY packages/oracle-consensus ./packages/oracle-consensus
 COPY packages/execution ./packages/execution
 COPY packages/autonomous-execution ./packages/autonomous-execution
+COPY packages/capital-ai ./packages/capital-ai
 COPY packages/floor-engine ./packages/floor-engine
 COPY packages/integration-layer ./packages/integration-layer
 COPY packages/system-orchestrator ./packages/system-orchestrator
@@ -71,6 +72,7 @@ RUN pnpm install --frozen-lockfile \
     --filter "@noderr/oracle-consensus" \
     --filter "@noderr/execution" \
     --filter "@noderr/autonomous-execution" \
+    --filter "@noderr/capital-ai" \
     --filter "@noderr/floor-engine" \
     --filter "@noderr/integration-layer" \
     --filter "@noderr/system-orchestrator" \
@@ -89,6 +91,7 @@ RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/oracle-consensus" build && \
     pnpm --filter "@noderr/execution" build && \
     pnpm --filter "@noderr/autonomous-execution" build && \
+    pnpm --filter "@noderr/capital-ai" build && \
     pnpm --filter "@noderr/floor-engine" build && \
     pnpm --filter "@noderr/integration-layer" build && \
     pnpm --filter "@noderr/system-orchestrator" build && \
@@ -108,6 +111,7 @@ RUN pnpm install --frozen-lockfile --prod \
     --filter "@noderr/oracle-consensus" \
     --filter "@noderr/execution" \
     --filter "@noderr/autonomous-execution" \
+    --filter "@noderr/capital-ai" \
     --filter "@noderr/floor-engine" \
     --filter "@noderr/integration-layer" \
     --filter "@noderr/system-orchestrator" \
