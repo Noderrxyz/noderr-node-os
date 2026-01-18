@@ -28,14 +28,23 @@ export type {
 
 import { Logger } from '@noderr/utils';
 import { getShutdownHandler, onShutdown } from '@noderr/utils';
-import { TelemetryClient } from '@noderr/telemetry';
 import { MarketIntelService } from './MarketIntelService';
+import { TelemetryClient } from './types';
 
 let marketIntelService: MarketIntelService | null = null;
 
 export async function startMarketIntelService(): Promise<void> {
   const logger = new Logger('MarketIntelService');
-  const telemetry = new TelemetryClient();
+  
+  // Create a simple telemetry client implementation
+  const telemetry: TelemetryClient = {
+    track: (event) => {
+      logger.debug('Telemetry event', { event });
+    },
+    flush: async () => {
+      // No-op for now
+    }
+  };
   
   try {
     logger.info('Starting Market Intelligence Service...');
