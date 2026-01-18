@@ -359,7 +359,10 @@ export interface FactorModel {
   weights: number[];
   correlationMatrix?: number[][];
   method: 'linear' | 'nonlinear' | 'ml';
-  performance: FactorPerformance;
+  performance: FactorPerformance | any;
+  principalComponents?: number[][];
+  explainedVariance?: number[];
+  createdAt?: Date;
 }
 
 export interface Factor {
