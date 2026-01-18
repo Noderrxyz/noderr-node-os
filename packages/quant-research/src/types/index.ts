@@ -569,3 +569,54 @@ export interface FactorAnalysisResult {
   exposures?: FactorExposure[];
   timestamp: Date;
 }
+
+
+export interface ConfidenceInterval {
+  lower: number;
+  upper: number;
+  level: number;
+}
+
+
+export enum DistributionType {
+  NORMAL = 'normal',
+  LOG_NORMAL = 'log_normal',
+  STUDENT_T = 't',
+  HISTORICAL = 'historical'
+}
+
+export interface MonteCarloConfig {
+  numSimulations: number;
+  timeHorizon: number;
+  initialValue: number;
+  distribution: DistributionType;
+  mean?: number;
+  volatility?: number;
+  confidenceLevel?: number;
+  seed?: number;
+}
+
+export interface SimulationPath {
+  path: number[];
+  finalValue: number;
+  totalReturn: number;
+  maxDrawdown: number;
+  volatility: number;
+}
+
+export interface MonteCarloResult {
+  paths: SimulationPath[];
+  statistics: {
+    mean: number;
+    median: number;
+    stdDev: number;
+    min: number;
+    max: number;
+  };
+  confidenceIntervals: {
+    [key: string]: ConfidenceInterval;
+  };
+  percentiles: { [key: string]: number };
+  probabilities?: { [key: string]: number };
+  tailRisk?: any;
+}
