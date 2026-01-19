@@ -253,6 +253,9 @@ var RecoveryActionType;
     RecoveryActionType["NOTIFY"] = "notify";
     RecoveryActionType["RESET"] = "reset";
     RecoveryActionType["ALERT_ONLY"] = "alert_only";
+    RecoveryActionType["RELOAD"] = "reload";
+    RecoveryActionType["CIRCUIT_BREAK"] = "circuit_break";
+    RecoveryActionType["SCALE_DOWN"] = "scale_down";
 })(RecoveryActionType || (exports.RecoveryActionType = RecoveryActionType = {}));
 // ============================================================================
 // Node Type System

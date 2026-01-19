@@ -718,7 +718,10 @@ export declare enum RecoveryActionType {
     ROLLBACK = "rollback",
     NOTIFY = "notify",
     RESET = "reset",
-    ALERT_ONLY = "alert_only"
+    ALERT_ONLY = "alert_only",
+    RELOAD = "reload",
+    CIRCUIT_BREAK = "circuit_break",
+    SCALE_DOWN = "scale_down"
 }
 export interface RecoveryAction {
     id?: string;

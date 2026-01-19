@@ -292,6 +292,7 @@ export class RecoveryManager extends EventEmitter {
   private setupDefaultStrategies(): void {
     // Default strategy for all modules
     this.state.defaultStrategy = {
+      name: 'default',
       module: '*',
       triggers: [
         {
@@ -322,7 +323,9 @@ export class RecoveryManager extends EventEmitter {
       ],
       maxAttempts: this.config.defaultMaxAttempts,
       backoffMultiplier: this.config.defaultBackoffMultiplier,
-      cooldownPeriod: this.config.defaultCooldownPeriod
+      cooldownPeriod: this.config.defaultCooldownPeriod,
+      priority: 1,
+      enabled: true
     };
     
     // Critical module strategies
@@ -330,6 +333,7 @@ export class RecoveryManager extends EventEmitter {
     
     for (const moduleId of criticalModules) {
       this.registerStrategy({
+        name: `critical-${moduleId}`,
         module: moduleId,
         triggers: [
           {
@@ -355,7 +359,9 @@ export class RecoveryManager extends EventEmitter {
         ],
         maxAttempts: 5, // More attempts for critical modules
         backoffMultiplier: 1.5,
-        cooldownPeriod: 30000
+        cooldownPeriod: 30000,
+        priority: 2,
+        enabled: true
       });
     }
   }
@@ -434,7 +440,7 @@ export class RecoveryManager extends EventEmitter {
     const timeout = (typeof actionConfig === 'object' ? actionConfig.timeout : undefined) || 30000;
     
     await Promise.race([
-      this.executeAction(action.module, action.action, actionConfig),
+      this.executeAction(action.module, action.type, typeof actionConfig === 'object' && 'maxRetries' in actionConfig ? actionConfig : {}),
       new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Recovery action timeout')), timeout)
       )
@@ -509,9 +515,9 @@ export class RecoveryManager extends EventEmitter {
     await this.messageBus.send(
       MessageFactory.create(
         MessageType.CONFIG_UPDATE,
-        'recovery.manager',
         moduleId,
-        { action: 'reload' }
+        { action: 'reload' },
+        'recovery.manager'
       )
     );
   }
@@ -526,9 +532,9 @@ export class RecoveryManager extends EventEmitter {
     await this.messageBus.send(
       MessageFactory.create(
         MessageType.MODULE_RESET as any,
-        'recovery.manager',
         moduleId,
-        { action: 'reset', clearState: true }
+        { action: 'reset', clearState: true },
+        'recovery.manager'
       )
     );
   }
@@ -544,9 +550,9 @@ export class RecoveryManager extends EventEmitter {
     await this.messageBus.send(
       MessageFactory.create(
         MessageType.MODULE_FAILOVER as any,
-        'recovery.manager',
         `${moduleId}.backup`,
-        { primaryModule: moduleId }
+        { primaryModule: moduleId },
+        'recovery.manager'
       )
     );
   }
@@ -571,9 +577,9 @@ export class RecoveryManager extends EventEmitter {
     await this.messageBus.send(
       MessageFactory.create(
         MessageType.MODULE_ROLLBACK as any,
-        'recovery.manager',
         moduleId,
-        { action: 'rollback' }
+        { action: 'rollback' },
+        'recovery.manager'
       )
     );
   }
@@ -588,9 +594,9 @@ export class RecoveryManager extends EventEmitter {
     await this.messageBus.send(
       MessageFactory.create(
         MessageType.MODULE_SCALE as any,
-        'recovery.manager',
         moduleId,
-        { action: 'scale_down', factor: 0.5 }
+        { action: 'scale_down', factor: 0.5 },
+        'recovery.manager'
       )
     );
   }
@@ -604,14 +610,14 @@ export class RecoveryManager extends EventEmitter {
     // Send alert
     await this.messageBus.send(
       MessageFactory.create(
-        MessageType.MODULE_ALERT as any,
-        'recovery.manager',
+        MessageType.MODULE_ALERT,
         'alerting.system',
         {
           module: moduleId,
           severity: 'critical',
           message: `Module ${moduleId} failed recovery - manual intervention required`
-        }
+        },
+        'recovery.manager'
       )
     );
   }
