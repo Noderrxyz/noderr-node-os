@@ -6,14 +6,15 @@
  */
 
 import { EventEmitter } from 'events';
-import { number } from 'ethers';
+// Ethers v6 migration: Removed unused BigNumber imports
 import * as ss from 'simple-statistics';
-import {
+// Import types from local alpha-edge types
+import type {
   TailRiskMetrics,
   RegimeDetection,
   PortfolioOptimization,
   DynamicHedge
-} from '@noderr/types/src';
+} from '../types';
 
 interface RiskConfig {
   confidenceLevels: number[]; // e.g., [0.95, 0.99, 0.999]
@@ -373,7 +374,7 @@ export class TailRiskManager extends EventEmitter {
       });
     }
     
-    return scenarios.sort((a, b) => b.impact - a.impact);
+    return scenarios.sort((a: any, b: any) => b.impact - a.impact);
   }
 
   /**
@@ -708,7 +709,7 @@ export class TailRiskManager extends EventEmitter {
     let maxDeviation = 0;
     for (const [asset, targetWeight] of Object.entries(optimization.optimalAllocation)) {
       const currentWeight = this.getCurrentWeight(asset);
-      const deviation = Math.abs(currentWeight - targetWeight);
+      const deviation = Math.abs(currentWeight - (targetWeight as number));
       maxDeviation = Math.max(maxDeviation, deviation);
     }
     
@@ -720,7 +721,6 @@ export class TailRiskManager extends EventEmitter {
    */
   private calculateDiversificationRatio(weights: Record<string, number>): number {
     const assets = Object.keys(weights);
-    const n = assets.length;
     
     // Calculate weighted average volatility
     let weightedVol = 0;
@@ -871,7 +871,7 @@ export class TailRiskManager extends EventEmitter {
 
   private calculateRegimeConfidence(indicators: RegimeDetection['indicators']): number {
     // Confidence based on indicator strength
-    const strengths = Object.values(indicators).map(Math.abs);
+    const strengths = Object.values(indicators).map((x: number) => Math.abs(x));
     return Math.min(...strengths);
   }
 
@@ -887,7 +887,7 @@ export class TailRiskManager extends EventEmitter {
       crisis: { toBull: 0.05, toBear: 0.3, toSideways: 0.1, toVolatile: 0.4, toCrisis: 0.15 }
     };
     
-    return transitions[currentRegime];
+    return transitions[currentRegime as keyof typeof transitions];
   }
 
   private estimateRegimeDuration(regime: RegimeDetection['currentRegime']): number {
@@ -900,7 +900,7 @@ export class TailRiskManager extends EventEmitter {
       crisis: 72 // 3 days
     };
     
-    return durations[regime];
+    return durations[regime as keyof typeof durations];
   }
 
   private getStressScenario(name: string): StressScenario {
@@ -1052,29 +1052,29 @@ export class TailRiskManager extends EventEmitter {
     return [];
   }
 
-  private async identifyOptimalHedges(exposures: any[]): Promise<any[]> {
+  private async identifyOptimalHedges(_exposures: any[]): Promise<any[]> {
     // Identify best hedging instruments
     return [];
   }
 
-  private calculateHedgeRatios(exposures: any[], instruments: any[]): number[] {
+  private calculateHedgeRatios(_exposures: any[], instruments: any[]): number[] {
     // Calculate optimal hedge ratios
     return instruments.map(() => 0.5);
   }
 
-  private calculateHedgeEffectiveness(instruments: any[], ratios: number[]): number[] {
+  private calculateHedgeEffectiveness(_instruments: any[], ratios: number[]): number[] {
     // Calculate effectiveness of each hedge
     return ratios.map(r => Math.min(0.95, 0.7 + r * 0.2));
   }
 
-  private calculateHedgeCosts(instruments: any[], ratios: number[]): number[] {
+  private calculateHedgeCosts(_instruments: any[], ratios: number[]): number[] {
     // Calculate cost of each hedge
     return ratios.map(r => r * 0.01);
   }
 
   private async calculateHedgedRiskMetrics(
-    instruments: any[],
-    ratios: number[]
+    _instruments: any[],
+    _ratios: number[]
   ): Promise<{ var: number; maxLoss: number }> {
     // Calculate risk metrics with hedges
     return {

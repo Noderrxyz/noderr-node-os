@@ -64,7 +64,8 @@ export class ArbitrageEngine extends EventEmitter {
   private graph: Graph = {};
   private opportunities: Map<string, ArbitrageOpportunity> = new Map();
   private executionHistory: ArbitrageOpportunity[] = [];
-  private _statisticalPairs: Map<string, StatisticalArbitrage> = new Map();
+  // Statistical pairs tracking disabled for now
+  // private _statisticalPairs: Map<string, StatisticalArbitrage> = new Map();
   
   constructor(config: Partial<ArbitrageConfig> = {}) {
     super();
@@ -321,14 +322,14 @@ export class ArbitrageEngine extends EventEmitter {
       this.config.maxCapitalPerTrade
     );
     
-    const profitEstimate = BigInt(Math.floor(optimalSize * netProfit));
+    const profitEstimate = Math.floor(optimalSize * netProfit);
     
     return {
       id: `tri_${asset1}_${asset2}_${asset3}_${Date.now()}`,
       type: 'triangular',
       profitEstimate,
       probability: this.calculateExecutionProbability([leg1.venue, leg2.venue, leg3.venue]),
-      requiredCapital: BigInt(Math.floor(optimalSize)),
+      requiredCapital: Math.floor(optimalSize),
       executionTime: this.calculateExecutionTime([leg1.venue, leg2.venue, leg3.venue]),
       riskScore: this.calculateRiskScore(netProfit, maxVolume),
       venues: [leg1.venue, leg2.venue, leg3.venue],
@@ -433,14 +434,14 @@ export class ArbitrageEngine extends EventEmitter {
       this.config.maxCapitalPerTrade
     );
     
-    const profitEstimate = BigInt(Math.floor(optimalSize * netProfit));
+    const profitEstimate = Math.floor(optimalSize * netProfit);
     
     return {
       id: `cross_${asset}_${buyVenue}_${sellVenue}_${Date.now()}`,
       type: 'cross_venue',
       profitEstimate,
       probability: this.calculateExecutionProbability([buyVenue, sellVenue]),
-      requiredCapital: BigInt(Math.floor(optimalSize)),
+      requiredCapital: Math.floor(optimalSize),
       executionTime: this.calculateExecutionTime([buyVenue, sellVenue]),
       riskScore: this.calculateRiskScore(netProfit, volume * buyPrice),
       venues: [buyVenue, sellVenue],
@@ -463,7 +464,7 @@ export class ArbitrageEngine extends EventEmitter {
         if (venue1Data.chainId === venue2Data.chainId) continue;
         
         // Check common assets
-        for (const [key, prices] of this.priceFeeds.entries()) {
+        for (const [key, _prices] of this.priceFeeds.entries()) {
           if (!key.includes(venue1Name) || !this.priceFeeds.has(key.replace(venue1Name, venue2Name))) {
             continue;
           }
@@ -548,7 +549,7 @@ export class ArbitrageEngine extends EventEmitter {
     // Analyze all asset pairs
     const assets = new Set<string>();
     for (const key of this.priceFeeds.keys()) {
-      assets + key.split('_'[0]!);
+      assets.add(key.split('_')[0]!);
     }
     
     const assetArray = Array.from(assets);
@@ -639,14 +640,14 @@ export class ArbitrageEngine extends EventEmitter {
       this.config.maxCapitalPerTrade
     );
     
-    const profitEstimate = BigInt(Math.floor(positionSize * expectedMove));
+    const profitEstimate = Math.floor(positionSize * expectedMove);
     
     return {
       id: `stat_${pair.pairId}_${Date.now()}`,
       type: 'statistical',
       profitEstimate,
       probability: pair.confidence,
-      requiredCapital: BigInt(Math.floor(positionSize)),
+      requiredCapital: Math.floor(positionSize),
       executionTime: pair.cointegration.halfLife * 3600 * 1000, // Convert hours to ms
       riskScore: 1 / pair.confidence,
       venues: ['multiple'],
@@ -835,7 +836,7 @@ export class ArbitrageEngine extends EventEmitter {
       );
     }
     
-    const totalGas = steps.reduce((sum: bigint, step: any) => sum + BigInt(step.gasEstimate || 0), BigInt(0));
+    const totalGas = steps.reduce((sum: number, step: any) => sum + (step.gasEstimate || 0), 0);
     
     return {
       steps,
@@ -865,8 +866,7 @@ export class ArbitrageEngine extends EventEmitter {
       
       // Check if we need flash loan
       const needsFlashLoan = opportunity.requiredCapital > 
-        BigInt('1000000' // $1M threshold
-      );
+        1000000; // $1M threshold
       
       if (needsFlashLoan && this.config.enableFlashLoans) {
         return await this.executeWithFlashLoan(opportunity, route);

@@ -7,15 +7,16 @@
  */
 
 import { EventEmitter } from 'events';
-import { number } from 'ethers';
-import { 
+// Ethers v6 migration: Removed unused BigNumber imports
+// Import types from local alpha-edge types
+import type { 
   OrderBookSnapshot, 
   OrderBookLevel,
   OrderFlowImbalance,
   MicrostructureSignal,
   LiquidityMap,
   VolatilityForecast
-} from '@noderr/types/src';
+} from '../types';
 
 interface MicrostructureConfig {
   updateFrequency: number; // milliseconds
@@ -42,7 +43,8 @@ export class MicrostructureAnalyzer extends EventEmitter {
   private orderBooks: Map<string, OrderBookSnapshot[]> = new Map();
   private orderFlowHistory: Map<string, number[]> = new Map();
   private liquidityMaps: Map<string, LiquidityMap> = new Map();
-  private volatilityCache: Map<string, number[]> = new Map();
+  // Volatility caching disabled for now
+  // private volatilityCache: Map<string, number[]> = new Map();
   private signalBuffer: MicrostructureSignal[] = [];
   
   constructor(config: Partial<MicrostructureConfig> = {}) {
@@ -163,7 +165,7 @@ export class MicrostructureAnalyzer extends EventEmitter {
   /**
    * Analyze order flow patterns
    */
-  private analyzeOrderFlow(symbol: string, snapshot: OrderBookSnapshot): OrderFlowImbalance {
+  private analyzeOrderFlow(symbol: string, _snapshot: OrderBookSnapshot): OrderFlowImbalance {
     const history = this.orderBooks.get(symbol) || [];
     
     if (history.length < 2) {
@@ -224,7 +226,6 @@ export class MicrostructureAnalyzer extends EventEmitter {
    * Update liquidity map with spoof detection
    */
   private updateLiquidityMap(symbol: string, snapshot: OrderBookSnapshot): LiquidityMap {
-    const existing = this.liquidityMaps.get(symbol);
     const levels: LiquidityMap['levels'] = [];
     
     // Analyze each price level
@@ -290,7 +291,7 @@ export class MicrostructureAnalyzer extends EventEmitter {
   /**
    * Detect liquidity shifts
    */
-  private detectLiquidityShift(symbol: string, metrics: OrderBookMetrics): MicrostructureSignal | null {
+  private detectLiquidityShift(symbol: string, _metrics: OrderBookMetrics): MicrostructureSignal | null {
     const history = this.orderBooks.get(symbol) || [];
     if (history.length < 50) return null;
     
@@ -328,7 +329,7 @@ export class MicrostructureAnalyzer extends EventEmitter {
    * Detect price discovery patterns
    */
   private detectPriceDiscovery(
-    symbol: string, 
+    _symbol: string, 
     metrics: OrderBookMetrics,
     flow: OrderFlowImbalance
   ): MicrostructureSignal | null {
@@ -713,7 +714,7 @@ export class MicrostructureAnalyzer extends EventEmitter {
     return predictions;
   }
 
-  private detectNewsFlow(symbol: string): boolean {
+  private detectNewsFlow(_symbol: string): boolean {
     // Placeholder for news detection logic
     // In production, this would integrate with news APIs
     return Math.random() < 0.1;
@@ -754,7 +755,7 @@ export class MicrostructureAnalyzer extends EventEmitter {
     return lambda * Math.sqrt(orderSize / liquidity);
   }
 
-  private calculateTheoreticalSpread(symbol: string): number {
+  private calculateTheoreticalSpread(_symbol: string): number {
     // Theoretical spread based on volatility and volume
     const vol = 0.02; // Placeholder
     const volume = 1000000; // Placeholder

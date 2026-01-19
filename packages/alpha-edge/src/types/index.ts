@@ -2,7 +2,7 @@
  * Alpha Edge Types - World-class trading infrastructure types
  */
 
-import { number } from 'ethers';
+// Ethers v6 migration: Removed unused BigNumber imports
 
 // ==================== MICROSTRUCTURE TYPES ====================
 
