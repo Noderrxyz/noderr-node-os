@@ -5,10 +5,10 @@ const src_1 = require("@noderr/utils/src");
 const events_1 = require("events");
 const logger = new src_1.Logger('PortfolioSentinel');
 const createLogger = (name) => ({
-    info: (message, meta) => logger.info(`[${name}] INFO:`, message, meta || ''),
-    error: (message, error) => logger.error(`[${name}] ERROR:`, message, error || ''),
-    debug: (message, meta) => logger.debug(`[${name}] DEBUG:`, message, meta || ''),
-    warn: (message, meta) => logger.warn(`[${name}] WARN:`, message, meta || '')
+    info: (message, meta) => logger.info(`[${name}] INFO: ${message}`, meta),
+    error: (message, error) => logger.error(`[${name}] ERROR: ${message}`, error),
+    debug: (message, meta) => logger.debug(`[${name}] DEBUG: ${message}`, meta),
+    warn: (message, meta) => logger.warn(`[${name}] WARN: ${message}`, meta)
 });
 class PortfolioSentinel extends events_1.EventEmitter {
     logger;
