@@ -1,6 +1,7 @@
 import { config as dotenvConfig } from 'dotenv';
 import { OnChainServiceConfig } from '@noderr/types/src';
 import { ethers } from 'ethers';
+import { getDefaultConfig } from './default';
 
 // Load environment variables
 dotenvConfig();
@@ -9,14 +10,12 @@ dotenvConfig();
  * Load configuration from environment variables
  */
 export function loadConfig(): OnChainServiceConfig {
+  // Get default config
+  const defaults = getDefaultConfig();
+  
   // Validate required environment variables
   const requiredVars = [
-    'RPC_URL',
-    'CHAIN_ID',
-    'PRIVATE_KEY',
-    'TREASURY_MANAGER_ADDRESS',
-    'MERKLE_REWARD_DISTRIBUTOR_ADDRESS',
-    'TRUST_FINGERPRINT_ADDRESS',
+    'PRIVATE_KEY', // Only private key is truly required
   ];
 
   for (const varName of requiredVars) {
@@ -27,19 +26,19 @@ export function loadConfig(): OnChainServiceConfig {
 
   return {
     // Blockchain Configuration
-    rpcUrl: process.env.RPC_URL!,
-    chainId: parseInt(process.env.CHAIN_ID!),
-    networkName: process.env.NETWORK_NAME || 'unknown',
+    rpcUrl: process.env.RPC_URL || defaults.rpcUrl,
+    chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : defaults.chainId,
+    networkName: process.env.NETWORK_NAME || defaults.networkName,
 
     // Wallet Configuration
     privateKey: process.env.PRIVATE_KEY!,
 
-    // Contract Addresses
-    treasuryManagerAddress: process.env.TREASURY_MANAGER_ADDRESS!,
-    merkleRewardDistributorAddress: process.env.MERKLE_REWARD_DISTRIBUTOR_ADDRESS!,
-    trustFingerprintAddress: process.env.TRUST_FINGERPRINT_ADDRESS!,
-    nodeRegistryAddress: process.env.NODE_REGISTRY_ADDRESS,
-    governanceManagerAddress: process.env.GOVERNANCE_MANAGER_ADDRESS,
+    // Contract Addresses (use defaults from deployed contracts)
+    treasuryManagerAddress: process.env.TREASURY_MANAGER_ADDRESS || defaults.treasuryManagerAddress,
+    merkleRewardDistributorAddress: process.env.MERKLE_REWARD_DISTRIBUTOR_ADDRESS || defaults.merkleRewardDistributorAddress,
+    trustFingerprintAddress: process.env.TRUST_FINGERPRINT_ADDRESS || defaults.trustFingerprintAddress,
+    nodeRegistryAddress: process.env.NODE_REGISTRY_ADDRESS || defaults.nodeRegistryAddress,
+    governanceManagerAddress: process.env.GOVERNANCE_MANAGER_ADDRESS || defaults.governanceManagerAddress,
 
     // Security Configuration
     maxCapitalRequest: process.env.MAX_CAPITAL_REQUEST
