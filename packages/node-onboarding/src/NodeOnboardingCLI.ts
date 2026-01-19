@@ -160,7 +160,7 @@ export class NodeOnboardingCLI {
   /**
    * Step 2: Connect wallet
    */
-  private async connectWallet(): Promise<ethers.Wallet> {
+  private async connectWallet(): Promise<ethers.HDNodeWallet | ethers.Wallet> {
     const { method } = await inquirer.prompt([
       {
         type: 'list',
@@ -346,7 +346,7 @@ export class NodeOnboardingCLI {
    * Step 6: Register node
    */
   private async registerNode(params: {
-    wallet: ethers.Wallet;
+    wallet: ethers.HDNodeWallet | ethers.Wallet;
     nodeTier: NodeTier;
     gpuHardwareId?: string;
     attestation: any;
