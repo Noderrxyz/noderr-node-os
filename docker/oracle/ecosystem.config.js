@@ -34,6 +34,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         SERVICE_NAME: 'telemetry'
+        METRICS_PORT: '8080',
       }
     },
     

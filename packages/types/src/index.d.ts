@@ -968,6 +968,7 @@ export interface UserApplication {
     stakeAmount: number;
     experience: string;
     motivation: string;
+    rpcEndpoint?: string;
     status: 'PENDING' | 'APPROVED' | 'REJECTED';
     submittedAt: number;
     reviewedAt?: number;

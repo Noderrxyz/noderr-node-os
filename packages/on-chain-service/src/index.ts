@@ -166,3 +166,62 @@ export * from './services/TrustUpdater';
 export function createOnChainService(config?: OnChainServiceConfig): OnChainService {
   return new OnChainService(config);
 }
+
+// ============================================================================
+// Main Entry Point
+// ============================================================================
+
+import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
+
+let onChainService: OnChainService | null = null;
+
+/**
+ * Start the on-chain service
+ */
+export async function startOnChainService(): Promise<void> {
+  try {
+    console.log('Starting On-Chain Service...');
+    
+    // Create service instance
+    onChainService = createOnChainService();
+    
+    // Check health
+    const health = await onChainService.getHealth();
+    console.log('On-Chain Service health check:', health);
+    
+    if (!health.healthy) {
+      console.error('On-Chain Service health check failed:', health.errors);
+      throw new Error('Service health check failed');
+    }
+    
+    // Register graceful shutdown
+    onShutdown('on-chain-service', async () => {
+      console.log('Shutting down on-chain service...');
+      
+      // Flush any pending operations
+      // TODO: Implement graceful shutdown logic
+      
+      console.log('On-chain service shut down complete');
+    }, 10000);
+    
+    console.log('On-Chain Service started successfully');
+    
+    // Keep process alive
+    await new Promise(() => {});
+  } catch (error) {
+    console.error('Failed to start On-Chain Service:', error);
+    throw error;
+  }
+}
+
+/**
+ * If run directly, start the service
+ */
+if (require.main === module) {
+  getShutdownHandler(30000);
+  
+  startOnChainService().catch((error) => {
+    console.error('Fatal error starting On-Chain Service:', error);
+    process.exit(1);
+  });
+}

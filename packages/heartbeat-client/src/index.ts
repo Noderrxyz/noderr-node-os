@@ -304,15 +304,17 @@ async function main(): Promise<void> {
   await heartbeatLoop();
 }
 
-// Run
-main().catch(error => {
-  logger.error('💥 Fatal error:', error);
-  process.exit(1);
-});
-
 // Export for testing
 export {
   sendHeartbeat,
   collectMetrics,
   refreshJwtToken,
 };
+
+// Run only when executed directly
+if (require.main === module) {
+  main().catch(error => {
+    logger.error('💥 Fatal error:', error);
+    process.exit(1);
+  });
+}
