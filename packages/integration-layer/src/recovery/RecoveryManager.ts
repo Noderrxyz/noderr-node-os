@@ -440,7 +440,7 @@ export class RecoveryManager extends EventEmitter {
     const timeout = (typeof actionConfig === 'object' ? actionConfig.timeout : undefined) || 30000;
     
     await Promise.race([
-      this.executeAction(action.module, action.type, typeof actionConfig === 'object' && 'maxRetries' in actionConfig ? actionConfig : {}),
+      this.executeAction(action.module, action.type, typeof actionConfig === 'object' && actionConfig !== null && !Array.isArray(actionConfig) ? actionConfig as RecoveryActionConfig : {}),
       new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Recovery action timeout')), timeout)
       )
@@ -682,7 +682,8 @@ export class RecoveryManager extends EventEmitter {
         // Simple error rate check
         moduleState.failureCount++;
         const errorRate = moduleState.failureCount / Math.max(1, trigger.duration / 1000);
-        return this.compareValue(errorRate, trigger.threshold, trigger.comparison);
+        const comparison = this.mapComparison(trigger.comparison || '>');
+        return this.compareValue(errorRate, trigger.threshold, comparison);
         
       case 'latency':
         // Would check latency metrics
@@ -708,6 +709,22 @@ export class RecoveryManager extends EventEmitter {
   /**
    * Private: Compare values based on comparison operator
    */
+  private mapComparison(comparison: string): 'gt' | 'lt' | 'eq' {
+    switch (comparison) {
+      case '>':
+      case '>=':
+        return 'gt';
+      case '<':
+      case '<=':
+        return 'lt';
+      case '==':
+      case '!=':
+        return 'eq';
+      default:
+        return 'gt';
+    }
+  }
+  
   private compareValue(value: number, threshold: number, comparison: 'gt' | 'lt' | 'eq'): boolean {
     switch (comparison) {
       case 'gt':

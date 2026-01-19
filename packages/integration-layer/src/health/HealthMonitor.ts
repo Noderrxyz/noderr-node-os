@@ -18,6 +18,7 @@ import {
   HealthCheckConfig,
   ModuleHealthConfig,
   HealthHistory,
+  ModuleStatusInfo,
   Message,
   MessageType,
   MessageFactory
@@ -517,13 +518,18 @@ export class HealthMonitor extends EventEmitter {
     // Generate recommendations
     const recommendations = this.generateRecommendations(results, alerts);
     
+    // Convert array to Record
+    const modulesRecord: Record<string, ModuleStatusInfo> = {};
+    moduleSummaries.forEach(m => {
+      modulesRecord[m.moduleId] = m;
+    });
+    
     this.lastSystemHealth = {
       status: HealthUtils.calculateOverallStatus(results),
       timestamp: Date.now(),
-      modules: moduleSummaries,
-      aggregateMetrics,
-      alerts,
-      recommendations
+      modules: modulesRecord,
+      metrics: aggregateMetrics,
+      alerts
     };
     
     this.emit('system:health:updated', this.lastSystemHealth);
