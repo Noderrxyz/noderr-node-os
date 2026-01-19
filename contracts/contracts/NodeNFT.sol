@@ -30,6 +30,9 @@ contract NodeNFT is ERC721Enumerable, AccessControl {
         bool isActive;
         uint256 activatedAt;
         string hardwareHash;    // Hash of verified hardware specs
+        uint256 reputationScore; // 0-1000, starts at 500
+        uint256 totalRewards;    // Cumulative rewards earned
+        uint256 lastRewardClaim; // Timestamp of last reward claim
     }
     
     mapping(uint256 => NodeMetadata) public nodeMetadata;
@@ -107,7 +110,10 @@ contract NodeNFT is ERC721Enumerable, AccessControl {
             stakingAmount: msg.value,
             isActive: false,
             activatedAt: 0,
-            hardwareHash: ""
+            hardwareHash: "",
+            reputationScore: 500,  // Start at neutral reputation
+            totalRewards: 0,
+            lastRewardClaim: 0
         });
         
         nodeTypeCount[nodeType]++;
@@ -256,6 +262,46 @@ contract NodeNFT is ERC721Enumerable, AccessControl {
      */
     function _baseURI() internal view override returns (string memory) {
         return _baseTokenURI;
+    }
+    
+    /**
+     * @notice Update reputation score for a node
+     * @param tokenId ID of the node NFT
+     * @param newScore New reputation score (0-1000)
+     */
+    function updateReputation(uint256 tokenId, uint256 newScore) 
+        external 
+        onlyRole(VERIFIER_ROLE) 
+    {
+        require(_ownerOf(tokenId) != address(0), "Node does not exist");
+        require(newScore <= 1000, "Score must be <= 1000");
+        
+        nodeMetadata[tokenId].reputationScore = newScore;
+    }
+    
+    /**
+     * @notice Record reward claim for a node
+     * @param tokenId ID of the node NFT
+     * @param amount Amount of rewards claimed
+     */
+    function recordRewardClaim(uint256 tokenId, uint256 amount) 
+        external 
+        onlyRole(VERIFIER_ROLE) 
+    {
+        require(_ownerOf(tokenId) != address(0), "Node does not exist");
+        
+        nodeMetadata[tokenId].totalRewards += amount;
+        nodeMetadata[tokenId].lastRewardClaim = block.timestamp;
+    }
+    
+    /**
+     * @notice Get reputation score for a node
+     * @param tokenId ID of the node NFT
+     * @return uint256 Reputation score
+     */
+    function getReputation(uint256 tokenId) external view returns (uint256) {
+        require(_ownerOf(tokenId) != address(0), "Node does not exist");
+        return nodeMetadata[tokenId].reputationScore;
     }
     
     /**
