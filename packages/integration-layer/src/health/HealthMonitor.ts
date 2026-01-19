@@ -219,6 +219,7 @@ export class HealthMonitor extends EventEmitter {
       interval: 30000, // 30 seconds
       timeout: 5000, // 5 seconds
       retries: 3,
+      enabled: true,
       modules: []
     };
   }
@@ -454,6 +455,7 @@ export class HealthMonitor extends EventEmitter {
       module: moduleId,
       message,
       timestamp: Date.now(),
+      acknowledged: false,
       resolved: false
     };
     

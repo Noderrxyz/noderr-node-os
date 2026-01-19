@@ -174,7 +174,7 @@ export class NodeOnboardingCLI {
       }
     ]);
 
-    let wallet: ethers.Wallet;
+    let wallet: ethers.HDNodeWallet | ethers.Wallet;
 
     if (method === 'privateKey') {
       const { privateKey } = await inquirer.prompt([

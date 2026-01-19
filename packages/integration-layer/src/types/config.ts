@@ -299,7 +299,7 @@ export interface Secret {
   id: string;
   name: string;
   value?: string; // Only in memory, never logged
-  source: 'env' | 'file' | 'vault' | 'kms';
+  source: 'env' | 'file' | 'vault' | 'kms' | 'runtime';
   metadata?: Record<string, any>;
   expiresAt?: number;
 }

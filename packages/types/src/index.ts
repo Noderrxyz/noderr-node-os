@@ -699,6 +699,9 @@ export interface HealthCheckResult {
   latency: number;
   timestamp: number;
   error?: string;
+  lastError?: string;
+  uptime?: number;
+  alerts?: HealthAlert[];
   details?: Record<string, any>;
 }
 
@@ -728,8 +731,18 @@ export interface HealthHistory {
   moduleId?: string;
   checks: HealthCheckResult[];
   entries?: HealthCheckResult[];
-  startTime: number;
-  endTime: number;
+  summary?: {
+    period?: number;
+    uptime?: number;
+    avgCpu?: number;
+    avgMemory?: number;
+    errorCount?: number;
+    statusChanges?: number;
+    mttr?: number;
+    mtbf?: number;
+  };
+  startTime?: number;
+  endTime?: number;
 }
 
 export enum ModuleHealthStatus {
@@ -743,6 +756,8 @@ export interface ModuleHealthConfig {
   module: string;
   moduleId?: string;
   enabled?: boolean;
+  interval?: number;
+  checks?: string[];
   checkInterval: number;
   timeout: number;
   thresholds: {

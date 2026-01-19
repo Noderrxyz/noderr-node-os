@@ -10,6 +10,11 @@ import { Logger } from 'winston';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import {
+  Message,
+  MessageType,
+  MessageFactory
+} from '@noderr/types/src';
+import {
   SystemConfig,
   ModuleConfig,
   ConfigUpdate,
@@ -19,11 +24,8 @@ import {
   EnvMapping,
   ConfigUtils,
   Secret,
-  SecretsConfig,
-  Message,
-  MessageType,
-  MessageFactory
-} from '@noderr/types/src';
+  SecretsConfig
+} from '../types/config';
 import { MessageBus } from '../bus/MessageBus';
 
 interface ConfigState {

@@ -187,7 +187,7 @@ export class NodeDashboard extends EventEmitter {
       logger.info(`${chalk.white('GPU:')}             ${chalk.green('✓')} ${chalk.gray(status.gpuHardwareId.substring(0, 16))}...`);
     }
     
-    logger.info();
+    logger.info('');
   }
 
   /**
@@ -210,7 +210,7 @@ export class NodeDashboard extends EventEmitter {
     logger.info(`${chalk.white('Success Rate:')}    ${successRateColor((metrics.successRate * 100).toFixed(2) + '%')}`);
     logger.info(`${chalk.white('Avg Response:')}    ${chalk.cyan(metrics.averageResponseTime.toFixed(0) + 'ms')}`);
     logger.info(`${chalk.white('Trust Score:')}     ${tfColor((metrics.trustFingerprint * 100).toFixed(2) + '%')}`);
-    logger.info();
+    logger.info('');
   }
 
   /**
@@ -227,7 +227,7 @@ export class NodeDashboard extends EventEmitter {
     logger.info(`${chalk.white('Total Earned:')}    ${chalk.green(earnings.totalEarned)} ${chalk.gray('NODR')}`);
     logger.info(`${chalk.white('Pending:')}         ${chalk.yellow(earnings.pendingRewards)} ${chalk.gray('NODR')}`);
     logger.info(`${chalk.white('Estimated APY:')}   ${apyColor(earnings.estimatedAPY.toFixed(2) + '%')}`);
-    logger.info();
+    logger.info('');
   }
 
   /**
@@ -251,7 +251,7 @@ export class NodeDashboard extends EventEmitter {
       });
     }
 
-    logger.info();
+    logger.info('');
   }
 
   /**
