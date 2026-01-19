@@ -251,6 +251,8 @@ var RecoveryActionType;
     RecoveryActionType["FAILOVER"] = "failover";
     RecoveryActionType["ROLLBACK"] = "rollback";
     RecoveryActionType["NOTIFY"] = "notify";
+    RecoveryActionType["RESET"] = "reset";
+    RecoveryActionType["ALERT_ONLY"] = "alert_only";
 })(RecoveryActionType || (exports.RecoveryActionType = RecoveryActionType = {}));
 // ============================================================================
 // Node Type System

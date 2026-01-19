@@ -39,8 +39,8 @@ interface HealthMonitorState {
   started: boolean;
   modules: Map<string, RegisteredModule>;
   alerts: Map<string, HealthAlert>;
-  checkTimer?: NodeJS.Timer;
-  metricsTimer?: NodeJS.Timer;
+  checkTimer?: NodeJS.Timeout;
+  metricsTimer?: NodeJS.Timeout;
 }
 
 export class HealthMonitor extends EventEmitter {
@@ -128,11 +128,14 @@ export class HealthMonitor extends EventEmitter {
     }
   ): void {
     const config: ModuleHealthConfig = {
+      module: options.name,
       moduleId,
       enabled: true,
       interval: this.config.interval,
+      checkInterval: this.config.interval,
       timeout: this.config.timeout,
       checks: ['basic', 'metrics'],
+      thresholds: {},
       ...options.config
     };
     
@@ -143,7 +146,9 @@ export class HealthMonitor extends EventEmitter {
       config,
       checkInProgress: false,
       history: {
+        module: options.name,
         moduleId,
+        checks: [],
         entries: [],
         summary: {
           period: 0,
@@ -409,21 +414,21 @@ export class HealthMonitor extends EventEmitter {
     if (!thresholds) return;
     
     // Check CPU thresholds
-    if (thresholds.cpu) {
-      const cpuUsage = result.metrics.cpu.usage;
-      if (cpuUsage > thresholds.cpu.critical) {
+    if (thresholds.cpu && result.metrics?.cpu && typeof result.metrics.cpu === 'object') {
+      const cpuUsage = (result.metrics.cpu as any).usage;
+      if (cpuUsage > (thresholds.cpu as any).critical) {
         this.createAlert(module.id, 'critical', `CPU usage critical: ${cpuUsage.toFixed(1)}%`);
-      } else if (cpuUsage > thresholds.cpu.warning) {
+      } else if (cpuUsage > (thresholds.cpu as any).warning) {
         this.createAlert(module.id, 'warning', `CPU usage high: ${cpuUsage.toFixed(1)}%`);
       }
     }
     
     // Check memory thresholds
-    if (thresholds.memory) {
-      const memUsage = result.metrics.memory.percentUsed;
-      if (memUsage > thresholds.memory.critical) {
+    if (thresholds.memory && result.metrics?.memory && typeof result.metrics.memory === 'object') {
+      const memUsage = (result.metrics.memory as any).percentUsed;
+      if (memUsage > (thresholds.memory as any).critical) {
         this.createAlert(module.id, 'critical', `Memory usage critical: ${memUsage.toFixed(1)}%`);
-      } else if (memUsage > thresholds.memory.warning) {
+      } else if (memUsage > (thresholds.memory as any).warning) {
         this.createAlert(module.id, 'warning', `Memory usage high: ${memUsage.toFixed(1)}%`);
       }
     }
@@ -431,9 +436,9 @@ export class HealthMonitor extends EventEmitter {
     // Check latency thresholds
     if (thresholds.latency) {
       const latency = result.latency;
-      if (latency > thresholds.latency.critical) {
+      if (latency > (thresholds.latency as any).critical) {
         this.createAlert(module.id, 'critical', `Health check latency critical: ${latency.toFixed(0)}ms`);
-      } else if (latency > thresholds.latency.warning) {
+      } else if (latency > (thresholds.latency as any).warning) {
         this.createAlert(module.id, 'warning', `Health check latency high: ${latency.toFixed(0)}ms`);
       }
     }

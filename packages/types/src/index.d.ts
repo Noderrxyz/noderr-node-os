@@ -716,14 +716,19 @@ export declare enum RecoveryActionType {
     SCALE = "scale",
     FAILOVER = "failover",
     ROLLBACK = "rollback",
-    NOTIFY = "notify"
+    NOTIFY = "notify",
+    RESET = "reset",
+    ALERT_ONLY = "alert_only"
 }
 export interface RecoveryAction {
+    id?: string;
     type: RecoveryActionType;
     module: string;
     action?: string;
+    reason?: string;
     config: RecoveryActionConfig;
     timestamp: number;
+    attempts?: number;
     status: 'pending' | 'executing' | 'completed' | 'failed';
     success?: boolean;
     result?: any;
@@ -738,8 +743,12 @@ export interface RecoveryActionConfig {
 }
 export interface RecoveryStrategy {
     name: string;
+    module?: string;
     triggers: RecoveryTrigger[];
     actions: RecoveryActionType[];
+    maxAttempts?: number;
+    backoffMultiplier?: number;
+    cooldownPeriod?: number;
     priority: number;
     enabled: boolean;
 }
