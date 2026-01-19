@@ -5,6 +5,8 @@ import { CircuitBreaker } from './utils/circuitBreaker';
 import { CapitalManager } from './services/CapitalManager';
 import { RewardDistributor } from './services/RewardDistributor';
 import { TrustUpdater } from './services/TrustUpdater';
+import { RewardOrchestrator } from './services/RewardOrchestrator';
+import { RewardEpochScheduler, HttpTelemetryClient } from './services/RewardEpochScheduler';
 import { OnChainServiceConfig, ServiceHealthStatus } from '@noderr/types/src';
 import { Logger } from 'winston';
 
@@ -23,6 +25,8 @@ export class OnChainService {
   public readonly capitalManager: CapitalManager;
   public readonly rewardDistributor: RewardDistributor;
   public readonly trustUpdater: TrustUpdater;
+  public readonly rewardOrchestrator: RewardOrchestrator;
+  public readonly rewardEpochScheduler: RewardEpochScheduler;
 
   constructor(config?: OnChainServiceConfig) {
     // Load and validate configuration
@@ -54,6 +58,32 @@ export class OnChainService {
       this.logger,
       this.rateLimiter,
       this.circuitBreaker
+    );
+
+    this.rewardOrchestrator = new RewardOrchestrator(
+      this.config,
+      this.logger,
+      this.rateLimiter,
+      this.circuitBreaker,
+      this.trustUpdater,
+      this.rewardDistributor
+    );
+
+    // Initialize telemetry client
+    const telemetryClient = new HttpTelemetryClient(
+      this.config.telemetryServiceUrl || 'http://localhost:8080',
+      this.logger
+    );
+
+    this.rewardEpochScheduler = new RewardEpochScheduler(
+      this.rewardOrchestrator,
+      telemetryClient,
+      this.logger,
+      {
+        epochDurationSeconds: this.config.epochDurationSeconds,
+        baseRewardRate: this.config.baseRewardRate,
+        vestingDuration: this.config.vestingDuration,
+      }
     );
 
     this.logger.info('OnChainService initialized', {
@@ -161,6 +191,8 @@ export * from './utils/merkle';
 export * from './services/CapitalManager';
 export * from './services/RewardDistributor';
 export * from './services/TrustUpdater';
+export * from './services/RewardOrchestrator';
+export * from './services/RewardEpochScheduler';
 
 // Export default instance creator
 export function createOnChainService(config?: OnChainServiceConfig): OnChainService {

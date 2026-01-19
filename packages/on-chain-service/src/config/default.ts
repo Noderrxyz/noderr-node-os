@@ -18,6 +18,7 @@ export const DEFAULT_CONFIG = {
   governanceManagerAddress: '0x72a065E5cf055F65d4c37CBc9d9DC5314115e5d7',
   nodeRegistryAddress: '0x175Cc86EF0c0C6f3CF865c5599863F6F61A60f58',
   guardianWorkloadManagerAddress: '0x8a55C0ab60FAD4ef913c6dfddB403a454B0818c0',
+  rewardCalculatorAddress: '0x0000000000000000000000000000000000000000', // TODO: Deploy RewardCalculator
   
   // Legacy aliases (for backward compatibility)
   treasuryManagerAddress: '0x5B78820Af5c910Fe3413FF0eb6F356d77d94B1eC', // StakingManager
@@ -46,6 +47,7 @@ export function getDefaultConfig() {
     governanceManagerAddress: process.env.GOVERNANCE_MANAGER_ADDRESS || DEFAULT_CONFIG.governanceManagerAddress,
     nodeRegistryAddress: process.env.NODE_REGISTRY_ADDRESS || DEFAULT_CONFIG.nodeRegistryAddress,
     guardianWorkloadManagerAddress: process.env.GUARDIAN_WORKLOAD_MANAGER_ADDRESS || DEFAULT_CONFIG.guardianWorkloadManagerAddress,
+    rewardCalculatorAddress: process.env.REWARD_CALCULATOR_ADDRESS || DEFAULT_CONFIG.rewardCalculatorAddress,
     
     // Legacy aliases
     treasuryManagerAddress: process.env.TREASURY_MANAGER_ADDRESS || DEFAULT_CONFIG.treasuryManagerAddress,
