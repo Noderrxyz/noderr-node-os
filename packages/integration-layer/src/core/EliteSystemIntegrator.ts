@@ -167,67 +167,71 @@ export class EliteSystemIntegrator extends EventEmitter {
   
   /**
    * Initialize Phase 4: Meta-Governance Intelligence
+   * TODO: Implement when meta-governance package is ready
    */
   private async initializePhase4Components(): Promise<void> {
-    this.logger.info('Initializing Phase 4: Meta-Governance Intelligence');
+    this.logger.info('Skipping Phase 4: Meta-Governance Intelligence (not yet implemented)');
     
+    // Phase 4 components will be initialized when meta-governance package is ready
     // Dynamic imports to avoid linter issues
-    const { GovernanceAuditLog } = await import('../../../meta-governance/src/GovernanceAuditLog');
-//     const { StrategyVotingEngine } = await import('../../../meta-governance/src/StrategyVotingEngine');
-//     const { SignalElection } = await import('../../../meta-governance/src/SignalElection');
-//     const { RiskPolicyManager } = await import('../../../meta-governance/src/RiskPolicyManager');
-//     const { MetaGovernanceOrchestrator } = await import('../../../meta-governance/src/MetaGovernanceOrchestrator');
-//     
-    // Initialize audit log first (needed by other components)
-    this.auditLog = new GovernanceAuditLog();
+    // const { GovernanceAuditLog } = await import('../../../meta-governance/src/GovernanceAuditLog');
+    // const { StrategyVotingEngine } = await import('../../../meta-governance/src/StrategyVotingEngine');
+    // const { SignalElection } = await import('../../../meta-governance/src/SignalElection');
+    // const { RiskPolicyManager } = await import('../../../meta-governance/src/RiskPolicyManager');
+    // const { MetaGovernanceOrchestrator } = await import('../../../meta-governance/src/MetaGovernanceOrchestrator');
+    //     
+    // // Initialize audit log first (needed by other components)
+    // this.auditLog = new GovernanceAuditLog();
+    //     
+    // // Initialize voting and election systems
+    // this.votingEngine = new StrategyVotingEngine();
+    // this.signalElection = new SignalElection();
+    //     
+    // // Initialize risk policy manager
+    // this.riskPolicyManager = new RiskPolicyManager();
+    //     
+    // // Initialize meta-governance orchestrator
+    // this.metaGovernance = new MetaGovernanceOrchestrator(
+    //   this.orchestrator,
+    //   this.metricsCollector,
+    //   null, // AI Core will be connected later
+    //   null  // Alpha Exploitation will be connected later
+    // );
+    //     
+    // // Set up Phase 4 event listeners
+    // this.setupPhase4EventListeners();
     
-    // Initialize voting and election systems
-    this.votingEngine = new StrategyVotingEngine();
-    this.signalElection = new SignalElection();
-    
-    // Initialize risk policy manager
-    this.riskPolicyManager = new RiskPolicyManager();
-    
-    // Initialize meta-governance orchestrator
-    this.metaGovernance = new MetaGovernanceOrchestrator(
-      this.orchestrator,
-      this.metricsCollector,
-      null, // AI Core will be connected later
-      null  // Alpha Exploitation will be connected later
-    );
-    
-    // Set up Phase 4 event listeners
-    this.setupPhase4EventListeners();
-    
-    this.logger.info('✅ Phase 4 initialized: Governance intelligence active');
+    this.logger.info('✅ Phase 4 skipped: Awaiting meta-governance implementation');
   }
   
   /**
    * Initialize Phase 5: Autonomous Deployment Pipeline
+   * TODO: Implement when deployment-pipeline package is ready
    */
   private async initializePhase5Components(): Promise<void> {
-    this.logger.info('Initializing Phase 5: Autonomous Deployment Pipeline');
+    this.logger.info('Skipping Phase 5: Autonomous Deployment Pipeline (not yet implemented)');
     
+    // Phase 5 components will be initialized when deployment-pipeline package is ready
     // Dynamic imports
-    const { DeploymentOrchestrator } = await import('../../../deployment-pipeline/src/DeploymentOrchestrator');
-//     const { CIValidator } = await import('../../../deployment-pipeline/src/CIValidator');
-//     const { CanaryLauncher } = await import('../../../deployment-pipeline/src/CanaryLauncher');
-//     const { LivePromoter } = await import('../../../deployment-pipeline/src/LivePromoter');
-//     const { RollbackEngine } = await import('../../../deployment-pipeline/src/RollbackEngine');
-//     const { DeploymentDashboardHook } = await import('../../../deployment-pipeline/src/DeploymentDashboardHook');
+    // const { DeploymentOrchestrator } = await import('../../../deployment-pipeline/src/DeploymentOrchestrator');
+    // const { CIValidator } = await import('../../../deployment-pipeline/src/CIValidator');
+    // const { CanaryLauncher } = await import('../../../deployment-pipeline/src/CanaryLauncher');
+    // const { LivePromoter } = await import('../../../deployment-pipeline/src/LivePromoter');
+    // const { RollbackEngine } = await import('../../../deployment-pipeline/src/RollbackEngine');
+    // const { DeploymentDashboardHook } = await import('../../../deployment-pipeline/src/DeploymentDashboardHook');
+    //     
+    // // Initialize deployment components
+    // this.deploymentOrchestrator = new DeploymentOrchestrator();
+    // this.ciValidator = new CIValidator();
+    // this.canaryLauncher = new CanaryLauncher();
+    // this.livePromoter = new LivePromoter();
+    // this.rollbackEngine = new RollbackEngine();
+    // this.deploymentDashboard = new DeploymentDashboardHook();
+    //     
+    // // Set up Phase 5 event listeners
+    // this.setupPhase5EventListeners();
     
-    // Initialize deployment components
-    this.deploymentOrchestrator = new DeploymentOrchestrator();
-    this.ciValidator = new CIValidator();
-    this.canaryLauncher = new CanaryLauncher();
-    this.livePromoter = new LivePromoter();
-    this.rollbackEngine = new RollbackEngine();
-    this.deploymentDashboard = new DeploymentDashboardHook();
-    
-    // Set up Phase 5 event listeners
-    this.setupPhase5EventListeners();
-    
-    this.logger.info('✅ Phase 5 initialized: Autonomous deployment active');
+    this.logger.info('✅ Phase 5 skipped: Awaiting deployment-pipeline implementation');
   }
   
   /**

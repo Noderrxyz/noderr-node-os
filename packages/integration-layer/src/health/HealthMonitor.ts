@@ -504,11 +504,9 @@ export class HealthMonitor extends EventEmitter {
     
     // Get module summaries
     const moduleSummaries = modules.map(m => ({
-      moduleId: m.id,
-      moduleName: m.name,
+      name: m.name,
       status: m.lastCheck?.status || HealthStatus.UNKNOWN,
       uptime: m.lastCheck?.uptime || 0,
-      errorCount: m.history.summary.errorCount,
       lastCheck: m.lastCheck?.timestamp || 0
     }));
     
@@ -521,7 +519,7 @@ export class HealthMonitor extends EventEmitter {
     // Convert array to Record
     const modulesRecord: Record<string, ModuleStatusInfo> = {};
     moduleSummaries.forEach(m => {
-      modulesRecord[m.moduleId] = m;
+      modulesRecord[m.name] = m;
     });
     
     this.lastSystemHealth = {

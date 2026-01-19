@@ -12,9 +12,9 @@
  */
 
 import { EventEmitter } from 'events';
-import { DynamicWeightAllocator, PortfolioSentinel } from '@noderr/capital-ai';
+import { DynamicWeightAllocator, PortfolioSentinel } from '@noderr/capital-ai/src';
 import type { AdapterMetadata, FloorPosition } from '../types';
-import { AdapterCategory } from '@noderr/types';
+import { AdapterCategory } from '@noderr/types/src';
 import { Logger } from '@noderr/utils/src';
 
 // LOW FIX: Use Logger instead of console
