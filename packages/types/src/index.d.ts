@@ -745,7 +745,12 @@ export interface RecoveryStrategy {
     name: string;
     module?: string;
     triggers: RecoveryTrigger[];
-    actions: RecoveryActionType[];
+    actions: (RecoveryActionType | {
+        type: RecoveryActionType;
+        priority?: number;
+        delay?: number;
+        timeout?: number;
+    })[];
     maxAttempts?: number;
     backoffMultiplier?: number;
     cooldownPeriod?: number;
@@ -754,7 +759,7 @@ export interface RecoveryStrategy {
 }
 export interface RecoveryTrigger {
     type: 'health' | 'metric' | 'error' | 'manual' | 'error_rate' | 'latency' | 'memory' | 'cpu' | 'custom';
-    condition: string;
+    condition?: string;
     threshold?: number;
     duration?: number;
     comparison?: '>' | '<' | '>=' | '<=' | '==' | '!=';

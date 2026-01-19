@@ -200,11 +200,13 @@ export class RecoveryManager extends EventEmitter {
     // Create recovery action
     const action: RecoveryAction = {
       id: `recovery_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: this.determineRecoveryAction(moduleState, strategy),
       module: moduleId,
-      action: this.determineRecoveryAction(moduleState, strategy),
       reason: context?.lastError || 'Module failure detected',
+      config: {},
       timestamp: Date.now(),
-      attempts: moduleState.recoveryAttempts + 1
+      attempts: moduleState.recoveryAttempts + 1,
+      status: 'pending'
     };
     
     this.state.activeRecoveries.set(moduleId, action);
@@ -296,7 +298,7 @@ export class RecoveryManager extends EventEmitter {
           type: 'error_rate',
           threshold: 0.5,
           duration: 60000,
-          comparison: 'gt'
+          comparison: '>'
         }
       ],
       actions: [
@@ -334,7 +336,7 @@ export class RecoveryManager extends EventEmitter {
             type: 'error_rate',
             threshold: 0.1, // More sensitive
             duration: 30000,
-            comparison: 'gt'
+            comparison: '>'
           }
         ],
         actions: [
@@ -394,12 +396,17 @@ export class RecoveryManager extends EventEmitter {
     strategy: RecoveryStrategy
   ): RecoveryActionType {
     // Sort actions by priority
-    const sortedActions = [...strategy.actions].sort((a, b) => a.priority - b.priority);
+    const sortedActions = [...strategy.actions].sort((a, b) => {
+      const aPriority = typeof a === 'object' ? (a.priority || 0) : 0;
+      const bPriority = typeof b === 'object' ? (b.priority || 0) : 0;
+      return aPriority - bPriority;
+    });
     
     // Find appropriate action based on attempt number
     const actionIndex = Math.min(moduleState.recoveryAttempts, sortedActions.length - 1);
+    const action = sortedActions[actionIndex];
     
-    return sortedActions[actionIndex].type;
+    return typeof action === 'object' ? action.type : action;
   }
   
   /**
@@ -409,18 +416,22 @@ export class RecoveryManager extends EventEmitter {
     action: RecoveryAction,
     strategy: RecoveryStrategy
   ): Promise<void> {
-    const actionConfig = strategy.actions.find(a => a.type === action.action);
+    const actionConfig = strategy.actions.find(a => {
+      const actionType = typeof a === 'object' ? a.type : a;
+      return actionType === action.type;
+    });
     if (!actionConfig) {
-      throw new Error(`No configuration for action: ${action.action}`);
+      throw new Error(`No configuration for action: ${action.type}`);
     }
     
     // Apply delay
-    if (actionConfig.delay) {
-      await new Promise(resolve => setTimeout(resolve, actionConfig.delay));
+    const delay = typeof actionConfig === 'object' ? actionConfig.delay : undefined;
+    if (delay) {
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
     
     // Execute with timeout
-    const timeout = actionConfig.timeout || 30000;
+    const timeout = (typeof actionConfig === 'object' ? actionConfig.timeout : undefined) || 30000;
     
     await Promise.race([
       this.executeAction(action.module, action.action, actionConfig),
