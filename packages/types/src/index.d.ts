@@ -581,7 +581,7 @@ export interface HealthCheckConfig {
 export interface HealthCheckResult {
     module: string;
     status: HealthStatus;
-    metrics?: Record<string, number>;
+    metrics?: HealthMetrics;
     latency: number;
     timestamp: number;
     error?: string;

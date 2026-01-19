@@ -18,11 +18,11 @@ import {
   HealthCheckConfig,
   ModuleHealthConfig,
   HealthHistory,
-  HealthUtils,
   Message,
   MessageType,
   MessageFactory
 } from '@noderr/types/src';
+import { HealthUtils } from '../types/health';
 import { MessageBus } from '../bus/MessageBus';
 
 interface RegisteredModule {
@@ -283,19 +283,17 @@ export class HealthMonitor extends EventEmitter {
       await this.messageBus.send(
         MessageFactory.create(
           MessageType.HEALTH_RESPONSE,
-          module.id,
           'system.health',
-          result
+          result,
+          module.id
         )
       );
       
       return result;
     } catch (error) {
       return {
-        moduleId: module.id,
-        moduleName: module.name,
+        module: module.id,
         status: HealthStatus.UNHEALTHY,
-        moduleStatus: 'error' as any,
         timestamp: Date.now(),
         latency: performance.now() - startTime,
         uptime: 0,
@@ -314,10 +312,8 @@ export class HealthMonitor extends EventEmitter {
     const metrics = await this.collectModuleMetrics(module);
     
     return {
-      moduleId: module.id,
-      moduleName: module.name,
+      module: module.id,
       status: HealthStatus.HEALTHY,
-      moduleStatus: 'ready' as any,
       timestamp: Date.now(),
       latency: 0,
       uptime: Date.now() - this.systemStartTime,
@@ -359,10 +355,20 @@ export class HealthMonitor extends EventEmitter {
     
     // Update history
     module.history.entries.push({
-      timestamp: result.timestamp,
+      module: module.id,
       status: result.status,
+      timestamp: result.timestamp,
+      latency: result.latency,
       metrics: result.metrics,
-      alerts: result.lastError ? [result.lastError] : undefined
+      alerts: result.lastError ? [{
+        id: `alert_${Date.now()}`,
+        severity: 'error',
+        module: module.id,
+        message: result.lastError,
+        timestamp: Date.now(),
+        acknowledged: false,
+        resolved: false
+      }] : undefined
     });
     
     // Limit history size
