@@ -15,7 +15,7 @@ import {
   MicrostructureSignal,
   LiquidityMap,
   VolatilityForecast
-} from '@noderr/types';
+} from '@noderr/types/src';
 
 interface MicrostructureConfig {
   updateFrequency: number; // milliseconds

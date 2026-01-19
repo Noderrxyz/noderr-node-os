@@ -12,7 +12,7 @@ import {
   CrossChainArbitrage,
   StatisticalArbitrage,
   ArbitrageRoute
-} from '@noderr/types';
+} from '../types';
 
 interface ArbitrageConfig {
   minProfitThreshold: number; // Minimum profit in USD
@@ -64,17 +64,17 @@ export class ArbitrageEngine extends EventEmitter {
   private graph: Graph = {};
   private opportunities: Map<string, ArbitrageOpportunity> = new Map();
   private executionHistory: ArbitrageOpportunity[] = [];
-  private statisticalPairs: Map<string, StatisticalArbitrage> = new Map();
+  private _statisticalPairs: Map<string, StatisticalArbitrage> = new Map();
   
   constructor(config: Partial<ArbitrageConfig> = {}) {
     super();
     
     this.config = {
-      minProfitThreshold: BigInt('100'), // $100 minimum
+      minProfitThreshold: 100, // $100 minimum
       maxLatency: 100, // 100ms max latency
       slippageTolerance: 0.005, // 0.5%
       gasBuffer: 1.2, // 20% gas buffer
-      maxCapitalPerTrade: BigInt('1000000'), // $1M max
+      maxCapitalPerTrade: 1000000, // $1M max
       enableFlashLoans: true,
       enableCrossChain: true,
       statisticalThreshold: 2.5, // 2.5 standard deviations
@@ -261,7 +261,7 @@ export class ArbitrageEngine extends EventEmitter {
             asset3
           );
           
-          if (opportunity && opportunity.profitEstimate.gt(this.config.minProfitThreshold)) {
+          if (opportunity && opportunity.profitEstimate > this.config.minProfitThreshold) {
             this.emitOpportunity(opportunity);
           }
         }
@@ -365,7 +365,7 @@ export class ArbitrageEngine extends EventEmitter {
             venueGroups.get(venues[j]!)!
           );
           
-          if (opportunity && opportunity.profitEstimate.gt(this.config.minProfitThreshold)) {
+          if (opportunity && opportunity.profitEstimate > this.config.minProfitThreshold) {
             this.emitOpportunity(opportunity);
           }
         }
@@ -476,7 +476,7 @@ export class ArbitrageEngine extends EventEmitter {
             venue2Data.chainId!
           );
           
-          if (opportunity && opportunity.profitEstimate.gt(this.config.minProfitThreshold)) {
+          if (opportunity && opportunity.profitEstimate > this.config.minProfitThreshold) {
             this.emitOpportunity(opportunity);
           }
         }
@@ -522,9 +522,9 @@ export class ArbitrageEngine extends EventEmitter {
     );
     
     // Adjust profit for bridge costs
-    const adjustedProfit = baseArb.profitEstimate.sub(bridgeCost.total);
+    const adjustedProfit = baseArb.profitEstimate - bridgeCost.total;
     
-    if (adjustedProfit.lte(this.config.minProfitThreshold)) return null;
+    if (adjustedProfit <= this.config.minProfitThreshold) return null;
     
     return {
       ...baseArb,
@@ -548,7 +548,7 @@ export class ArbitrageEngine extends EventEmitter {
     // Analyze all asset pairs
     const assets = new Set<string>();
     for (const key of this.priceFeeds.keys()) {
-      assets.add(key.split('_')[0]!);
+      assets + key.split('_'[0]!);
     }
     
     const assetArray = Array.from(assets);
@@ -558,7 +558,7 @@ export class ArbitrageEngine extends EventEmitter {
         
         if (pair && Math.abs(pair.zScore) > this.config.statisticalThreshold) {
           const opportunity = this.createStatisticalArbitrageOpportunity(pair);
-          if (opportunity.profitEstimate.gt(this.config.minProfitThreshold)) {
+          if (opportunity.profitEstimate > this.config.minProfitThreshold) {
             this.emitOpportunity(opportunity);
           }
         }
@@ -679,7 +679,7 @@ export class ArbitrageEngine extends EventEmitter {
             lag.profitability
           );
           
-          if (opportunity.profitEstimate.gt(this.config.minProfitThreshold)) {
+          if (opportunity.profitEstimate > this.config.minProfitThreshold) {
             this.emitOpportunity(opportunity);
           }
         }
@@ -751,8 +751,8 @@ export class ArbitrageEngine extends EventEmitter {
     avgLag: number,
     profitability: number
   ): ArbitrageOpportunity {
-    const capitalRequired = this.config.maxCapitalPerTrade./(10); // Use 10% for latency arb
-    const profitEstimate = capitalRequired.mul(Math.floor(profitability * 1000))./(1000);
+    const capitalRequired = this.config.maxCapitalPerTrade / 10; // Use 10% for latency arb
+    const profitEstimate = capitalRequired * profitability;
     
     return {
       id: `latency_${asset}_${fastVenue}_${slowVenue}_${Date.now()}`,
@@ -786,7 +786,7 @@ export class ArbitrageEngine extends EventEmitter {
           inputAsset: asset1!,
           outputAsset: asset2!,
           inputAmount: opportunity.requiredCapital,
-          expectedOutput: opportunity.requiredCapital.mul(95)./(100), // Simplified
+          expectedOutput: opportunity.requiredCapital * 0.95, // Simplified
           gasEstimate: this.estimateGas(venue1!)
         },
         {
@@ -794,8 +794,8 @@ export class ArbitrageEngine extends EventEmitter {
           venue: venue2!,
           inputAsset: asset2!,
           outputAsset: asset3!,
-          inputAmount: opportunity.requiredCapital.mul(95)./(100),
-          expectedOutput: opportunity.requiredCapital.mul(90)./(100),
+          inputAmount: opportunity.requiredCapital * 0.95,
+          expectedOutput: opportunity.requiredCapital * 0.90,
           gasEstimate: this.estimateGas(venue2!)
         },
         {
@@ -803,8 +803,8 @@ export class ArbitrageEngine extends EventEmitter {
           venue: venue3!,
           inputAsset: asset3!,
           outputAsset: asset1!,
-          inputAmount: opportunity.requiredCapital.mul(90)./(100),
-          expectedOutput: opportunity.requiredCapital.add(opportunity.profitEstimate),
+          inputAmount: opportunity.requiredCapital * 0.90,
+          expectedOutput: opportunity.requiredCapital + opportunity.profitEstimate,
           gasEstimate: this.estimateGas(venue3!)
         }
       );
@@ -820,7 +820,7 @@ export class ArbitrageEngine extends EventEmitter {
           inputAsset: 'USD',
           outputAsset: asset!,
           inputAmount: opportunity.requiredCapital,
-          expectedOutput: opportunity.requiredCapital.mul(98)./(100),
+          expectedOutput: opportunity.requiredCapital * 0.98,
           gasEstimate: this.estimateGas(buyVenue!)
         },
         {
@@ -828,8 +828,8 @@ export class ArbitrageEngine extends EventEmitter {
           venue: sellVenue!,
           inputAsset: asset!,
           outputAsset: 'USD',
-          inputAmount: opportunity.requiredCapital.mul(98)./(100),
-          expectedOutput: opportunity.requiredCapital.add(opportunity.profitEstimate),
+          inputAmount: opportunity.requiredCapital * 0.98,
+          expectedOutput: opportunity.requiredCapital + opportunity.profitEstimate,
           gasEstimate: this.estimateGas(sellVenue!)
         }
       );
@@ -864,8 +864,8 @@ export class ArbitrageEngine extends EventEmitter {
       const route = await this.buildOptimalRoute(opportunity);
       
       // Check if we need flash loan
-      const needsFlashLoan = opportunity.requiredCapital.gt(
-        BigInt('1000000') // $1M threshold
+      const needsFlashLoan = opportunity.requiredCapital > 
+        BigInt('1000000' // $1M threshold
       );
       
       if (needsFlashLoan && this.config.enableFlashLoans) {
@@ -889,7 +889,7 @@ export class ArbitrageEngine extends EventEmitter {
       this.executionHistory.push(opportunity);
       this.emit('execution_success', {
         opportunity,
-        actualProfit: route.totalProfit.sub(route.totalGas)
+        actualProfit: route.totalProfit - route.totalGas
       });
       
       return true;
@@ -949,7 +949,7 @@ export class ArbitrageEngine extends EventEmitter {
     const customScan = () => {
       if (condition(this.priceFeeds)) {
         const opportunity = calculator(this.priceFeeds);
-        if (opportunity && opportunity.profitEstimate.gt(this.config.minProfitThreshold)) {
+        if (opportunity && opportunity.profitEstimate > this.config.minProfitThreshold) {
           this.emitOpportunity(opportunity);
         }
       }
@@ -965,21 +965,21 @@ export class ArbitrageEngine extends EventEmitter {
 
   private estimateGas(venue: string): number {
     const venueData = this.venues.get(venue);
-    if (!venueData) return BigInt('100000'); // Default
+    if (!venueData) return 100000; // Default gas estimate in USD
     
     if (venueData.type === 'cex') {
-      return BigInt('0'); // No gas for CEX
+      return 0; // No gas for CEX
     }
     
-    // Estimate based on chain
-    const gasPrice = {
-      1: '50', // Ethereum
-      56: '5', // BSC
-      137: '30', // Polygon
-      42161: '0.1' // Arbitrum
-    }[venueData.chainId || 1] || '10';
+    // Estimate based on chain (in USD)
+    const gasEstimate = {
+      1: 50, // Ethereum
+      56: 5, // BSC
+      137: 30, // Polygon
+      42161: 0.1 // Arbitrum
+    }[venueData.chainId || 1] || 10;
     
-    return BigInt(gasPrice).mul('1000000000').mul('200000'); // gasPrice * gasLimit
+    return gasEstimate; // Return gas cost in USD
   }
 
   private calculateTotalFees(venues: string[]): number {
@@ -1048,8 +1048,8 @@ export class ArbitrageEngine extends EventEmitter {
   }
 
   private async estimateBridgeCost(
-    asset: string,
-    amount: number,
+    _asset: string,
+    _amount: number,
     sourceChain: number,
     targetChain: number,
     bridge: string
@@ -1060,21 +1060,21 @@ export class ArbitrageEngine extends EventEmitter {
   }> {
     // Simplified bridge cost estimation
     const baseCost = {
-      'binance_bridge': '10',
-      'polygon_bridge': '50',
-      'arbitrum_bridge': '20',
-      'multichain': '30',
-      'anyswap': '40'
-    }[bridge] || '50';
+      'binance_bridge': 10,
+      'polygon_bridge': 50,
+      'arbitrum_bridge': 20,
+      'multichain': 30,
+      'anyswap': 40
+    }[bridge] || 50;
     
     const sourceGas = this.estimateGas(`chain_${sourceChain}`);
     const targetGas = this.estimateGas(`chain_${targetChain}`);
-    const bridgeFee = BigInt(baseCost).mul('1000000000000000000'); // In wei
+    const bridgeFee = baseCost; // Bridge fee in USD
     
     return {
       sourceGas,
       targetGas,
-      total: sourceGas.add(targetGas).add(bridgeFee)
+      total: sourceGas + targetGas + bridgeFee
     };
   }
 

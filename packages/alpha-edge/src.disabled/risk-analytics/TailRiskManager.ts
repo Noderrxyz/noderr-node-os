@@ -13,7 +13,7 @@ import {
   RegimeDetection,
   PortfolioOptimization,
   DynamicHedge
-} from '@noderr/types';
+} from '@noderr/types/src';
 
 interface RiskConfig {
   confidenceLevels: number[]; // e.g., [0.95, 0.99, 0.999]
