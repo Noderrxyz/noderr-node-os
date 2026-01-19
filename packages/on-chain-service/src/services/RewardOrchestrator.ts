@@ -499,6 +499,7 @@ export class RewardOrchestrator {
 
   /**
    * Step 5: Create Merkle epoch and distribute rewards
+   * WITH TREASURY SUSTAINABILITY CHECKS
    */
   private async distributeRewards(
     rewardEntries: RewardEntry[],
@@ -507,8 +508,50 @@ export class RewardOrchestrator {
     this.logger.info('Distributing rewards', { rewardCount: rewardEntries.length });
 
     try {
+      // Calculate total rewards to be distributed
+      const totalRewards = rewardEntries.reduce((sum, entry) => sum + entry.amount, 0n);
+
+      // CRITICAL: Check treasury balance before distribution
+      const treasuryBalance = await this.getTreasuryBalance();
+      const safetyBuffer = treasuryBalance / 10n; // Keep 10% buffer
+      const availableForDistribution = treasuryBalance - safetyBuffer;
+
+      this.logger.info('Treasury sustainability check', {
+        treasuryBalance: ethers.formatEther(treasuryBalance),
+        safetyBuffer: ethers.formatEther(safetyBuffer),
+        availableForDistribution: ethers.formatEther(availableForDistribution),
+        requestedDistribution: ethers.formatEther(totalRewards),
+      });
+
+      // If requested rewards exceed available balance, scale down proportionally
+      let adjustedRewards = rewardEntries;
+      if (totalRewards > availableForDistribution) {
+        const scaleFactor = Number(availableForDistribution) / Number(totalRewards);
+        
+        this.logger.warn('⚠️ Treasury insufficient for full rewards, scaling down', {
+          scaleFactor: scaleFactor.toFixed(4),
+          originalTotal: ethers.formatEther(totalRewards),
+          adjustedTotal: ethers.formatEther(availableForDistribution),
+        });
+
+        adjustedRewards = rewardEntries.map((entry) => ({
+          ...entry,
+          amount: BigInt(Math.floor(Number(entry.amount) * scaleFactor)),
+        }));
+      }
+
+      // Additional check: If treasury is critically low, skip distribution entirely
+      const CRITICAL_THRESHOLD = ethers.parseEther('100000'); // 100K NODR minimum
+      if (treasuryBalance < CRITICAL_THRESHOLD) {
+        this.logger.error('🚨 CRITICAL: Treasury balance below minimum threshold', {
+          balance: ethers.formatEther(treasuryBalance),
+          threshold: ethers.formatEther(CRITICAL_THRESHOLD),
+        });
+        throw new Error('Treasury balance critically low, skipping reward distribution');
+      }
+
       // Convert to format expected by RewardDistributor
-      const rewards = rewardEntries.map((entry) => ({
+      const rewards = adjustedRewards.map((entry) => ({
         address: entry.address,
         amount: entry.amount,
       }));
@@ -524,15 +567,30 @@ export class RewardOrchestrator {
         epochConfig.vestingDuration
       );
 
-      this.logger.info('Rewards distributed successfully', {
+      const finalTotal = adjustedRewards.reduce((sum, entry) => sum + entry.amount, 0n);
+      this.logger.info('✅ Rewards distributed successfully', {
         epochId: epochConfig.epochId,
-        totalRewards: ethers.formatEther(
-          rewardEntries.reduce((sum, entry) => sum + entry.amount, 0n)
-        ),
+        operatorCount: adjustedRewards.length,
+        totalRewards: ethers.formatEther(finalTotal),
+        treasuryRemaining: ethers.formatEther(treasuryBalance - finalTotal),
       });
     } catch (error: any) {
-      this.logger.error('Failed to distribute rewards', { error: error.message });
+      this.logger.error('❌ Failed to distribute rewards', { error: error.message });
       throw error;
+    }
+  }
+
+  /**
+   * Get current treasury balance
+   */
+  private async getTreasuryBalance(): Promise<bigint> {
+    try {
+      const balance = await this.treasuryManagerContract.getBalance();
+      return balance as bigint;
+    } catch (error: any) {
+      this.logger.error('Failed to get treasury balance', { error: error.message });
+      // Return 0 to prevent distribution if we can't check balance
+      return 0n;
     }
   }
 
