@@ -16,6 +16,8 @@ import * as tf from '@tensorflow/tfjs-node';
 import { ModelLoader, LoadedModel } from './model-loader';
 import { createClient } from '@supabase/supabase-js';
 
+const logger = new Logger('inference-service');
+
 // Initialize Supabase client
 const supabase = createClient(
   process.env.SUPABASE_PROJECT_URL || '',

@@ -12,7 +12,7 @@
 
 import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
-import { OracleCoordinator, TradingSignal } from '@noderr/oracle-consensus';
+import { OracleCoordinator, TradingSignal } from '@noderr/oracle-consensus/src';
 import { MLSignalService, MLPrediction as MLPred } from './services/MLSignalService';
 import { RiskCheckService, RiskAssessment as RiskAssess, PortfolioState } from './services/RiskCheckService';
 import { ExecutionService, ExecutionPlan as ExecPlan, ExecutionResult as ExecResult } from './services/ExecutionService';

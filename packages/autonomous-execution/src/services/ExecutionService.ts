@@ -10,6 +10,8 @@
 import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 
+const logger = new Logger('execution-service');
+
 /**
  * Execution plan
  */

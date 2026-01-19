@@ -39,7 +39,7 @@ async function registerNode(
     }
   } else {
     // Micro and Validator nodes don't use GPU
-    logger.info('ℹ️  GPU not required for', nodeTier, 'node\n');
+    logger.info(`ℹ️  GPU not required for ${nodeTier} node\n`);
   }
 
   // Step 2: Collect system information (including GPU if available)

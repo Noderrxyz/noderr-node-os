@@ -8,6 +8,8 @@
 import { Logger } from '@noderr/utils/src';
 import { getGPUHardwareId } from '@noderr/gpu-service-mvs';
 
+const logger = new Logger('gpu-integration');
+
 /**
  * Get GPU hardware ID for node registration
  * 

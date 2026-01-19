@@ -22,6 +22,8 @@ import tar from 'tar';
 import fetch from 'node-fetch';
 import { createClient } from '@supabase/supabase-js';
 
+const logger = new Logger('model-loader');
+
 // Initialize Supabase client
 const supabase = createClient(
   process.env.SUPABASE_PROJECT_URL || '',

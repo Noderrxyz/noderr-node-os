@@ -43,7 +43,7 @@ interface BufferedLog {
 
 export class LogBridge extends EventEmitter {
   private config: Required<LogBridgeConfig>;
-  private logger: Logger;
+  private logger: winston.Logger;
   private buffer: BufferedLog[] = [];
   private flushTimer: NodeJS.Timeout | undefined;
   private s3Client?: S3Client;
@@ -234,7 +234,7 @@ export class LogBridge extends EventEmitter {
   /**
    * Private: Create Winston logger
    */
-  private createLogger(): Logger {
+  private createLogger(): winston.Logger {
     const logFormat = this.config.format === 'json'
       ? format.json()
       : format.combine(

@@ -16,7 +16,7 @@ import {
   Message,
   MessageType,
   MessageFactory
-} from '@noderr/types';
+} from '@noderr/types/src';
 import { MessageBus } from '../bus/MessageBus';
 import { SystemOrchestrator } from '../core/SystemOrchestrator';
 

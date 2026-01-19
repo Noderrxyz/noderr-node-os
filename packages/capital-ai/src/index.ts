@@ -9,12 +9,13 @@ export { CapitalStrategyDashboard } from './CapitalStrategyDashboard';
 // Version
 export const CAPITAL_AI_VERSION = '1.0.0'; 
 
-// ============================================================================
 // Main Entry Point
 // ============================================================================
 
 import { Logger } from '@noderr/utils/src';
 import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
+
+const logger = new Logger('capital-ai');
 
 let capitalAIService: any | null = null;
 
