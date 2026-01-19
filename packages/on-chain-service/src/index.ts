@@ -7,6 +7,7 @@ import { RewardDistributor } from './services/RewardDistributor';
 import { TrustUpdater } from './services/TrustUpdater';
 import { RewardOrchestrator } from './services/RewardOrchestrator';
 import { RewardEpochScheduler, HttpTelemetryClient } from './services/RewardEpochScheduler';
+import { TrustFingerprintSync, TrustFingerprintSyncScheduler } from './services/TrustFingerprintSync';
 import { OnChainServiceConfig, ServiceHealthStatus } from '@noderr/types/src';
 import { Logger } from 'winston';
 
@@ -27,6 +28,8 @@ export class OnChainService {
   public readonly trustUpdater: TrustUpdater;
   public readonly rewardOrchestrator: RewardOrchestrator;
   public readonly rewardEpochScheduler: RewardEpochScheduler;
+  public readonly trustFingerprintSync: TrustFingerprintSync;
+  public readonly trustFingerprintSyncScheduler: TrustFingerprintSyncScheduler;
 
   constructor(config?: OnChainServiceConfig) {
     // Load and validate configuration
@@ -84,6 +87,19 @@ export class OnChainService {
         baseRewardRate: this.config.baseRewardRate,
         vestingDuration: this.config.vestingDuration,
       }
+    );
+
+    this.trustFingerprintSync = new TrustFingerprintSync(
+      this.config,
+      this.logger,
+      this.rateLimiter,
+      this.circuitBreaker
+    );
+
+    this.trustFingerprintSyncScheduler = new TrustFingerprintSyncScheduler(
+      this.trustFingerprintSync,
+      this.logger,
+      this.config.trustSyncIntervalSeconds || 3600
     );
 
     this.logger.info('OnChainService initialized', {
@@ -193,6 +209,7 @@ export * from './services/RewardDistributor';
 export * from './services/TrustUpdater';
 export * from './services/RewardOrchestrator';
 export * from './services/RewardEpochScheduler';
+export * from './services/TrustFingerprintSync';
 
 // Export default instance creator
 export function createOnChainService(config?: OnChainServiceConfig): OnChainService {
