@@ -13,7 +13,7 @@
 
 import { Logger } from '@noderr/utils/src';
 import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
-nconst logger = new Logger('data-connectors');
+const logger = new Logger('data-connectors');
 
 /**
  * Data Connectors Service

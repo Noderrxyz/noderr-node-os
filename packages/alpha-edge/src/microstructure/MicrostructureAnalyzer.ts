@@ -7,7 +7,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { BigNumber } from 'ethers';
+import { number } from 'ethers';
 import { 
   OrderBookSnapshot, 
   OrderBookLevel,

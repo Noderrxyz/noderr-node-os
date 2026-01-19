@@ -16,7 +16,7 @@
 
 import { Logger } from '@noderr/utils/src';
 import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
-nconst logger = new Logger('exchanges');
+const logger = new Logger('exchanges');
 
 export { NonBlockingExchangeConnector } from './NonBlockingExchangeConnector';
 export { PaperTradingEngine, Order, Position, Trade, PaperTradingConfig } from './PaperTradingEngine';

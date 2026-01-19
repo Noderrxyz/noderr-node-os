@@ -556,7 +556,12 @@ export declare enum ModuleStatus {
     HEALTHY = "healthy",
     DEGRADED = "degraded",
     UNHEALTHY = "unhealthy",
-    UNKNOWN = "unknown"
+    UNKNOWN = "unknown",
+    STARTING = "starting",
+    READY = "ready",
+    ERROR = "error",
+    STOPPING = "stopping",
+    STOPPED = "stopped"
 }
 export interface ModuleStatusInfo {
     name: string;
@@ -652,7 +657,12 @@ export declare enum MessageType {
     MODULE_ROLLBACK = "module_rollback",
     MODULE_SCALE = "module_scale",
     MODULE_ALERT = "module_alert",
-    MODULE_ERROR = "module_error"
+    MODULE_ERROR = "module_error",
+    SYSTEM_STARTUP = "system_startup",
+    SYSTEM_SHUTDOWN = "system_shutdown",
+    MODULE_REGISTER = "module_register",
+    MODULE_READY = "module_ready",
+    CONFIG_UPDATE = "config_update"
 }
 export declare enum MessagePriority {
     LOW = 0,
@@ -660,11 +670,11 @@ export declare enum MessagePriority {
     HIGH = 2,
     CRITICAL = 3
 }
-export interface Message {
+export interface Message<T = any> {
     id: string;
     type: MessageType;
     topic: string;
-    payload: any;
+    payload: T;
     priority: MessagePriority;
     timestamp: number;
     source: string;
@@ -731,19 +741,26 @@ export interface ModuleRegistration {
 }
 export type MessageHandler = (message: Message) => Promise<void>;
 export interface Route {
-    pattern: string | RegExp;
-    handler: MessageHandler;
+    pattern?: string | RegExp;
+    handler?: MessageHandler;
     priority?: MessagePriority;
+    source?: string | RegExp;
+    destination?: string | string[];
+    messageTypes?: MessageType[];
+    filter?: (message: Message) => boolean;
+    transform?: (message: Message) => Message;
 }
 export interface MessageStats {
     sent: number;
     received: number;
-    failed: number;
+    failed?: number;
     avgLatency: number;
-    maxLatency: number;
-    minLatency: number;
+    maxLatency?: number;
+    minLatency?: number;
     p99Latency?: number;
     lastActivity?: number;
+    errors?: number;
+    lastError?: string;
 }
 export interface RouteMetrics {
     route: string;
@@ -751,6 +768,8 @@ export interface RouteMetrics {
     messageCount?: number;
     avgLatency: number;
     maxLatency?: number;
+    p50Latency?: number;
+    p95Latency?: number;
     errors: number;
     lastUsed: number;
     lastUpdated?: number;

@@ -6,7 +6,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { BigNumber, ethers } from 'ethers';
+// import { ethers } from 'ethers';
 import {
   ArbitrageOpportunity,
   CrossChainArbitrage,
@@ -15,11 +15,11 @@ import {
 } from '@noderr/types';
 
 interface ArbitrageConfig {
-  minProfitThreshold: BigNumber; // Minimum profit in USD
+  minProfitThreshold: number; // Minimum profit in USD
   maxLatency: number; // Maximum acceptable latency in ms
   slippageTolerance: number; // 0-1
   gasBuffer: number; // Gas price multiplier
-  maxCapitalPerTrade: BigNumber;
+  maxCapitalPerTrade: number;
   enableFlashLoans: boolean;
   enableCrossChain: boolean;
   statisticalThreshold: number; // Z-score threshold
@@ -52,7 +52,7 @@ interface Graph {
       venue: string;
       rate: number;
       volume: number;
-      gasEstimate?: BigNumber;
+      gasEstimate?: number;
     }[];
   };
 }
@@ -70,11 +70,11 @@ export class ArbitrageEngine extends EventEmitter {
     super();
     
     this.config = {
-      minProfitThreshold: BigNumber.from('100'), // $100 minimum
+      minProfitThreshold: BigInt('100'), // $100 minimum
       maxLatency: 100, // 100ms max latency
       slippageTolerance: 0.005, // 0.5%
       gasBuffer: 1.2, // 20% gas buffer
-      maxCapitalPerTrade: BigNumber.from('1000000'), // $1M max
+      maxCapitalPerTrade: BigInt('1000000'), // $1M max
       enableFlashLoans: true,
       enableCrossChain: true,
       statisticalThreshold: 2.5, // 2.5 standard deviations
@@ -318,17 +318,17 @@ export class ArbitrageEngine extends EventEmitter {
     
     const optimalSize = Math.min(
       maxVolume * 0.1, // Take max 10% of liquidity
-      this.config.maxCapitalPerTrade.toNumber()
+      this.config.maxCapitalPerTrade
     );
     
-    const profitEstimate = BigNumber.from(Math.floor(optimalSize * netProfit));
+    const profitEstimate = BigInt(Math.floor(optimalSize * netProfit));
     
     return {
       id: `tri_${asset1}_${asset2}_${asset3}_${Date.now()}`,
       type: 'triangular',
       profitEstimate,
       probability: this.calculateExecutionProbability([leg1.venue, leg2.venue, leg3.venue]),
-      requiredCapital: BigNumber.from(Math.floor(optimalSize)),
+      requiredCapital: BigInt(Math.floor(optimalSize)),
       executionTime: this.calculateExecutionTime([leg1.venue, leg2.venue, leg3.venue]),
       riskScore: this.calculateRiskScore(netProfit, maxVolume),
       venues: [leg1.venue, leg2.venue, leg3.venue],
@@ -430,17 +430,17 @@ export class ArbitrageEngine extends EventEmitter {
     // Calculate optimal size
     const optimalSize = Math.min(
       volume * buyPrice * 0.1, // Take max 10% of liquidity
-      this.config.maxCapitalPerTrade.toNumber()
+      this.config.maxCapitalPerTrade
     );
     
-    const profitEstimate = BigNumber.from(Math.floor(optimalSize * netProfit));
+    const profitEstimate = BigInt(Math.floor(optimalSize * netProfit));
     
     return {
       id: `cross_${asset}_${buyVenue}_${sellVenue}_${Date.now()}`,
       type: 'cross_venue',
       profitEstimate,
       probability: this.calculateExecutionProbability([buyVenue, sellVenue]),
-      requiredCapital: BigNumber.from(Math.floor(optimalSize)),
+      requiredCapital: BigInt(Math.floor(optimalSize)),
       executionTime: this.calculateExecutionTime([buyVenue, sellVenue]),
       riskScore: this.calculateRiskScore(netProfit, volume * buyPrice),
       venues: [buyVenue, sellVenue],
@@ -635,18 +635,18 @@ export class ArbitrageEngine extends EventEmitter {
     );
     
     const positionSize = Math.min(
-      this.config.maxCapitalPerTrade.toNumber() * kellyFraction,
-      this.config.maxCapitalPerTrade.toNumber()
+      this.config.maxCapitalPerTrade * kellyFraction,
+      this.config.maxCapitalPerTrade
     );
     
-    const profitEstimate = BigNumber.from(Math.floor(positionSize * expectedMove));
+    const profitEstimate = BigInt(Math.floor(positionSize * expectedMove));
     
     return {
       id: `stat_${pair.pairId}_${Date.now()}`,
       type: 'statistical',
       profitEstimate,
       probability: pair.confidence,
-      requiredCapital: BigNumber.from(Math.floor(positionSize)),
+      requiredCapital: BigInt(Math.floor(positionSize)),
       executionTime: pair.cointegration.halfLife * 3600 * 1000, // Convert hours to ms
       riskScore: 1 / pair.confidence,
       venues: ['multiple'],
@@ -704,7 +704,7 @@ export class ArbitrageEngine extends EventEmitter {
     }
     
     // Analyze lag for each price movement
-    const lags: any[] = [];
+    // const lags: any[] = [];
     for (const [_, group] of priceGroups) {
       if (group.length < 2) continue;
       
@@ -751,8 +751,8 @@ export class ArbitrageEngine extends EventEmitter {
     avgLag: number,
     profitability: number
   ): ArbitrageOpportunity {
-    const capitalRequired = this.config.maxCapitalPerTrade.div(10); // Use 10% for latency arb
-    const profitEstimate = capitalRequired.mul(Math.floor(profitability * 1000)).div(1000);
+    const capitalRequired = this.config.maxCapitalPerTrade./(10); // Use 10% for latency arb
+    const profitEstimate = capitalRequired.mul(Math.floor(profitability * 1000))./(1000);
     
     return {
       id: `latency_${asset}_${fastVenue}_${slowVenue}_${Date.now()}`,
@@ -786,7 +786,7 @@ export class ArbitrageEngine extends EventEmitter {
           inputAsset: asset1!,
           outputAsset: asset2!,
           inputAmount: opportunity.requiredCapital,
-          expectedOutput: opportunity.requiredCapital.mul(95).div(100), // Simplified
+          expectedOutput: opportunity.requiredCapital.mul(95)./(100), // Simplified
           gasEstimate: this.estimateGas(venue1!)
         },
         {
@@ -794,8 +794,8 @@ export class ArbitrageEngine extends EventEmitter {
           venue: venue2!,
           inputAsset: asset2!,
           outputAsset: asset3!,
-          inputAmount: opportunity.requiredCapital.mul(95).div(100),
-          expectedOutput: opportunity.requiredCapital.mul(90).div(100),
+          inputAmount: opportunity.requiredCapital.mul(95)./(100),
+          expectedOutput: opportunity.requiredCapital.mul(90)./(100),
           gasEstimate: this.estimateGas(venue2!)
         },
         {
@@ -803,7 +803,7 @@ export class ArbitrageEngine extends EventEmitter {
           venue: venue3!,
           inputAsset: asset3!,
           outputAsset: asset1!,
-          inputAmount: opportunity.requiredCapital.mul(90).div(100),
+          inputAmount: opportunity.requiredCapital.mul(90)./(100),
           expectedOutput: opportunity.requiredCapital.add(opportunity.profitEstimate),
           gasEstimate: this.estimateGas(venue3!)
         }
@@ -820,7 +820,7 @@ export class ArbitrageEngine extends EventEmitter {
           inputAsset: 'USD',
           outputAsset: asset!,
           inputAmount: opportunity.requiredCapital,
-          expectedOutput: opportunity.requiredCapital.mul(98).div(100),
+          expectedOutput: opportunity.requiredCapital.mul(98)./(100),
           gasEstimate: this.estimateGas(buyVenue!)
         },
         {
@@ -828,14 +828,14 @@ export class ArbitrageEngine extends EventEmitter {
           venue: sellVenue!,
           inputAsset: asset!,
           outputAsset: 'USD',
-          inputAmount: opportunity.requiredCapital.mul(98).div(100),
+          inputAmount: opportunity.requiredCapital.mul(98)./(100),
           expectedOutput: opportunity.requiredCapital.add(opportunity.profitEstimate),
           gasEstimate: this.estimateGas(sellVenue!)
         }
       );
     }
     
-    const totalGas = steps.reduce((sum, step) => sum.add(step.gasEstimate), BigNumber.from(0));
+    const totalGas = steps.reduce((sum: bigint, step: any) => sum + BigInt(step.gasEstimate || 0), BigInt(0));
     
     return {
       steps,
@@ -865,7 +865,7 @@ export class ArbitrageEngine extends EventEmitter {
       
       // Check if we need flash loan
       const needsFlashLoan = opportunity.requiredCapital.gt(
-        BigNumber.from('1000000') // $1M threshold
+        BigInt('1000000') // $1M threshold
       );
       
       if (needsFlashLoan && this.config.enableFlashLoans) {
@@ -913,7 +913,7 @@ export class ArbitrageEngine extends EventEmitter {
     // Analyze historical execution patterns
     const similar = this.executionHistory.filter(h => 
       h.type === opportunity.type &&
-      h.venues.some(v => opportunity.venues.includes(v))
+      h.venues.some((v: string) => opportunity.venues.includes(v))
     );
     
     // Estimate competition
@@ -963,12 +963,12 @@ export class ArbitrageEngine extends EventEmitter {
 
   // ========== HELPER METHODS ==========
 
-  private estimateGas(venue: string): BigNumber {
+  private estimateGas(venue: string): number {
     const venueData = this.venues.get(venue);
-    if (!venueData) return BigNumber.from('100000'); // Default
+    if (!venueData) return BigInt('100000'); // Default
     
     if (venueData.type === 'cex') {
-      return BigNumber.from('0'); // No gas for CEX
+      return BigInt('0'); // No gas for CEX
     }
     
     // Estimate based on chain
@@ -979,7 +979,7 @@ export class ArbitrageEngine extends EventEmitter {
       42161: '0.1' // Arbitrum
     }[venueData.chainId || 1] || '10';
     
-    return BigNumber.from(gasPrice).mul('1000000000').mul('200000'); // gasPrice * gasLimit
+    return BigInt(gasPrice).mul('1000000000').mul('200000'); // gasPrice * gasLimit
   }
 
   private calculateTotalFees(venues: string[]): number {
@@ -1049,14 +1049,14 @@ export class ArbitrageEngine extends EventEmitter {
 
   private async estimateBridgeCost(
     asset: string,
-    amount: BigNumber,
+    amount: number,
     sourceChain: number,
     targetChain: number,
     bridge: string
   ): Promise<{
-    sourceGas: BigNumber;
-    targetGas: BigNumber;
-    total: BigNumber;
+    sourceGas: number;
+    targetGas: number;
+    total: number;
   }> {
     // Simplified bridge cost estimation
     const baseCost = {
@@ -1069,7 +1069,7 @@ export class ArbitrageEngine extends EventEmitter {
     
     const sourceGas = this.estimateGas(`chain_${sourceChain}`);
     const targetGas = this.estimateGas(`chain_${targetChain}`);
-    const bridgeFee = BigNumber.from(baseCost).mul('1000000000000000000'); // In wei
+    const bridgeFee = BigInt(baseCost).mul('1000000000000000000'); // In wei
     
     return {
       sourceGas,

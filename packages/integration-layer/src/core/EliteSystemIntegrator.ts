@@ -7,7 +7,6 @@
 
 import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
-import { Logger } from 'winston';
 import { SystemOrchestrator } from './SystemOrchestrator';
 
 // Market regime detection
@@ -174,11 +173,11 @@ export class EliteSystemIntegrator extends EventEmitter {
     
     // Dynamic imports to avoid linter issues
     const { GovernanceAuditLog } = await import('../../../meta-governance/src/GovernanceAuditLog');
-    const { StrategyVotingEngine } = await import('../../../meta-governance/src/StrategyVotingEngine');
-    const { SignalElection } = await import('../../../meta-governance/src/SignalElection');
-    const { RiskPolicyManager } = await import('../../../meta-governance/src/RiskPolicyManager');
-    const { MetaGovernanceOrchestrator } = await import('../../../meta-governance/src/MetaGovernanceOrchestrator');
-    
+//     const { StrategyVotingEngine } = await import('../../../meta-governance/src/StrategyVotingEngine');
+//     const { SignalElection } = await import('../../../meta-governance/src/SignalElection');
+//     const { RiskPolicyManager } = await import('../../../meta-governance/src/RiskPolicyManager');
+//     const { MetaGovernanceOrchestrator } = await import('../../../meta-governance/src/MetaGovernanceOrchestrator');
+//     
     // Initialize audit log first (needed by other components)
     this.auditLog = new GovernanceAuditLog();
     
@@ -211,11 +210,11 @@ export class EliteSystemIntegrator extends EventEmitter {
     
     // Dynamic imports
     const { DeploymentOrchestrator } = await import('../../../deployment-pipeline/src/DeploymentOrchestrator');
-    const { CIValidator } = await import('../../../deployment-pipeline/src/CIValidator');
-    const { CanaryLauncher } = await import('../../../deployment-pipeline/src/CanaryLauncher');
-    const { LivePromoter } = await import('../../../deployment-pipeline/src/LivePromoter');
-    const { RollbackEngine } = await import('../../../deployment-pipeline/src/RollbackEngine');
-    const { DeploymentDashboardHook } = await import('../../../deployment-pipeline/src/DeploymentDashboardHook');
+//     const { CIValidator } = await import('../../../deployment-pipeline/src/CIValidator');
+//     const { CanaryLauncher } = await import('../../../deployment-pipeline/src/CanaryLauncher');
+//     const { LivePromoter } = await import('../../../deployment-pipeline/src/LivePromoter');
+//     const { RollbackEngine } = await import('../../../deployment-pipeline/src/RollbackEngine');
+//     const { DeploymentDashboardHook } = await import('../../../deployment-pipeline/src/DeploymentDashboardHook');
     
     // Initialize deployment components
     this.deploymentOrchestrator = new DeploymentOrchestrator();

@@ -145,6 +145,11 @@ var ModuleStatus;
     ModuleStatus["DEGRADED"] = "degraded";
     ModuleStatus["UNHEALTHY"] = "unhealthy";
     ModuleStatus["UNKNOWN"] = "unknown";
+    ModuleStatus["STARTING"] = "starting";
+    ModuleStatus["READY"] = "ready";
+    ModuleStatus["ERROR"] = "error";
+    ModuleStatus["STOPPING"] = "stopping";
+    ModuleStatus["STOPPED"] = "stopped";
 })(ModuleStatus || (exports.ModuleStatus = ModuleStatus = {}));
 var ModuleHealthStatus;
 (function (ModuleHealthStatus) {
@@ -177,6 +182,11 @@ var MessageType;
     MessageType["MODULE_SCALE"] = "module_scale";
     MessageType["MODULE_ALERT"] = "module_alert";
     MessageType["MODULE_ERROR"] = "module_error";
+    MessageType["SYSTEM_STARTUP"] = "system_startup";
+    MessageType["SYSTEM_SHUTDOWN"] = "system_shutdown";
+    MessageType["MODULE_REGISTER"] = "module_register";
+    MessageType["MODULE_READY"] = "module_ready";
+    MessageType["CONFIG_UPDATE"] = "config_update";
 })(MessageType || (exports.MessageType = MessageType = {}));
 var MessagePriority;
 (function (MessagePriority) {

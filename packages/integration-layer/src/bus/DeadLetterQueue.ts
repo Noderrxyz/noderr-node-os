@@ -141,6 +141,8 @@ export class DeadLetterQueue extends EventEmitter {
         message,
         reason,
         retries: 0,
+        firstAttempt: Date.now(),
+        lastAttempt: Date.now(),
         firstFailure: Date.now(),
         lastFailure: Date.now(),
         error

@@ -52,7 +52,7 @@ export class ConfigurationService extends EventEmitter {
     environment: 'development',
     version: '1.0.0',
     debug: false,
-    modules: [],
+    modules: [] as ModuleConfig[],
     messageBus: {
       maxMessageSize: 1024 * 1024,
       maxQueueSize: 10000,
@@ -605,9 +605,9 @@ export class ConfigurationService extends EventEmitter {
   private async broadcastUpdate(update: ConfigUpdate): Promise<void> {
     const message = MessageFactory.create(
       MessageType.CONFIG_UPDATE,
-      'config.service',
       update.module || '*',
-      update
+      update,
+      'config.service'
     );
     
     await this.messageBus.send(message);

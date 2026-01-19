@@ -30,7 +30,7 @@ import { Logger } from '@noderr/utils/src';
 import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
 import { MarketIntelService } from './MarketIntelService';
 import { TelemetryClient } from './types';
-nconst logger = new Logger('market-intel');
+const logger = new Logger('market-intel');
 
 let marketIntelService: MarketIntelService | null = null;
 

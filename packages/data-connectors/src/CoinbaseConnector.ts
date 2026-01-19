@@ -5,10 +5,10 @@ import crypto from 'crypto';
 
 const logger = new Logger('CoinbaseConnector');
 const createLogger = (name: string) => ({
-  info: (message: string, meta?: any) => logger.info(`[${name}] INFO:`, message, meta || ''),
-  error: (message: string, error?: any) => logger.error(`[${name}] ERROR:`, message, error || ''),
-  debug: (message: string, meta?: any) => logger.debug(`[${name}] DEBUG:`, message, meta || ''),
-  warn: (message: string, meta?: any) => logger.warn(`[${name}] WARN:`, message, meta || '')
+  info: (message: string, meta?: any) => logger.info(`[${name}] INFO: ${message}`, meta),
+  error: (message: string, error?: any) => logger.error(`[${name}] ERROR: ${message}`, error),
+  debug: (message: string, meta?: any) => logger.debug(`[${name}] DEBUG: ${message}`, meta),
+  warn: (message: string, meta?: any) => logger.warn(`[${name}] WARN: ${message}`, meta)
 });
 
 interface MarketData {

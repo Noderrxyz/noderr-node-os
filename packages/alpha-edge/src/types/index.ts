@@ -2,7 +2,7 @@
  * Alpha Edge Types - World-class trading infrastructure types
  */
 
-import { BigNumber } from 'ethers';
+import { number } from 'ethers';
 
 // ==================== MICROSTRUCTURE TYPES ====================
 
@@ -72,9 +72,9 @@ export interface VolatilityForecast {
 export interface ArbitrageOpportunity {
   id: string;
   type: 'triangular' | 'cross_venue' | 'statistical' | 'latency' | 'funding';
-  profitEstimate: BigNumber;
+  profitEstimate: number;
   probability: number;
-  requiredCapital: BigNumber;
+  requiredCapital: number;
   executionTime: number;
   riskScore: number;
   venues: string[];
@@ -87,8 +87,8 @@ export interface CrossChainArbitrage extends ArbitrageOpportunity {
   targetChain: string;
   bridgeProtocol: string;
   gasEstimate: {
-    source: BigNumber;
-    target: BigNumber;
+    source: number;
+    target: number;
   };
   slippageTolerance: number;
 }
@@ -116,12 +116,12 @@ export interface ArbitrageRoute {
     venue: string;
     inputAsset: string;
     outputAsset: string;
-    inputAmount: BigNumber;
-    expectedOutput: BigNumber;
-    gasEstimate: BigNumber;
+    inputAmount: number;
+    expectedOutput: number;
+    gasEstimate: number;
   }>;
-  totalProfit: BigNumber;
-  totalGas: BigNumber;
+  totalProfit: number;
+  totalGas: number;
   executionTime: number;
   atomicity: boolean;
 }
@@ -218,7 +218,7 @@ export interface MarketMakingOpportunity {
   competitorCount: number;
   inventoryRisk: number;
   expectedProfit: number;
-  requiredCapital: BigNumber;
+  requiredCapital: number;
 }
 
 export interface SpreadOptimization {
@@ -253,7 +253,7 @@ export interface ImpermanentLossProtection {
   position: {
     pool: string;
     assets: [string, string];
-    amounts: [BigNumber, BigNumber];
+    amounts: [number, number];
     entryPrice: number;
   };
   currentIL: number;
@@ -354,7 +354,7 @@ export interface AlphaSignal {
   expectedReturn: number;
   riskAdjustedReturn: number;
   timeHorizon: number; // milliseconds
-  capitalRequired: BigNumber;
+  capitalRequired: number;
   priority: 'critical' | 'high' | 'medium' | 'low';
   metadata: any;
 }
@@ -363,10 +363,10 @@ export interface ExecutionPlan {
   signals: AlphaSignal[];
   allocations: Array<{
     signal: AlphaSignal;
-    capital: BigNumber;
+    capital: number;
     weight: number;
   }>;
-  totalCapital: BigNumber;
+  totalCapital: number;
   expectedReturn: number;
   maxDrawdown: number;
   executionSteps: Array<{

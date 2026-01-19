@@ -10,7 +10,7 @@ import { Logger } from 'winston';
 import { MessageBus } from '../bus/MessageBus';
 import { HealthMonitor } from '../health/HealthMonitor';
 import { RecoveryManager } from '../recovery/RecoveryManager';
-// import { ConfigurationService } from '@noderr/config'; // TODO: Fix config package exports
+import { ConfigurationService } from '../config/ConfigurationService';
 import {
   ModuleStatus,
   HealthStatus,

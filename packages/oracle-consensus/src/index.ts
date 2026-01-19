@@ -26,7 +26,7 @@ import { BFTConsensusEngine } from './BFTConsensusEngine';
 import { OracleLotterySelector } from './OracleLotterySelector';
 import { OracleCoordinator } from './OracleCoordinator';
 import { ethers } from 'ethers';
-nconst logger = new Logger('oracle-consensus');
+const logger = new Logger('oracle-consensus');
 
 let consensusEngine: BFTConsensusEngine | null = null;
 let lotterySelector: OracleLotterySelector | null = null;

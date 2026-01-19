@@ -6,7 +6,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { BigNumber } from 'ethers';
+import { number } from 'ethers';
 import * as ss from 'simple-statistics';
 import {
   TailRiskMetrics,
@@ -27,7 +27,7 @@ interface RiskConfig {
 
 interface Position {
   asset: string;
-  amount: BigNumber;
+  amount: number;
   entryPrice: number;
   currentPrice: number;
   leverage: number;
@@ -274,7 +274,7 @@ export class TailRiskManager extends EventEmitter {
     const currentAllocation: Record<string, number> = {};
     
     for (const [asset, position] of this.positions) {
-      const value = position.amount.toNumber() * position.currentPrice;
+      const value = position.amount * position.currentPrice;
       currentAllocation[asset] = value / totalValue;
     }
     
@@ -460,7 +460,7 @@ export class TailRiskManager extends EventEmitter {
       let value = 0;
       for (const [asset, position] of this.positions) {
         const prices = this.priceHistory.get(asset)!;
-        value += position.amount.toNumber() * prices[i]!;
+        value += position.amount * prices[i]!;
       }
       portfolioValues.push(value);
     }
@@ -753,7 +753,7 @@ export class TailRiskManager extends EventEmitter {
   private calculatePortfolioValue(): number {
     let value = 0;
     for (const [_, position] of this.positions) {
-      value += position.amount.toNumber() * position.currentPrice;
+      value += position.amount * position.currentPrice;
     }
     return value;
   }
@@ -762,7 +762,7 @@ export class TailRiskManager extends EventEmitter {
     const position = this.positions.get(asset);
     if (!position) return 0;
     
-    const assetValue = position.amount.toNumber() * position.currentPrice;
+    const assetValue = position.amount * position.currentPrice;
     const totalValue = this.calculatePortfolioValue();
     
     return assetValue / totalValue;
