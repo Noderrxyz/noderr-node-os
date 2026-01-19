@@ -1,3 +1,4 @@
+import { HealthCheckResult } from "@noderr/types/src";
 /**
  * Health Types - System health monitoring and recovery types
  * 
@@ -21,19 +22,19 @@ export enum ModuleStatus {
   STOPPED = 'stopped'
 }
 
-export interface HealthCheckResult {
-  moduleId: string;
-  moduleName: string;
-  status: HealthStatus;
-  moduleStatus: ModuleStatus;
-  timestamp: number;
-  latency: number;
-  uptime: number;
-  lastError?: string;
-  metrics: HealthMetrics;
-  dependencies?: DependencyHealth[];
-  custom?: Record<string, any>;
-}
+// export interface HealthCheckResult {
+//   moduleId: string;
+//   moduleName: string;
+//   status: HealthStatus;
+//   moduleStatus: ModuleStatus;
+//   timestamp: number;
+//   latency: number;
+//   uptime: number;
+//   lastError?: string;
+//   metrics: HealthMetrics;
+//   dependencies?: DependencyHealth[];
+//   custom?: Record<string, any>;
+// }
 
 export interface HealthMetrics {
   cpu: CPUMetrics;

@@ -823,11 +823,11 @@ export class SystemOrchestrator extends EventEmitter {
   private async broadcastSystemEvent(type: MessageType, payload: any): Promise<void> {
     const message = MessageFactory.create(
       type,
-      'system.orchestrator',
       '*',
       payload,
-      { priority: MessagePriority.HIGH }
+      'system.orchestrator'
     );
+    message.priority = MessagePriority.HIGH;
     
     await this.messageBus.send(message);
   }

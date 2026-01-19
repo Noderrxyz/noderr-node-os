@@ -538,9 +538,23 @@ export class HealthMonitor extends EventEmitter {
     const degradedModules = results.filter(r => r.status === HealthStatus.DEGRADED).length;
     const unhealthyModules = results.filter(r => r.status === HealthStatus.UNHEALTHY).length;
     
-    const avgCpuUsage = results.reduce((sum, r) => sum + r.metrics.cpu.usage, 0) / totalModules;
-    const avgMemoryUsage = results.reduce((sum, r) => sum + r.metrics.memory.percentUsed, 0) / totalModules;
-    const totalMemoryUsed = results.reduce((sum, r) => sum + r.metrics.memory.rss, 0);
+    const avgCpuUsage = results.reduce((sum, r) => {
+      const cpu = r.metrics?.cpu;
+      const usage = typeof cpu === 'object' ? (cpu.usage || 0) : (cpu || 0);
+      return sum + usage;
+    }, 0) / totalModules;
+    
+    const avgMemoryUsage = results.reduce((sum, r) => {
+      const memory = r.metrics?.memory;
+      const percentUsed = typeof memory === 'object' ? (memory.percentUsed || 0) : (memory || 0);
+      return sum + percentUsed;
+    }, 0) / totalModules;
+    
+    const totalMemoryUsed = results.reduce((sum, r) => {
+      const memory = r.metrics?.memory;
+      const rss = typeof memory === 'object' ? (memory.rss || 0) : 0;
+      return sum + rss;
+    }, 0);
     
     return {
       totalModules,
@@ -562,13 +576,21 @@ export class HealthMonitor extends EventEmitter {
     const recommendations: string[] = [];
     
     // Check for high CPU usage
-    const highCpuModules = results.filter(r => r.metrics.cpu.usage > 80);
+    const highCpuModules = results.filter(r => {
+      const cpu = r.metrics?.cpu;
+      const usage = typeof cpu === 'object' ? (cpu.usage || 0) : (cpu || 0);
+      return usage > 80;
+    });
     if (highCpuModules.length > 0) {
       recommendations.push(`High CPU usage detected in ${highCpuModules.length} modules. Consider scaling or optimization.`);
     }
     
     // Check for memory issues
-    const highMemModules = results.filter(r => r.metrics.memory.percentUsed > 80);
+    const highMemModules = results.filter(r => {
+      const memory = r.metrics?.memory;
+      const percentUsed = typeof memory === 'object' ? (memory.percentUsed || 0) : (memory || 0);
+      return percentUsed > 80;
+    });
     if (highMemModules.length > 0) {
       recommendations.push(`High memory usage in ${highMemModules.length} modules. Monitor for memory leaks.`);
     }
