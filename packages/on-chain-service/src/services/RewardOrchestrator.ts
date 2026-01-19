@@ -417,10 +417,39 @@ export class RewardOrchestrator {
           daysStaked,
         };
 
-        const rewardAmount = await this.rewardCalculatorContract.calculateReward(
+        let rewardAmount = await this.rewardCalculatorContract.calculateReward(
           epochConfig.baseRewardRate,
           performanceDataStruct
         );
+
+        // Apply penalty multiplier if PenaltyManager is configured
+        if (this.config.penaltyManagerAddress && this.config.penaltyManagerAddress !== '0x0000000000000000000000000000000000000000') {
+          try {
+            const penaltyManagerContract = new ethers.Contract(
+              this.config.penaltyManagerAddress,
+              ['function getPenaltyMultiplier(address operator) external view returns (uint256)'],
+              this.provider
+            );
+            
+            const penaltyMultiplier = await penaltyManagerContract.getPenaltyMultiplier(data.address);
+            const multiplierDecimal = Number(penaltyMultiplier) / 10000; // Convert from basis points
+            
+            // Apply penalty multiplier to reward
+            rewardAmount = (rewardAmount * BigInt(Math.floor(multiplierDecimal * 10000))) / 10000n;
+            
+            this.logger.debug('Applied penalty multiplier', {
+              address: data.address,
+              penaltyMultiplier: multiplierDecimal,
+              originalReward: ethers.formatEther(rewardAmount),
+              adjustedReward: ethers.formatEther(rewardAmount),
+            });
+          } catch (error: any) {
+            this.logger.warn('Failed to apply penalty multiplier, using full reward', {
+              address: data.address,
+              error: error.message,
+            });
+          }
+        }
 
         rewardEntries.push({
           address: data.address,
