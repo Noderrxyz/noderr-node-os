@@ -14,7 +14,7 @@ export interface SystemConfig {
   health: HealthConfig;
   recovery: RecoveryConfig;
   telemetry: TelemetryConfig;
-  security: SecurityConfig;
+  security?: SecurityConfig;
 }
 
 export interface ModuleConfig {

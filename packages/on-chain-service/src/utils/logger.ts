@@ -1,5 +1,5 @@
 import winston from 'winston';
-import { OnChainServiceConfig } from '@noderr/types';
+import { OnChainServiceConfig } from '@noderr/types/src';
 
 /**
  * Create and configure Winston logger

@@ -6,7 +6,7 @@ import {
   RewardEntry,
   MerkleProof,
   TransactionResult,
-} from '@noderr/types';
+} from '@noderr/types/src';
 import { RateLimiter } from '../utils/rateLimiter';
 import { CircuitBreaker } from '../utils/circuitBreaker';
 import {

@@ -689,6 +689,7 @@ export interface HealthCheckConfig {
   timeout: number;
   retries: number;
   enabled: boolean;
+  modules?: string[];
 }
 
 export interface HealthCheckResult {
@@ -724,6 +725,7 @@ export interface HealthAlert {
 
 export interface HealthHistory {
   module: string;
+  moduleId?: string;
   checks: HealthCheckResult[];
   entries?: HealthCheckResult[];
   startTime: number;
@@ -739,6 +741,8 @@ export enum ModuleHealthStatus {
 
 export interface ModuleHealthConfig {
   module: string;
+  moduleId?: string;
+  enabled?: boolean;
   checkInterval: number;
   timeout: number;
   thresholds: {
@@ -777,6 +781,7 @@ export enum MessageType {
   SYSTEM_SHUTDOWN = 'system_shutdown',
   MODULE_REGISTER = 'module_register',
   MODULE_READY = 'module_ready',
+  HEALTH_RESPONSE = 'health_response',
   CONFIG_UPDATE = 'config_update'
 }
 
@@ -900,8 +905,15 @@ export interface RecoveryTrigger {
 
 export interface ModuleRegistration {
   name: string;
+  moduleId?: string;
   version: string;
   dependencies: string[];
+  capabilities?: string[];
+  endpoints?: {
+    health?: string;
+    metrics?: string;
+    api?: string;
+  };
   config: ModuleConfig;
   healthCheck?: () => Promise<HealthCheckResult>;
   initialize?: () => Promise<void>;
@@ -943,6 +955,7 @@ export interface RouteMetrics {
   maxLatency?: number;
   p50Latency?: number;
   p95Latency?: number;
+  p99Latency?: number;
   errors: number;
   lastUsed: number;
   lastUpdated?: number;

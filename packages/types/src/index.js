@@ -186,6 +186,7 @@ var MessageType;
     MessageType["SYSTEM_SHUTDOWN"] = "system_shutdown";
     MessageType["MODULE_REGISTER"] = "module_register";
     MessageType["MODULE_READY"] = "module_ready";
+    MessageType["HEALTH_RESPONSE"] = "health_response";
     MessageType["CONFIG_UPDATE"] = "config_update";
 })(MessageType || (exports.MessageType = MessageType = {}));
 var MessagePriority;

@@ -5,7 +5,7 @@ import { CircuitBreaker } from './utils/circuitBreaker';
 import { CapitalManager } from './services/CapitalManager';
 import { RewardDistributor } from './services/RewardDistributor';
 import { TrustUpdater } from './services/TrustUpdater';
-import { OnChainServiceConfig, ServiceHealthStatus } from '@noderr/types';
+import { OnChainServiceConfig, ServiceHealthStatus } from '@noderr/types/src';
 import { Logger } from 'winston';
 
 /**
@@ -152,7 +152,7 @@ export class OnChainService {
 }
 
 // Export all types and utilities
-export * from '@noderr/types';
+export * from '@noderr/types/src';
 export * from './config';
 export * from './utils/logger';
 export * from './utils/rateLimiter';

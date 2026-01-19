@@ -575,6 +575,7 @@ export class MessageBus extends EventEmitter {
     if (!this.routeMetrics.has(route)) {
       this.routeMetrics.set(route, {
         route,
+        messagesHandled: 0,
         messageCount: 0,
         avgLatency: 0,
         p50Latency: 0,
@@ -582,6 +583,7 @@ export class MessageBus extends EventEmitter {
         p99Latency: 0,
         maxLatency: 0,
         errors: 0,
+        lastUsed: Date.now(),
         lastUpdated: Date.now()
       });
     }
