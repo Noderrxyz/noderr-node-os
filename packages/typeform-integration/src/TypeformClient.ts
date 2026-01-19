@@ -87,6 +87,12 @@ export class TypeformClient {
     const stakeAmount = parseFloat(getAnswer('stake_amount') || '0');
     const experience = getAnswer('experience');
     const motivation = getAnswer('motivation');
+    const rpcEndpoint = getAnswer('rpc_endpoint');
+
+    // Validate RPC endpoint
+    if (rpcEndpoint && !rpcEndpoint.startsWith('https://')) {
+      throw new Error('Invalid RPC endpoint: must be a valid HTTPS URL');
+    }
 
     // Map node type string to enum
     let requestedNodeType: NodeType = NodeType.VALIDATOR;
@@ -105,6 +111,7 @@ export class TypeformClient {
       stakeAmount,
       experience,
       motivation,
+      rpcEndpoint: rpcEndpoint || '', // Custom RPC endpoint for blockchain access
       status: 'PENDING',
       submittedAt: new Date(response.submitted_at).getTime(),
       metadata: {

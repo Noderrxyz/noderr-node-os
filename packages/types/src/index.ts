@@ -1166,6 +1166,7 @@ export interface UserApplication {
   stakeAmount: number;
   experience: string;
   motivation: string;
+  rpcEndpoint?: string; // Custom RPC endpoint for blockchain access (e.g., Infura, Alchemy)
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   submittedAt: number;
   reviewedAt?: number;
