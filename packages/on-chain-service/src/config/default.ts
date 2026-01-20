@@ -13,17 +13,17 @@ export const DEFAULT_CONFIG = {
   nodrTokenAddress: '0x61318A5e42612f1d0B67f443E457B8E9C2F001D6',
   utilityNFTAddress: '0xD67326eE24F3a5fcb8a12AaD294Dc610642F96cC',
   trustFingerprintAddress: '0xFf3BFD4eDC994d54B2adD3b315281590a50a9d95',
-  stakingManagerAddress: '0x5B78820Af5c910Fe3413FF0eb6F356d77d94B1eC',
-  rewardDistributorAddress: '0x33Ac6daE76D2f3008b1b6dDfbA34933746e34359',
-  governanceManagerAddress: '0x72a065E5cf055F65d4c37CBc9d9DC5314115e5d7',
-  nodeRegistryAddress: '0x175Cc86EF0c0C6f3CF865c5599863F6F61A60f58',
+  stakingManagerAddress: '0x382343dCCe23017e9b14DC68AD066250E07b2994',
+  rewardDistributorAddress: '0x6A143A66652140C04079716EceF8d5A353aeC49B',
+  governanceManagerAddress: '0x83f8254C25aEa57217CD1A6Aa03DFa06d6816156',
+  nodeRegistryAddress: '0x0C384F177b11FDf39360e6d1030608AfE670cF7c',
   guardianWorkloadManagerAddress: '0x8a55C0ab60FAD4ef913c6dfddB403a454B0818c0',
-  rewardCalculatorAddress: '0x0000000000000000000000000000000000000000', // TODO: Deploy RewardCalculator
-  penaltyManagerAddress: '0x0000000000000000000000000000000000000000', // TODO: Deploy PenaltyManager
+  rewardCalculatorAddress: '0xD815fe075539e6f97861E6aF1CE2706d640A8fCe', // ✅ Deployed Jan 20, 2026
+  penaltyManagerAddress: '0x64E91FBDFE38Fe2e0865FFBBEB2d2Ad88eEB7Dd8', // ✅ Deployed Jan 20, 2026
   
   // Legacy aliases (for backward compatibility)
-  treasuryManagerAddress: '0x5B78820Af5c910Fe3413FF0eb6F356d77d94B1eC', // StakingManager
-  merkleRewardDistributorAddress: '0x33Ac6daE76D2f3008b1b6dDfbA34933746e34359', // RewardDistributor
+  treasuryManagerAddress: '0x257db11bf3EEDB4E832D821742eBF09338C4CD42', // TreasuryManager
+  merkleRewardDistributorAddress: '0xCcDB471823C4F14Ffa4814641eafDa63fb526834', // MerkleRewardDistributor
   
   // Block Explorer
   blockExplorerUrl: 'https://sepolia.basescan.org',
