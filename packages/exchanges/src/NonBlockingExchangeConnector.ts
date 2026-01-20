@@ -1,4 +1,4 @@
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { EventEmitter } from 'events';
 import * as net from 'net';
 import * as tls from 'tls';

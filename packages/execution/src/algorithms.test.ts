@@ -11,7 +11,7 @@ import {
   TimeInForce,
   AlgorithmType,
   ExecutionStatus
-} from '@noderr/types/src';
+} from '@noderr/types';
 import winston from 'winston';
 
 // Create test logger

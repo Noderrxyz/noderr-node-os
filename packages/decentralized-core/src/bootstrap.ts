@@ -5,7 +5,7 @@
  * Does not participate in trading or consensus.
  */
 
-import { Logger, getShutdownHandler, onShutdown } from '@noderr/utils/src';
+import { Logger, getShutdownHandler, onShutdown } from '@noderr/utils';
 import { NodeCommunicationLayer } from './NodeCommunicationLayer';
 
 const logger = new Logger('bootstrap-node');

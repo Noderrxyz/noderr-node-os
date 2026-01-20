@@ -5,7 +5,7 @@
  * to provide comprehensive system monitoring.
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { EventEmitter } from 'events';
 import * as winston from 'winston';
 import * as http from 'http';

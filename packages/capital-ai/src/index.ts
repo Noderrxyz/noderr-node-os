@@ -12,8 +12,8 @@ export const CAPITAL_AI_VERSION = '1.0.0';
 // Main Entry Point
 // ============================================================================
 
-import { Logger } from '@noderr/utils/src';
-import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
+import { getShutdownHandler, onShutdown } from '@noderr/utils';
 
 const logger = new Logger('capital-ai');
 

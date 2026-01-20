@@ -3,7 +3,7 @@
  * Health check for Docker HEALTHCHECK directive
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { healthCheckRegistry } from './health-check-enhanced';
 
 const logger = new Logger('health-check');

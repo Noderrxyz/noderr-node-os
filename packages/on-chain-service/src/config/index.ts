@@ -1,5 +1,5 @@
 import { config as dotenvConfig } from 'dotenv';
-import { OnChainServiceConfig } from '@noderr/types/src';
+import { OnChainServiceConfig } from '@noderr/types';
 import { ethers } from 'ethers';
 import { getDefaultConfig } from './default';
 

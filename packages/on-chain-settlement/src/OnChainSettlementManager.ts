@@ -7,10 +7,10 @@
  * @module OnChainSettlementManager
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { EventEmitter } from 'events';
 import { ethers } from 'ethers';
-import { TradingSignal } from '@noderr/oracle-consensus/src';
+import { TradingSignal } from '@noderr/oracle-consensus';
 
 const logger = new Logger('OnChainSettlementManager');
 export interface SettlementConfig {

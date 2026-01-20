@@ -5,7 +5,7 @@
  * For Oracle nodes (required) and Guardian nodes (optional bonus)
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { getGPUHardwareId } from '@noderr/gpu-service-mvs';
 
 const logger = new Logger('gpu-integration');

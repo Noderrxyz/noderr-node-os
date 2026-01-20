@@ -12,8 +12,8 @@
  * - OHLCV candles
  */
 
-import { Logger, getShutdownHandler, onShutdown } from '@noderr/utils/src';
-import { SimulationEventBus, eventBus, EventTopics } from '@noderr/core/src';
+import { Logger, getShutdownHandler, onShutdown } from '@noderr/utils';
+import { SimulationEventBus, eventBus, EventTopics } from '@noderr/core';
 
 export { MarketDataRingBuffer, MarketDataRingBufferView, RingBufferBenchmark, MarketDataPoint } from './RingBuffer';
 export { HistoricalDataLoader, OHLCVData, HistoricalDataConfig } from './HistoricalDataLoader';

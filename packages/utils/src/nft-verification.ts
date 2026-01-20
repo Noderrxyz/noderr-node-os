@@ -11,7 +11,7 @@
  * - Retry logic for network issues
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { ethers } from 'ethers';
 
 // Configuration

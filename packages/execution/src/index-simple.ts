@@ -37,6 +37,6 @@ export type {
   Fill,
   ExecutionRoute,
   ExecutedRoute
-} from '@noderr/types/src';
+} from '@noderr/types';
 
 export const VERSION = '1.0.0';

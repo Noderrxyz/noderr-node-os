@@ -1,4 +1,4 @@
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 
 /**
  * @class PnLCalculator

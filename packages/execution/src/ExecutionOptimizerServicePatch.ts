@@ -3,9 +3,9 @@
  * This file contains the modifications needed to respect trading mode controls
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { SafetyController } from '@noderr/safety-control';
-import { Order, ExecutionError, ExecutionErrorCode } from '@noderr/types/src';
+import { Order, ExecutionError, ExecutionErrorCode } from '@noderr/types';
 
 /**
  * Add this to the ExecutionOptimizerService class properties:

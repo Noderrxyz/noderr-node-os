@@ -19,7 +19,7 @@ import {
   MessageFactory,
   MessagePriority,
   ModuleRegistration
-} from '@noderr/types/src';
+} from '@noderr/types';
 
 // Phase 4: Meta-Governance Intelligence (TODO: Sprint 2+)
 // import { MetaGovernanceOrchestrator } from '../../../meta-governance/src/MetaGovernanceOrchestrator';
@@ -37,10 +37,10 @@ import {
 // import { DeploymentDashboardHook } from '../../../deployment-pipeline/src/DeploymentDashboardHook';
 
 // Phase 6: Adaptive Capital Allocation AI
-import { DynamicWeightAllocator } from '@noderr/capital-ai/src';
-import { CapitalFlowOptimizer } from '@noderr/capital-ai/src';
-import { PortfolioSentinel } from '@noderr/capital-ai/src';
-import { CapitalStrategyDashboard } from '@noderr/capital-ai/src';
+import { DynamicWeightAllocator } from '@noderr/capital-ai';
+import { CapitalFlowOptimizer } from '@noderr/capital-ai';
+import { PortfolioSentinel } from '@noderr/capital-ai';
+import { CapitalStrategyDashboard } from '@noderr/capital-ai';
 
 // Existing module imports
 // import { AIModuleService } from '../../../ai-core/src';

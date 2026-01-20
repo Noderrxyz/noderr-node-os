@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 
 // LOW FIX: Use Logger instead of console.log
 const logger = new Logger('OnChainRegistry');

@@ -22,7 +22,7 @@ import {
   Message,
   MessageType,
   MessageFactory
-} from '@noderr/types/src';
+} from '@noderr/types';
 import { HealthUtils } from '../types/health';
 import { MessageBus } from '../bus/MessageBus';
 

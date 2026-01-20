@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { createLogger } from '../utils/logger';
-import { OnChainServiceConfig } from '@noderr/types/src';
+import { OnChainServiceConfig } from '@noderr/types';
 
 /**
  * Penalty tier enumeration (matches smart contract)

@@ -1,8 +1,8 @@
 import { EventEmitter } from 'events';
-import { TradingSignal, OrderExecutedEvent } from '@noderr/core/src';
+import { TradingSignal, OrderExecutedEvent } from '@noderr/core';
 import { SignalToOrderTranslator } from './SignalToOrderTranslator';
-import { Logger } from '@noderr/utils/src';
-import { eventBus, EventTopics, SimulationEvent } from '@noderr/core/src';
+import { Logger } from '@noderr/utils';
+import { eventBus, EventTopics, SimulationEvent } from '@noderr/core';
 // RLOrderRouter temporarily disabled due to @tensorflow/tfjs-node-gpu dependency
 // import { RLOrderRouter, MarketState, RoutingAction, ExecutionResult as RLExecutionResult } from './RLOrderRouter';
 

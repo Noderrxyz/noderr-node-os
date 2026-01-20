@@ -8,7 +8,7 @@ import {
   ExecutionConstraints,
   ExecutionObjectives,
   CostAnalysis
-} from '@noderr/types/src';
+} from '@noderr/types';
 import { Logger } from 'winston';
 import * as math from 'mathjs';
 

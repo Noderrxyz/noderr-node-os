@@ -6,7 +6,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 
 export interface StrategyReviewRequest {
   strategyId: string;

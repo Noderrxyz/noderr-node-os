@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { SystemOrchestrator } from '../../SystemOrchestrator';
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 
 describe('Core Execution Flow Integration Tests', () => {
   let orchestrator: SystemOrchestrator;

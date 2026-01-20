@@ -5,7 +5,7 @@
  * Integrates with P2P network for decentralized guardian coordination.
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { EventEmitter } from 'events';
 import { NodeCommunicationLayer, MessageType, P2PMessage } from '@noderr/decentralized-core';
 

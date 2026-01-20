@@ -1,5 +1,5 @@
-import { Logger } from '@noderr/utils/src';
-import { eventBus, EventTopics, SimulationEvent, TradingSignal, ExecutionResult } from '@noderr/core/src';
+import { Logger } from '@noderr/utils';
+import { eventBus, EventTopics, SimulationEvent, TradingSignal, ExecutionResult } from '@noderr/core';
 import { PnLCalculator } from './PnLCalculator';
 import * as fs from 'fs/promises';
 import * as path from 'path';

@@ -1,4 +1,4 @@
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { ResilientDataConnector, ConnectorConfig } from './ResilientDataConnector';
 import WebSocket from 'ws';
 import crypto from 'crypto';
