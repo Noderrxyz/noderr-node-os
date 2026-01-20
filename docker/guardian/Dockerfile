@@ -49,6 +49,7 @@ COPY packages/exchanges ./packages/exchanges
 COPY packages/data-connectors ./packages/data-connectors
 COPY packages/risk-engine ./packages/risk-engine
 COPY packages/compliance ./packages/compliance
+COPY packages/decentralized-core ./packages/decentralized-core
 COPY packages/guardian-consensus ./packages/guardian-consensus
 COPY packages/oracle-consensus ./packages/oracle-consensus
 COPY packages/execution ./packages/execution
@@ -70,6 +71,7 @@ RUN pnpm install --frozen-lockfile \
     --filter "@noderr/data-connectors" \
     --filter "@noderr/risk-engine" \
     --filter "@noderr/compliance" \
+    --filter "@noderr/decentralized-core" \
     --filter "@noderr/guardian-consensus" \
     --filter "@noderr/oracle-consensus" \
     --filter "@noderr/execution" \
@@ -90,6 +92,7 @@ RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/data-connectors" build && \
     pnpm --filter "@noderr/risk-engine" build && \
     pnpm --filter "@noderr/compliance" build && \
+    pnpm --filter "@noderr/decentralized-core" build && \
     pnpm --filter "@noderr/guardian-consensus" build && \
     pnpm --filter "@noderr/oracle-consensus" build && \
     pnpm --filter "@noderr/execution" build && \
@@ -111,6 +114,7 @@ RUN pnpm install --frozen-lockfile --prod \
     --filter "@noderr/data-connectors" \
     --filter "@noderr/risk-engine" \
     --filter "@noderr/compliance" \
+    --filter "@noderr/decentralized-core" \
     --filter "@noderr/guardian-consensus" \
     --filter "@noderr/oracle-consensus" \
     --filter "@noderr/execution" \

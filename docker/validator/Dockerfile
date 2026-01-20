@@ -38,6 +38,7 @@ COPY packages/core ./packages/core
 COPY packages/telemetry ./packages/telemetry
 COPY packages/market-data ./packages/market-data
 COPY packages/data-connectors ./packages/data-connectors
+COPY packages/decentralized-core ./packages/decentralized-core
 COPY packages/on-chain-service ./packages/on-chain-service
 COPY packages/validator-consensus ./packages/validator-consensus
 COPY packages/heartbeat-client ./packages/heartbeat-client
@@ -50,6 +51,7 @@ RUN pnpm install --frozen-lockfile \
     --filter "@noderr/telemetry" \
     --filter "@noderr/market-data" \
     --filter "@noderr/data-connectors" \
+    --filter "@noderr/decentralized-core" \
     --filter "@noderr/on-chain-service" \
     --filter "@noderr/validator-consensus" \
     --filter "@noderr/heartbeat-client"
@@ -61,6 +63,7 @@ RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/telemetry" build && \
     pnpm --filter "@noderr/market-data" build && \
     pnpm --filter "@noderr/data-connectors" build && \
+    pnpm --filter "@noderr/decentralized-core" build && \
     pnpm --filter "@noderr/on-chain-service" build && \
     pnpm --filter "@noderr/validator-consensus" build && \
     pnpm --filter "@noderr/heartbeat-client" build
@@ -73,6 +76,7 @@ RUN pnpm install --frozen-lockfile --prod \
     --filter "@noderr/telemetry" \
     --filter "@noderr/market-data" \
     --filter "@noderr/data-connectors" \
+    --filter "@noderr/decentralized-core" \
     --filter "@noderr/on-chain-service" \
     --filter "@noderr/validator-consensus" \
     --filter "@noderr/heartbeat-client"
