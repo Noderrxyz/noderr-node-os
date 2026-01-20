@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { Logger } from 'winston';
-import { OnChainServiceConfig } from '@noderr/types/src';
+import { OnChainServiceConfig, RewardEntry } from '@noderr/types/src';
 import { RateLimiter } from '../utils/rateLimiter';
 import { CircuitBreaker } from '../utils/circuitBreaker';
 import { TrustUpdater } from './TrustUpdater';
@@ -31,17 +31,6 @@ export interface TrustComponents {
   history: number;
   peer: number;
   stake: number;
-}
-
-/**
- * Reward entry for Merkle distribution
- */
-export interface RewardEntry {
-  address: string;
-  amount: bigint;
-  trustScore: number;
-  stakeAmount: bigint;
-  performanceMultiplier: number;
 }
 
 /**

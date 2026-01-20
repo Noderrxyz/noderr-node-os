@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
-import logger from '../utils/logger';
-import { OnChainConfig } from '../config/default';
+import { createLogger } from '../utils/logger';
+import { OnChainServiceConfig } from '@noderr/types/src';
 
 /**
  * Penalty tier enumeration (matches smart contract)
@@ -54,7 +54,8 @@ export class PenaltyOrchestrator {
   private penaltyManagerContract: ethers.Contract;
   private trustFingerprintContract: ethers.Contract;
   private stakingManagerContract: ethers.Contract;
-  private config: OnChainConfig;
+  private config: OnChainServiceConfig;
+  private logger: any;
 
   // Penalty Manager ABI (key functions only)
   private readonly PENALTY_MANAGER_ABI = [
@@ -84,13 +85,14 @@ export class PenaltyOrchestrator {
     'function getAllStakers() external view returns (address[])',
   ];
 
-  constructor(config: OnChainConfig) {
+  constructor(config: OnChainServiceConfig) {
     this.config = config;
+    this.logger = createLogger(config);
     this.provider = new ethers.JsonRpcProvider(config.rpcUrl);
     this.signer = new ethers.Wallet(config.privateKey, this.provider);
 
     this.penaltyManagerContract = new ethers.Contract(
-      config.penaltyManagerAddress,
+      config.penaltyManagerAddress!,
       this.PENALTY_MANAGER_ABI,
       this.signer
     );
@@ -102,12 +104,12 @@ export class PenaltyOrchestrator {
     );
 
     this.stakingManagerContract = new ethers.Contract(
-      config.stakingManagerAddress,
+      config.stakingManagerAddress!,
       this.STAKING_MANAGER_ABI,
       this.provider
     );
 
-    logger.info('PenaltyOrchestrator initialized', {
+    this.this.logger.info('PenaltyOrchestrator initialized', {
       penaltyManager: config.penaltyManagerAddress,
       trustFingerprint: config.trustFingerprintAddress,
       stakingManager: config.stakingManagerAddress,
@@ -119,7 +121,7 @@ export class PenaltyOrchestrator {
    * Runs continuously, checking all operators every hour
    */
   async startMonitoring(): Promise<void> {
-    logger.info('Starting penalty monitoring');
+    this.logger.info('Starting penalty monitoring');
 
     // Listen for penalty events
     this.setupEventListeners();
@@ -132,7 +134,7 @@ export class PenaltyOrchestrator {
       try {
         await this.monitorAllOperators();
       } catch (error) {
-        logger.error('Error in penalty monitoring loop', { error });
+        this.logger.error('Error in penalty monitoring loop', { error });
       }
     }, 60 * 60 * 1000); // Every hour
   }
@@ -142,12 +144,12 @@ export class PenaltyOrchestrator {
    */
   async monitorAllOperators(): Promise<void> {
     try {
-      logger.info('Monitoring all operators for penalty updates');
+      this.logger.info('Monitoring all operators for penalty updates');
 
       // Get all stakers from StakingManager
       const operators = await this.stakingManagerContract.getAllStakers();
 
-      logger.info(`Found ${operators.length} active operators`);
+      this.logger.info(`Found ${operators.length} active operators`);
 
       // Check each operator
       for (const operator of operators) {
@@ -156,13 +158,13 @@ export class PenaltyOrchestrator {
           // Add delay to avoid rate limiting
           await this.sleep(1000);
         } catch (error) {
-          logger.error('Error checking operator penalty', { operator, error });
+          this.logger.error('Error checking operator penalty', { operator, error });
         }
       }
 
-      logger.info('Completed penalty monitoring cycle');
+      this.logger.info('Completed penalty monitoring cycle');
     } catch (error) {
-      logger.error('Error monitoring all operators', { error });
+      this.logger.error('Error monitoring all operators', { error });
       throw error;
     }
   }
@@ -172,7 +174,7 @@ export class PenaltyOrchestrator {
    */
   async checkOperatorPenalty(operatorAddress: string): Promise<void> {
     try {
-      logger.debug('Checking operator penalty', { operator: operatorAddress });
+      this.logger.debug('Checking operator penalty', { operator: operatorAddress });
 
       // Get current status
       const currentStatus = await this.getOperatorStatus(operatorAddress);
@@ -181,7 +183,7 @@ export class PenaltyOrchestrator {
       const trustScore = await this.trustFingerprintContract.getTrustScore(operatorAddress);
       const trustScoreNumber = Number(trustScore);
 
-      logger.debug('Operator trust score', {
+      this.logger.debug('Operator trust score', {
         operator: operatorAddress,
         trustScore: trustScoreNumber,
         currentTier: PenaltyTier[currentStatus.currentTier],
@@ -191,7 +193,7 @@ export class PenaltyOrchestrator {
       const tx = await this.penaltyManagerContract.checkAndUpdatePenaltyTier(operatorAddress);
       const receipt = await tx.wait();
 
-      logger.info('Penalty tier check completed', {
+      this.logger.info('Penalty tier check completed', {
         operator: operatorAddress,
         txHash: receipt.hash,
         gasUsed: receipt.gasUsed.toString(),
@@ -202,7 +204,7 @@ export class PenaltyOrchestrator {
 
       // Check if tier changed
       if (newStatus.currentTier !== currentStatus.currentTier) {
-        logger.info('Operator penalty tier changed', {
+        this.logger.info('Operator penalty tier changed', {
           operator: operatorAddress,
           previousTier: PenaltyTier[currentStatus.currentTier],
           newTier: PenaltyTier[newStatus.currentTier],
@@ -229,7 +231,7 @@ export class PenaltyOrchestrator {
         }
       }
     } catch (error) {
-      logger.error('Error checking operator penalty', { operator: operatorAddress, error });
+      this.logger.error('Error checking operator penalty', { operator: operatorAddress, error });
       throw error;
     }
   }
@@ -253,7 +255,7 @@ export class PenaltyOrchestrator {
         pausedAt: Number(status.pausedAt),
       };
     } catch (error) {
-      logger.error('Error getting operator status', { operator: operatorAddress, error });
+      this.logger.error('Error getting operator status', { operator: operatorAddress, error });
       throw error;
     }
   }
@@ -266,7 +268,7 @@ export class PenaltyOrchestrator {
       const multiplier = await this.penaltyManagerContract.getPenaltyMultiplier(operatorAddress);
       return Number(multiplier) / 10000; // Convert from basis points to decimal
     } catch (error) {
-      logger.error('Error getting penalty multiplier', { operator: operatorAddress, error });
+      this.logger.error('Error getting penalty multiplier', { operator: operatorAddress, error });
       throw error;
     }
   }
@@ -306,7 +308,7 @@ export class PenaltyOrchestrator {
         issues.push('Overall trust score below threshold');
       }
     } catch (error) {
-      logger.error('Error identifying issues', { operator: operatorAddress, error });
+      this.logger.error('Error identifying issues', { operator: operatorAddress, error });
       issues.push('Unable to determine specific issues');
     }
 
@@ -336,7 +338,7 @@ export class PenaltyOrchestrator {
    */
   async sendPenaltyNotification(notification: PenaltyNotification): Promise<void> {
     try {
-      logger.info('Sending penalty notification', {
+      this.logger.info('Sending penalty notification', {
         operator: notification.operatorAddress,
         tier: PenaltyTier[notification.tier],
       });
@@ -347,7 +349,7 @@ export class PenaltyOrchestrator {
       const tierName = PenaltyTier[notification.tier];
       const gracePeriodDays = Math.ceil((notification.gracePeriodEnd - Date.now() / 1000) / 86400);
 
-      logger.info('Penalty notification details', {
+      this.logger.info('Penalty notification details', {
         operator: notification.operatorAddress,
         tier: tierName,
         trustScore: notification.trustScore,
@@ -362,7 +364,7 @@ export class PenaltyOrchestrator {
       // await this.smsService.sendPenaltyAlert(notification);
       // await this.pushService.sendPenaltyAlert(notification);
     } catch (error) {
-      logger.error('Error sending penalty notification', {
+      this.logger.error('Error sending penalty notification', {
         operator: notification.operatorAddress,
         error,
       });
@@ -378,7 +380,7 @@ export class PenaltyOrchestrator {
     trustScore: number
   ): Promise<void> {
     try {
-      logger.info('Triggering governance review', {
+      this.logger.info('Triggering governance review', {
         operator: operatorAddress,
         tier: PenaltyTier[tier],
         trustScore,
@@ -396,7 +398,7 @@ export class PenaltyOrchestrator {
       //   reason: 'Automatic penalty escalation',
       // });
     } catch (error) {
-      logger.error('Error triggering governance review', {
+      this.logger.error('Error triggering governance review', {
         operator: operatorAddress,
         error,
       });
@@ -411,7 +413,7 @@ export class PenaltyOrchestrator {
     this.penaltyManagerContract.on(
       'PenaltyTierChanged',
       async (operator, previousTier, newTier, trustScore, gracePeriodEnd, event) => {
-        logger.info('PenaltyTierChanged event received', {
+        this.logger.info('PenaltyTierChanged event received', {
           operator,
           previousTier: PenaltyTier[Number(previousTier)],
           newTier: PenaltyTier[Number(newTier)],
@@ -436,7 +438,7 @@ export class PenaltyOrchestrator {
     this.penaltyManagerContract.on(
       'OperatorSlashed',
       async (operator, amount, percentage, trustScore, reason, event) => {
-        logger.warn('OperatorSlashed event received', {
+        this.logger.warn('OperatorSlashed event received', {
           operator,
           amount: ethers.formatEther(amount),
           percentage: Number(percentage) / 100,
@@ -461,7 +463,7 @@ export class PenaltyOrchestrator {
     this.penaltyManagerContract.on(
       'NetworkHealthCritical',
       async (totalOperators, penalizedOperators, penaltyRate, event) => {
-        logger.error('NetworkHealthCritical event received', {
+        this.logger.error('NetworkHealthCritical event received', {
           totalOperators: Number(totalOperators),
           penalizedOperators: Number(penalizedOperators),
           penaltyRate: Number(penaltyRate) / 100,
@@ -473,7 +475,7 @@ export class PenaltyOrchestrator {
       }
     );
 
-    logger.info('Penalty event listeners setup complete');
+    this.logger.info('Penalty event listeners setup complete');
   }
 
   /**
@@ -481,17 +483,17 @@ export class PenaltyOrchestrator {
    */
   async pausePenalty(operatorAddress: string, reason: string): Promise<void> {
     try {
-      logger.info('Pausing penalty for operator', { operator: operatorAddress, reason });
+      this.logger.info('Pausing penalty for operator', { operator: operatorAddress, reason });
 
       const tx = await this.penaltyManagerContract.pausePenalty(operatorAddress, reason);
       const receipt = await tx.wait();
 
-      logger.info('Penalty paused successfully', {
+      this.logger.info('Penalty paused successfully', {
         operator: operatorAddress,
         txHash: receipt.hash,
       });
     } catch (error) {
-      logger.error('Error pausing penalty', { operator: operatorAddress, error });
+      this.logger.error('Error pausing penalty', { operator: operatorAddress, error });
       throw error;
     }
   }
@@ -501,17 +503,17 @@ export class PenaltyOrchestrator {
    */
   async resumePenalty(operatorAddress: string): Promise<void> {
     try {
-      logger.info('Resuming penalty for operator', { operator: operatorAddress });
+      this.logger.info('Resuming penalty for operator', { operator: operatorAddress });
 
       const tx = await this.penaltyManagerContract.resumePenalty(operatorAddress);
       const receipt = await tx.wait();
 
-      logger.info('Penalty resumed successfully', {
+      this.logger.info('Penalty resumed successfully', {
         operator: operatorAddress,
         txHash: receipt.hash,
       });
     } catch (error) {
-      logger.error('Error resuming penalty', { operator: operatorAddress, error });
+      this.logger.error('Error resuming penalty', { operator: operatorAddress, error });
       throw error;
     }
   }
@@ -525,7 +527,7 @@ export class PenaltyOrchestrator {
     reason: string
   ): Promise<void> {
     try {
-      logger.info('Extending grace period for operator', {
+      this.logger.info('Extending grace period for operator', {
         operator: operatorAddress,
         extensionDays: extensionSeconds / 86400,
         reason,
@@ -538,12 +540,12 @@ export class PenaltyOrchestrator {
       );
       const receipt = await tx.wait();
 
-      logger.info('Grace period extended successfully', {
+      this.logger.info('Grace period extended successfully', {
         operator: operatorAddress,
         txHash: receipt.hash,
       });
     } catch (error) {
-      logger.error('Error extending grace period', { operator: operatorAddress, error });
+      this.logger.error('Error extending grace period', { operator: operatorAddress, error });
       throw error;
     }
   }
@@ -553,16 +555,16 @@ export class PenaltyOrchestrator {
    */
   async pauseEscalations(reason: string): Promise<void> {
     try {
-      logger.warn('Pausing all penalty escalations', { reason });
+      this.logger.warn('Pausing all penalty escalations', { reason });
 
       const tx = await this.penaltyManagerContract.pauseEscalations(reason);
       const receipt = await tx.wait();
 
-      logger.warn('All penalty escalations paused', {
+      this.logger.warn('All penalty escalations paused', {
         txHash: receipt.hash,
       });
     } catch (error) {
-      logger.error('Error pausing escalations', { error });
+      this.logger.error('Error pausing escalations', { error });
       throw error;
     }
   }
@@ -572,16 +574,16 @@ export class PenaltyOrchestrator {
    */
   async resumeEscalations(): Promise<void> {
     try {
-      logger.info('Resuming all penalty escalations');
+      this.logger.info('Resuming all penalty escalations');
 
       const tx = await this.penaltyManagerContract.resumeEscalations();
       const receipt = await tx.wait();
 
-      logger.info('All penalty escalations resumed', {
+      this.logger.info('All penalty escalations resumed', {
         txHash: receipt.hash,
       });
     } catch (error) {
-      logger.error('Error resuming escalations', { error });
+      this.logger.error('Error resuming escalations', { error });
       throw error;
     }
   }
