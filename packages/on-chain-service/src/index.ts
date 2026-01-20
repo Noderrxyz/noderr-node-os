@@ -8,7 +8,7 @@ import { TrustUpdater } from './services/TrustUpdater';
 import { RewardOrchestrator } from './services/RewardOrchestrator';
 import { RewardEpochScheduler, HttpTelemetryClient } from './services/RewardEpochScheduler';
 import { TrustFingerprintSync, TrustFingerprintSyncScheduler } from './services/TrustFingerprintSync';
-import { NodeRegistrar } from './services/NodeRegistrar';
+
 import { OnChainServiceConfig, ServiceHealthStatus } from '@noderr/types/src';
 import { Logger } from 'winston';
 
@@ -31,7 +31,7 @@ export class OnChainService {
   public readonly rewardEpochScheduler: RewardEpochScheduler;
   public readonly trustFingerprintSync: TrustFingerprintSync;
   public readonly trustFingerprintSyncScheduler: TrustFingerprintSyncScheduler;
-  public readonly nodeRegistrar: NodeRegistrar;
+
 
   constructor(config?: OnChainServiceConfig) {
     // Load and validate configuration
@@ -104,12 +104,7 @@ export class OnChainService {
       this.config.trustSyncIntervalSeconds || 3600
     );
 
-    this.nodeRegistrar = new NodeRegistrar(
-      this.config,
-      this.logger,
-      this.rateLimiter,
-      this.circuitBreaker
-    );
+
 
     this.logger.info('OnChainService initialized', {
       network: this.config.networkName,
@@ -253,17 +248,7 @@ export async function startOnChainService(): Promise<void> {
       throw new Error('Service health check failed');
     }
     
-    // Initialize node registration
-    console.log('Initializing node registration...');
-    try {
-      await onChainService.nodeRegistrar.initialize();
-      console.log('✅ Node registration complete');
-    } catch (error: any) {
-      console.error('❌ Node registration failed:', error.message);
-      // Don't throw - allow service to continue even if registration fails
-      // Registration can be retried later
-    }
-    
+
     // Register graceful shutdown
     onShutdown('on-chain-service', async () => {
       console.log('Shutting down on-chain service...');
