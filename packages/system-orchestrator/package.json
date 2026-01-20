@@ -15,9 +15,12 @@
     "@noderr/strategy": "workspace:*",
     "@noderr/execution": "workspace:*",
     "@noderr/performance": "workspace:*",
-    "@noderr/reputation": "workspace:*"
+    "@noderr/reputation": "workspace:*",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "@types/winston": "^2.4.4",
+    "@types/node": "^20.10.5"
   }
 }

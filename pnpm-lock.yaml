@@ -1704,7 +1704,16 @@ importers:
       '@noderr/utils':
         specifier: workspace:*
         version: link:../utils
+      winston:
+        specifier: ^3.11.0
+        version: 3.18.3
     devDependencies:
+      '@types/node':
+        specifier: ^20.10.5
+        version: 20.19.26
+      '@types/winston':
+        specifier: ^2.4.4
+        version: 2.4.4
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
