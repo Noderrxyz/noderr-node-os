@@ -84,7 +84,7 @@ export class OnChainService {
       this.logger,
       {
         epochDurationSeconds: this.config.epochDurationSeconds,
-        baseRewardRate: this.config.baseRewardRate,
+        baseRewardRate: this.config.baseRewardRate ? BigInt(this.config.baseRewardRate) : undefined,
         vestingDuration: this.config.vestingDuration,
       }
     );

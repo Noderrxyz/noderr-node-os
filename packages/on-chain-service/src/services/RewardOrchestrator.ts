@@ -110,7 +110,7 @@ export class RewardOrchestrator {
 
     // Initialize contract instances
     this.stakingManagerContract = new ethers.Contract(
-      config.stakingManagerAddress,
+      config.stakingManagerAddress!,
       this.getStakingManagerABI(),
       this.wallet
     );
@@ -122,7 +122,7 @@ export class RewardOrchestrator {
     );
 
     this.rewardCalculatorContract = new ethers.Contract(
-      config.rewardCalculatorAddress,
+      config.rewardCalculatorAddress!,
       this.getRewardCalculatorABI(),
       this.wallet
     );
@@ -346,17 +346,14 @@ export class RewardOrchestrator {
     });
 
     // Convert to batch format
-    const addresses: string[] = [];
-    const components: TrustComponents[] = [];
-
-    for (const [address, comp] of componentsMap.entries()) {
-      addresses.push(address);
-      components.push(comp);
-    }
+    const updates = Array.from(componentsMap.entries()).map(([operator, components]) => ({
+      operator,
+      components
+    }));
 
     try {
       // Use TrustUpdater service to submit scores
-      await this.trustUpdater.batchUpdateScores(addresses, components);
+      await this.trustUpdater.batchUpdateScores(updates);
 
       this.logger.info('TrustFingerprint scores submitted successfully');
     } catch (error: any) {
@@ -443,9 +440,6 @@ export class RewardOrchestrator {
         rewardEntries.push({
           address: data.address,
           amount: rewardAmount,
-          trustScore: Number(trustScore),
-          stakeAmount: stakedAmount,
-          performanceMultiplier,
         });
 
         this.logger.debug('Calculated reward for operator', {

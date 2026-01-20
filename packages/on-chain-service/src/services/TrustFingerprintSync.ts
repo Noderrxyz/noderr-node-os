@@ -60,7 +60,7 @@ export class TrustFingerprintSync {
     );
 
     this.utilityNFTContract = new ethers.Contract(
-      config.utilityNFTAddress,
+      config.utilityNFTAddress!,
       this.getUtilityNFTABI(),
       this.wallet
     );

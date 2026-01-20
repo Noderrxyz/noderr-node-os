@@ -109,7 +109,7 @@ export class PenaltyOrchestrator {
       this.provider
     );
 
-    this.this.logger.info('PenaltyOrchestrator initialized', {
+    this.logger.info('PenaltyOrchestrator initialized', {
       penaltyManager: config.penaltyManagerAddress,
       trustFingerprint: config.trustFingerprintAddress,
       stakingManager: config.stakingManagerAddress,

@@ -34,7 +34,7 @@ export class HttpTelemetryClient implements TelemetryClient {
         throw new Error(`Telemetry API returned ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const data = await response.json() as { operators?: any[] };
       return data.operators || [];
     } catch (error: any) {
       this.logger.error('Failed to fetch operator performance from telemetry', {
