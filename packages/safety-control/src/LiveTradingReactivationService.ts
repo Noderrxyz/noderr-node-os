@@ -1,4 +1,4 @@
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import { SafetyController } from './SafetyController';
 import * as fs from 'fs';

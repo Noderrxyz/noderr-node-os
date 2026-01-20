@@ -1,4 +1,4 @@
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 import { createHash } from 'crypto';
 import { Redis } from 'ioredis';
 

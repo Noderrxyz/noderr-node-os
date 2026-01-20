@@ -1,4 +1,4 @@
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 const logger = new Logger('risk-engine');
 /**
  * Risk Engine Module
@@ -98,8 +98,8 @@ export const defaultRiskEngineConfig: RiskEngineConfig = {
 // Main Entry Point
 // ============================================================================
 
-import { createStatePersistence, StatePersistenceManager } from '@noderr/utils';
-import { getShutdownHandler, onShutdown } from '@noderr/utils';
+import { createStatePersistence, StatePersistenceManager } from '@noderr/utils/src';
+import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
 // RiskEngineService already imported above for default export
 
 let riskEngineService: RiskEngineService | null = null;

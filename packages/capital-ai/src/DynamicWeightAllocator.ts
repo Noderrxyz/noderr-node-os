@@ -1,4 +1,4 @@
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 
 const logger = new Logger('DynamicWeightAllocator');

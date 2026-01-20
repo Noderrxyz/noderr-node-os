@@ -13,7 +13,7 @@
  * - Maintain reputation through consistent participation
  */
 
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 import { ValidatorConsensus, ValidatorConsensusConfig } from './ValidatorConsensus';
 import { createLogger, format, transports } from 'winston';
 

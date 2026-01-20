@@ -1,6 +1,6 @@
 import { MerkleTree } from 'merkletreejs';
 import { keccak256 } from 'ethers';
-import { RewardEntry, MerkleProof } from '@noderr/types';
+import { RewardEntry, MerkleProof } from '@noderr/types/src';
 
 /**
  * Generate Merkle tree from reward entries

@@ -1,5 +1,5 @@
 import { IDeFiAdapter } from './IDeFiAdapter';
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 import { AaveV3Adapter } from './adapters/AaveV3Adapter';
 import { UniswapV3Adapter } from './adapters/UniswapV3Adapter';
 import { MockDeFiAdapter, REMAINING_PROTOCOLS } from './adapters/MockDeFiAdapter';

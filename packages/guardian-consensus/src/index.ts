@@ -10,7 +10,7 @@
  * - Fast consensus (< 5 seconds)
  */
 
-import { Logger, getShutdownHandler, onShutdown } from '@noderr/utils';
+import { Logger, getShutdownHandler, onShutdown } from '@noderr/utils/src';
 
 const logger = new Logger('guardian-consensus');
 

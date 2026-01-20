@@ -1,4 +1,4 @@
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 import { TypeformClient, TypeformResponse } from './TypeformClient';
 import { ApplicationService } from './ApplicationService';
 import { UserApplication } from '@noderr/types';

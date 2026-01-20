@@ -416,7 +416,7 @@ export class RingBufferBenchmark {
 }
 
 // Run benchmark if executed directly
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 
 if (require.main === module) {
   const logger = new Logger('RingBufferBenchmark');

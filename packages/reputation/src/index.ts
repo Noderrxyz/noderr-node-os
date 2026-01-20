@@ -1,4 +1,4 @@
-import { Logger, onShutdown } from '@noderr/utils';
+import { Logger, onShutdown } from '@noderr/utils/src';
 import { ReputationSystem, ReputationConfig } from '@noderr/decentralized-core/src/ReputationSystem';
 import * as winston from 'winston';
 

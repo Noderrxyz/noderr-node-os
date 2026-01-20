@@ -1,5 +1,5 @@
 import { IDeFiAdapter } from '../IDeFiAdapter';
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 import { BigNumberish, ethers } from 'ethers';
 import { getMockSigner, simulateTransaction, toBigInt } from '../DeFiAdapterUtils';
 

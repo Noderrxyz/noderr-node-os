@@ -32,8 +32,8 @@ export const VERSION = '1.0.0';
 // Main Entry Point
 // ============================================================================
 
-import { Logger } from '@noderr/utils';
-import { getShutdownHandler, onShutdown } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
+import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
 
 const logger = new Logger('quant-research');
 let quantResearchService: any | null = null;

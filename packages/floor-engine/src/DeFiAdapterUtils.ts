@@ -1,5 +1,5 @@
 import { ethers, BigNumberish } from 'ethers';
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 
 // MEDIUM FIX #33: Use Logger instead of console.log
 const logger = new Logger('DeFiAdapterUtils');

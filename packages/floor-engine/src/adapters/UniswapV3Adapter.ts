@@ -1,7 +1,7 @@
 import { IDeFiAdapter } from '../IDeFiAdapter';
 import { BigNumberish, ethers } from 'ethers';
 import { simulateTransaction, toBigInt, getMockSigner } from '../DeFiAdapterUtils';
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 
 // MEDIUM FIX #38: Use Logger instead of console
 const logger = new Logger('UniswapV3Adapter');

@@ -1,4 +1,4 @@
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 import { LockFreeOrderQueue, OrderEncoder, LockFreeQueueBenchmark } from './LockFreeOrderQueue';
 
 const logger = new Logger('test-lockfree-queue');

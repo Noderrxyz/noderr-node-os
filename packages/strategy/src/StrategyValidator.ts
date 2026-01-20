@@ -1,7 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as ts from 'typescript';
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 
 const logger = new Logger('StrategyValidator');
 

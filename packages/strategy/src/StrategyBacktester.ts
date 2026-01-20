@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 
 const logger = new Logger('StrategyBacktester');
 

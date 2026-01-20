@@ -15,7 +15,7 @@
  * @module BFTConsensusEngine
  */
 
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 import { ethers } from 'ethers';
 import { EventEmitter } from 'events';
 import { OracleLotterySelector, CommitteeSelection } from './OracleLotterySelector';

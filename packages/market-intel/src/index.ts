@@ -26,8 +26,8 @@ export type {
 // Main Entry Point
 // ============================================================================
 
-import { Logger } from '@noderr/utils';
-import { getShutdownHandler, onShutdown } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
+import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
 import { MarketIntelService } from './MarketIntelService';
 import { TelemetryClient } from './types';
 const logger = new Logger('market-intel');

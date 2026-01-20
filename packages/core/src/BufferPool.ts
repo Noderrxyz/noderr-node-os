@@ -1,4 +1,4 @@
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 import * as winston from 'winston';
 
 const logger = new Logger('BufferPool');

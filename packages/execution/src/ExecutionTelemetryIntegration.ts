@@ -11,7 +11,7 @@ import {
   MarketCondition,
   ExecutionStatus,
   ExecutionErrorCode 
-} from '@noderr/types';
+} from '@noderr/types/src';
 
 export interface TelemetryMetrics {
   ordersReceived: number;

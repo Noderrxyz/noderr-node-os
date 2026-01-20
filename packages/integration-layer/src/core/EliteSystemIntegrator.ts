@@ -5,7 +5,7 @@
  * to create a fully autonomous, self-governing trading system operating at the 0.001% level.
  */
 
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
 import { SystemOrchestrator } from './SystemOrchestrator';
 

@@ -7,8 +7,8 @@
  * - execution-optimizer
  */
 
-import { Logger } from '@noderr/utils';
-import { Order, ExecutionResult, VenueConfig, AlgorithmConfig, MEVConfig, SafetyConfig } from '@noderr/types';
+import { Logger } from '@noderr/utils/src';
+import { Order, ExecutionResult, VenueConfig, AlgorithmConfig, MEVConfig, SafetyConfig } from '@noderr/types/src';
 
 const logger = new Logger('execution');
 
@@ -95,7 +95,7 @@ export type {
   AlgorithmConfig,
   MEVConfig,
   SafetyConfig
-} from '@noderr/types';
+} from '@noderr/types/src';
 
 // Version
 export const VERSION = '1.0.0';
@@ -104,7 +104,7 @@ export const VERSION = '1.0.0';
 // Main Entry Point for Execution Service
 // ============================================================================
 
-import { getShutdownHandler, onShutdown, createStatePersistence, StatePersistenceManager } from '@noderr/utils';
+import { getShutdownHandler, onShutdown, createStatePersistence, StatePersistenceManager } from '@noderr/utils/src';
 
 let engine: SmartExecutionEngine | null = null;
 let lifecycleManager: OrderLifecycleManager | null = null;

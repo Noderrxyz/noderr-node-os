@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 
 describe('Safety Mechanisms Integration Tests', () => {
   const logger = new Logger('safety-mechanisms-test');

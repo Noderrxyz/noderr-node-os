@@ -13,7 +13,7 @@ import {
   Message,
   MessageType,
   MessageFactory
-} from '@noderr/types';
+} from '@noderr/types/src';
 import {
   SystemConfig,
   ModuleConfig,

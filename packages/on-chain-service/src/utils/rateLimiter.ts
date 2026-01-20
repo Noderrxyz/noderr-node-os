@@ -1,4 +1,4 @@
-import { RateLimiterStatus } from '@noderr/types';
+import { RateLimiterStatus } from '@noderr/types/src';
 
 /**
  * Rate limiter to prevent excessive on-chain transactions

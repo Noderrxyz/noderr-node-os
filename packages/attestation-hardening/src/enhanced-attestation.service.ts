@@ -1,4 +1,4 @@
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 import { createVerify, createHash } from 'crypto';
 import { PCRBaselineService, PCRValues, HardwareProfile } from './pcr-baseline.service';
 

@@ -12,7 +12,7 @@
  * - Automatic recovery
  */
 
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';

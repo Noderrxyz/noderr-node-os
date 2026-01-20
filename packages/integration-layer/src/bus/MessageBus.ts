@@ -17,7 +17,7 @@ import {
   MessageStats,
   RouteMetrics,
   MessageBusEvents
-} from '@noderr/types';
+} from '@noderr/types/src';
 
 interface HandlerRegistration {
   id: string;

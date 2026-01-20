@@ -12,7 +12,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 import { OHLCVData, HistoricalDataLoader, HistoricalDataConfig } from './HistoricalDataLoader';
 
 export interface MarketDataTick {

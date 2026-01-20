@@ -8,7 +8,7 @@ import { TrustUpdater } from './services/TrustUpdater';
 import { RewardOrchestrator } from './services/RewardOrchestrator';
 import { RewardEpochScheduler, HttpTelemetryClient } from './services/RewardEpochScheduler';
 import { TrustFingerprintSync, TrustFingerprintSyncScheduler } from './services/TrustFingerprintSync';
-import { OnChainServiceConfig, ServiceHealthStatus } from '@noderr/types';
+import { OnChainServiceConfig, ServiceHealthStatus } from '@noderr/types/src';
 import { Logger } from 'winston';
 
 /**
@@ -198,7 +198,7 @@ export class OnChainService {
 }
 
 // Export all types and utilities
-export * from '@noderr/types';
+export * from '@noderr/types/src';
 export * from './config';
 export * from './utils/logger';
 export * from './utils/rateLimiter';
@@ -220,7 +220,7 @@ export function createOnChainService(config?: OnChainServiceConfig): OnChainServ
 // Main Entry Point
 // ============================================================================
 
-import { getShutdownHandler, onShutdown } from '@noderr/utils';
+import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
 
 let onChainService: OnChainService | null = null;
 

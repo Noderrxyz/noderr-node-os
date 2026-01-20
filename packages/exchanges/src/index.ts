@@ -14,8 +14,8 @@
  * - Automatic reconnection
  */
 
-import { Logger } from '@noderr/utils';
-import { getShutdownHandler, onShutdown } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
+import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
 const logger = new Logger('exchanges');
 
 export { NonBlockingExchangeConnector } from './NonBlockingExchangeConnector';

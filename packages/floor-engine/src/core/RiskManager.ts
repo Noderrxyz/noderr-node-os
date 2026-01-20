@@ -14,7 +14,7 @@ import {
 } from '../types';
 import { AdapterRegistry } from './AdapterRegistry';
 import { MLRiskAdapter, MLRiskScore, MLAllocationRecommendation, MLEmergencyAction } from './MLRiskAdapter';
-import { Logger } from '@noderr/utils';
+import { Logger } from '@noderr/utils/src';
 
 // LOW FIX: Use Logger instead of console
 const logger = new Logger('RiskManager');

@@ -9,7 +9,7 @@ import { EventEmitter } from 'events';
 import { Logger } from 'winston';
 import {
   Message
-} from '@noderr/types';
+} from '@noderr/types/src';
 
 interface DeadLetterEntry {
   message: Message;
