@@ -8,6 +8,7 @@
 import { Logger, getShutdownHandler, onShutdown } from '@noderr/utils/src';
 import { createLogger, format, transports } from 'winston';
 import { TelemetryService } from './TelemetryService';
+import { LogLevel } from './types/telemetry';
 
 const logger = new Logger('telemetry');
 
@@ -71,7 +72,7 @@ export async function startTelemetryService(): Promise<void> {
       },
       logging: {
         enabled: true,
-        level: 'info'
+        level: LogLevel.INFO
       },
       tracing: {
         enabled: false // Disable tracing for now
