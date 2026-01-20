@@ -334,6 +334,43 @@ export class NodeCommunicationLayer extends EventEmitter {
     
     this.logger.debug('Broadcasted execution result', { signalId: execution.signalId });
   }
+
+  /**
+   * Generic broadcast message method
+   */
+  async broadcastMessage(message: Omit<P2PMessage, "signature">): Promise<void> {
+    if (!this.node?.services.pubsub) {
+      throw new Error("P2P node not initialized");
+    }
+
+    // Sign the message
+    const messageToSign = JSON.stringify({
+      ...message,
+      signature: undefined
+    });
+    const signature = await this.wallet.signMessage(messageToSign);
+
+    // Create full P2P message
+    const p2pMessage: P2PMessage = {
+      ...message,
+      signature
+    };
+
+    // Determine topic based on message type
+    let topic = this.SIGNAL_TOPIC; // default
+    if (message.type === MessageType.EXECUTION) {
+      topic = this.EXECUTION_TOPIC;
+    } else if (message.type === MessageType.CONSENSUS) {
+      topic = "consensus"; // Add consensus topic
+    }
+
+    // Broadcast
+    const data = new TextEncoder().encode(JSON.stringify(p2pMessage));
+    const pubsub = this.node.services.pubsub as any;
+    await pubsub.publish(topic, data);
+
+    this.logger.debug("Broadcasted message", { type: message.type });
+  }
   
   /**
    * Handle incoming signal message

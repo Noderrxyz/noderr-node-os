@@ -7,7 +7,7 @@
 
 import { Logger } from '@noderr/utils/src';
 import { EventEmitter } from 'events';
-import { NodeCommunicationLayer, MessageType, P2PMessage } from '@noderr/decentralized-core/src';
+import { NodeCommunicationLayer, MessageType, P2PMessage } from '@noderr/decentralized-core';
 
 export interface RiskApprovalRequest {
   tradeId: string;
@@ -134,8 +134,7 @@ export class GuardianConsensusService extends EventEmitter {
           vote
         },
         timestamp: Date.now(),
-        sender: this.config.nodeId,
-        signature: '' // Will be signed by NodeCommunicationLayer
+        sender: this.config.nodeId
       });
     }
   }
@@ -260,8 +259,7 @@ export class GuardianConsensusService extends EventEmitter {
           request
         },
         timestamp: Date.now(),
-        sender: this.config.nodeId,
-        signature: '' // Will be signed by NodeCommunicationLayer
+        sender: this.config.nodeId
       });
     }
     

@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@noderr/core": "workspace:*",
+    "@noderr/decentralized-core": "workspace:*",
     "@noderr/utils": "workspace:*",
     "@noderr/types": "workspace:*"
   },
