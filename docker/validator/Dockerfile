@@ -34,6 +34,7 @@ RUN npm install -g pnpm@9
 # Copy VALIDATOR-specific packages (REDUCED SET)
 COPY packages/types ./packages/types
 COPY packages/utils ./packages/utils
+COPY packages/core ./packages/core
 COPY packages/telemetry ./packages/telemetry
 COPY packages/market-data ./packages/market-data
 COPY packages/data-connectors ./packages/data-connectors
@@ -45,6 +46,7 @@ COPY packages/heartbeat-client ./packages/heartbeat-client
 RUN pnpm install --frozen-lockfile \
     --filter "@noderr/types" \
     --filter "@noderr/utils" \
+    --filter "@noderr/core" \
     --filter "@noderr/telemetry" \
     --filter "@noderr/market-data" \
     --filter "@noderr/data-connectors" \
@@ -55,6 +57,7 @@ RUN pnpm install --frozen-lockfile \
 # Build packages in dependency order
 RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/utils" build && \
+    pnpm --filter "@noderr/core" build && \
     pnpm --filter "@noderr/telemetry" build && \
     pnpm --filter "@noderr/market-data" build && \
     pnpm --filter "@noderr/data-connectors" build && \
@@ -66,6 +69,7 @@ RUN pnpm --filter "@noderr/types" build && \
 RUN pnpm install --frozen-lockfile --prod \
     --filter "@noderr/types" \
     --filter "@noderr/utils" \
+    --filter "@noderr/core" \
     --filter "@noderr/telemetry" \
     --filter "@noderr/market-data" \
     --filter "@noderr/data-connectors" \

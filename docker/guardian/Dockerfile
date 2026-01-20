@@ -42,6 +42,7 @@ RUN npm install -g pnpm@9
 # Copy GUARDIAN-specific packages (EXPANDED SET with execution services)
 COPY packages/types ./packages/types
 COPY packages/utils ./packages/utils
+COPY packages/core ./packages/core
 COPY packages/telemetry ./packages/telemetry
 COPY packages/market-data ./packages/market-data
 COPY packages/exchanges ./packages/exchanges
@@ -62,6 +63,7 @@ COPY packages/heartbeat-client ./packages/heartbeat-client
 RUN pnpm install --frozen-lockfile \
     --filter "@noderr/types" \
     --filter "@noderr/utils" \
+    --filter "@noderr/core" \
     --filter "@noderr/telemetry" \
     --filter "@noderr/market-data" \
     --filter "@noderr/exchanges" \
@@ -81,6 +83,7 @@ RUN pnpm install --frozen-lockfile \
 # Build packages in dependency order
 RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/utils" build && \
+    pnpm --filter "@noderr/core" build && \
     pnpm --filter "@noderr/telemetry" build && \
     pnpm --filter "@noderr/market-data" build && \
     pnpm --filter "@noderr/exchanges" build && \
@@ -101,6 +104,7 @@ RUN pnpm --filter "@noderr/types" build && \
 RUN pnpm install --frozen-lockfile --prod \
     --filter "@noderr/types" \
     --filter "@noderr/utils" \
+    --filter "@noderr/core" \
     --filter "@noderr/telemetry" \
     --filter "@noderr/market-data" \
     --filter "@noderr/exchanges" \
