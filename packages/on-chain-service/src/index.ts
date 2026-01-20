@@ -8,6 +8,7 @@ import { TrustUpdater } from './services/TrustUpdater';
 import { RewardOrchestrator } from './services/RewardOrchestrator';
 import { RewardEpochScheduler, HttpTelemetryClient } from './services/RewardEpochScheduler';
 import { TrustFingerprintSync, TrustFingerprintSyncScheduler } from './services/TrustFingerprintSync';
+import { NodeRegistrar } from './services/NodeRegistrar';
 import { OnChainServiceConfig, ServiceHealthStatus } from '@noderr/types/src';
 import { Logger } from 'winston';
 
@@ -30,6 +31,7 @@ export class OnChainService {
   public readonly rewardEpochScheduler: RewardEpochScheduler;
   public readonly trustFingerprintSync: TrustFingerprintSync;
   public readonly trustFingerprintSyncScheduler: TrustFingerprintSyncScheduler;
+  public readonly nodeRegistrar: NodeRegistrar;
 
   constructor(config?: OnChainServiceConfig) {
     // Load and validate configuration
@@ -100,6 +102,13 @@ export class OnChainService {
       this.trustFingerprintSync,
       this.logger,
       this.config.trustSyncIntervalSeconds || 3600
+    );
+
+    this.nodeRegistrar = new NodeRegistrar(
+      this.config,
+      this.logger,
+      this.rateLimiter,
+      this.circuitBreaker
     );
 
     this.logger.info('OnChainService initialized', {
@@ -210,6 +219,7 @@ export * from './services/TrustUpdater';
 export * from './services/RewardOrchestrator';
 export * from './services/RewardEpochScheduler';
 export * from './services/TrustFingerprintSync';
+export * from './services/NodeRegistrar';
 
 // Export default instance creator
 export function createOnChainService(config?: OnChainServiceConfig): OnChainService {
@@ -241,6 +251,17 @@ export async function startOnChainService(): Promise<void> {
     if (!health.healthy) {
       console.error('On-Chain Service health check failed:', health.errors);
       throw new Error('Service health check failed');
+    }
+    
+    // Initialize node registration
+    console.log('Initializing node registration...');
+    try {
+      await onChainService.nodeRegistrar.initialize();
+      console.log('✅ Node registration complete');
+    } catch (error: any) {
+      console.error('❌ Node registration failed:', error.message);
+      // Don't throw - allow service to continue even if registration fails
+      // Registration can be retried later
     }
     
     // Register graceful shutdown
