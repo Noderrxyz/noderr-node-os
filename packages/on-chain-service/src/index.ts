@@ -214,7 +214,6 @@ export * from './services/TrustUpdater';
 export * from './services/RewardOrchestrator';
 export * from './services/RewardEpochScheduler';
 export * from './services/TrustFingerprintSync';
-export * from './services/NodeRegistrar';
 
 // Export default instance creator
 export function createOnChainService(config?: OnChainServiceConfig): OnChainService {
