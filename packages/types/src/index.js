@@ -97,6 +97,7 @@ var AlgorithmType;
 var ExecutionUrgency;
 (function (ExecutionUrgency) {
     ExecutionUrgency["LOW"] = "low";
+    ExecutionUrgency["NORMAL"] = "normal";
     ExecutionUrgency["MEDIUM"] = "medium";
     ExecutionUrgency["HIGH"] = "high";
     ExecutionUrgency["CRITICAL"] = "critical";

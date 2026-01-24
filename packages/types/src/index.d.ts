@@ -393,6 +393,7 @@ export interface RateLimit {
 }
 export declare enum ExecutionUrgency {
     LOW = "low",
+    NORMAL = "normal",
     MEDIUM = "medium",
     HIGH = "high",
     CRITICAL = "critical"
