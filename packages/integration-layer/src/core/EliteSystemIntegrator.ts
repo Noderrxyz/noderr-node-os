@@ -240,17 +240,17 @@ export class EliteSystemIntegrator extends EventEmitter {
   private async initializePhase6Components(): Promise<void> {
     this.logger.info('Initializing Phase 6: Adaptive Capital Allocation AI');
     
-    // Dynamic imports
-    const { DynamicWeightAllocator } = await import('../../../capital-ai/src/DynamicWeightAllocator');
-    const { CapitalFlowOptimizer } = await import('../../../capital-ai/src/CapitalFlowOptimizer');
-    const { PortfolioSentinel } = await import('../../../capital-ai/src/PortfolioSentinel');
-    const { CapitalStrategyDashboard } = await import('../../../capital-ai/src/CapitalStrategyDashboard');
+    // Dynamic imports - Phase 6 (commented out until capital-ai is fully implemented)
+    // const { DynamicWeightAllocator } = await import('@noderr/capital-ai');
+    // const { CapitalFlowOptimizer } = await import('@noderr/capital-ai');
+    // const { PortfolioSentinel } = await import('@noderr/capital-ai');
+    // const { CapitalStrategyDashboard } = await import('@noderr/capital-ai');
     
-    // Initialize capital AI components
-    this.dynamicWeightAllocator = new DynamicWeightAllocator();
-    this.capitalFlowOptimizer = new CapitalFlowOptimizer();
-    this.portfolioSentinel = new PortfolioSentinel();
-    this.capitalStrategyDashboard = new CapitalStrategyDashboard();
+    // Initialize capital AI components (commented out until capital-ai is fully implemented)
+    // this.dynamicWeightAllocator = new DynamicWeightAllocator();
+    // this.capitalFlowOptimizer = new CapitalFlowOptimizer();
+    // this.portfolioSentinel = new PortfolioSentinel();
+    // this.capitalStrategyDashboard = new CapitalStrategyDashboard();
     
     // Set up Phase 6 event listeners
     this.setupPhase6EventListeners();
@@ -1137,9 +1137,9 @@ export async function validateEliteSystemIntegration(): Promise<boolean> {
   logger.info('🔍 Validating Elite System Integration...');
   
   const checks = [
-    { name: 'Meta-Governance Module', path: '../../../meta-governance/src/index' },
-    { name: 'Deployment Pipeline Module', path: '../../../deployment-pipeline/src/index' },
-    { name: 'Capital AI Module', path: '../../../capital-ai/src/index' }
+    { name: 'Meta-Governance Module', path: '@noderr/meta-governance' },
+    { name: 'Deployment Pipeline Module', path: '@noderr/deployment-pipeline' },
+    { name: 'Capital AI Module', path: '@noderr/capital-ai' }
   ];
   
   for (const check of checks) {

@@ -30,13 +30,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    "tests",
-    "src/recovery/RecoveryManager.ts",
-    "src/health/HealthMonitor.ts",
-    "src/core/SystemOrchestrator.ts",
-    "src/config/ConfigurationService.ts",
-    "src/core/EliteSystemIntegrator.ts",
-    "src/bus/MessageBus.ts",
-    "src/bus/DeadLetterQueue.ts"
+    "tests"
   ]
 } 
