@@ -89,7 +89,7 @@ export class MLService extends EventEmitter {
       }
     });
 
-    this.client.on('error', (error) => {
+    this.client.on('error', (error: Error) => {
       this.emit('error', error);
     });
   }
