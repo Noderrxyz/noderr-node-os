@@ -56,7 +56,7 @@ export class GuardianBacktestingService extends EventEmitter {
   private consensusContract: ethers.Contract;
   private lifecycleContract: ethers.Contract;
   private backtestingFramework: BacktestingFramework;
-  private config: GuardianConfig;
+  private config: GuardianNodeConfig;
   private activeRounds: Map<string, BacktestRound>;
   private isRunning: boolean;
 
@@ -66,7 +66,7 @@ export class GuardianBacktestingService extends EventEmitter {
     lotteryContractAddress: string,
     consensusContractAddress: string,
     lifecycleContractAddress: string,
-    config: GuardianConfig
+    config: GuardianNodeConfig
   ) {
     super();
     this.logger = new Logger('GuardianBacktestingService');

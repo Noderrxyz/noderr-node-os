@@ -16,6 +16,7 @@ export interface Strategy {
   maxCapital?: number;
   sampleSize?: number;
   isActive?: boolean;
+  code?: string;
 }
 
 export interface MonitorConfig {
