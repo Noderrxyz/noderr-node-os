@@ -18,6 +18,7 @@ exports.isNodeRegistered = isNodeRegistered;
 exports.getNodeInfo = getNodeInfo;
 exports.verifyNodeAuthorization = verifyNodeAuthorization;
 exports.startPeriodicNFTVerification = startPeriodicNFTVerification;
+const src_1 = require("@noderr/utils/src");
 const ethers_1 = require("ethers");
 // Configuration
 const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY || 'Z6Vsdc0TcuwUWBvlIzOqT';
@@ -37,6 +38,7 @@ const UTILITY_NFT_ABI = [
 let provider;
 let utilityNFT;
 let nodeRegistry;
+const logger = new src_1.Logger('nft-verification');
 function initializeContracts() {
     if (!provider) {
         provider = new ethers_1.ethers.JsonRpcProvider(RPC_URL);
@@ -63,7 +65,7 @@ async function verifyNFTOwnership(walletAddress, expectedTokenId) {
                 details: `Address ${walletAddress} is not a valid Ethereum address`,
             };
         }
-        console.log(`🔍 Verifying NFT ownership for wallet: ${walletAddress}`);
+        logger.info(`🔍 Verifying NFT ownership for wallet: ${walletAddress}`);
         // Check NFT balance
         const balance = await utilityNFT.balanceOf(walletAddress);
         const balanceNumber = Number(balance);
@@ -76,7 +78,7 @@ async function verifyNFTOwnership(walletAddress, expectedTokenId) {
                 details: `Wallet ${walletAddress} does not own any Noderr Utility NFTs`,
             };
         }
-        console.log(`✅ Wallet has ${balanceNumber} NFT(s)`);
+        logger.info(`✅ Wallet has ${balanceNumber} NFT(s)`);
         // Get token ID
         let tokenId;
         if (expectedTokenId) {
@@ -121,7 +123,7 @@ async function verifyNFTOwnership(walletAddress, expectedTokenId) {
                 };
             }
         }
-        console.log(`✅ Token ID verified: ${tokenId}`);
+        logger.info(`✅ Token ID verified: ${tokenId}`);
         // Verification successful
         return {
             isValid: true,
@@ -131,7 +133,7 @@ async function verifyNFTOwnership(walletAddress, expectedTokenId) {
         };
     }
     catch (error) {
-        console.error('❌ NFT verification failed:', error);
+        logger.error('❌ NFT verification failed:', error);
         return {
             isValid: false,
             hasNFT: false,
@@ -152,7 +154,7 @@ async function verifyNFTOwnership(walletAddress, expectedTokenId) {
 async function verifyNFTOwnershipWithRetry(walletAddress, expectedTokenId, maxRetries = 3, retryDelay = 2000) {
     let lastError = null;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        console.log(`🔄 NFT verification attempt ${attempt}/${maxRetries}...`);
+        logger.info(`🔄 NFT verification attempt ${attempt}/${maxRetries}...`);
         const result = await verifyNFTOwnership(walletAddress, expectedTokenId);
         if (result.isValid) {
             return result;
@@ -163,7 +165,7 @@ async function verifyNFTOwnershipWithRetry(walletAddress, expectedTokenId, maxRe
         }
         lastError = result;
         if (attempt < maxRetries) {
-            console.log(`⏳ Retrying in ${retryDelay}ms...`);
+            logger.info(`⏳ Retrying in ${retryDelay}ms...`);
             await new Promise(resolve => setTimeout(resolve, retryDelay));
         }
     }
@@ -186,7 +188,7 @@ async function verifyNFTOwnershipWithRetry(walletAddress, expectedTokenId, maxRe
 async function isNodeRegistered(tokenId) {
     // Node registration feature is not yet implemented
     // For now, NFT ownership is sufficient for node authorization
-    console.log(`ℹ️ Node registration check skipped (not yet implemented)`);
+    logger.info(`ℹ️ Node registration check skipped (not yet implemented)`);
     return false;
 }
 /**
@@ -200,7 +202,7 @@ async function isNodeRegistered(tokenId) {
  */
 async function getNodeInfo(tokenId) {
     // Node registration feature is not yet implemented
-    console.log(`ℹ️ Node info query skipped (not yet implemented)`);
+    logger.info(`ℹ️ Node info query skipped (not yet implemented)`);
     return null;
 }
 /**
@@ -248,13 +250,13 @@ onVerificationFailed) {
             return;
         const result = await verifyNFTOwnershipWithRetry(walletAddress, tokenId);
         if (!result.isValid) {
-            console.error('❌ Periodic NFT verification failed:', result.error);
+            logger.error('❌ Periodic NFT verification failed:', result.error);
             if (onVerificationFailed) {
                 onVerificationFailed(result);
             }
         }
         else {
-            console.log('✅ Periodic NFT verification passed');
+            logger.info('✅ Periodic NFT verification passed');
         }
         if (isRunning) {
             setTimeout(check, intervalMs);

@@ -19,11 +19,15 @@ exports.getShutdownHandler = getShutdownHandler;
 exports.onShutdown = onShutdown;
 exports.registerConnection = registerConnection;
 exports.registerConnections = registerConnections;
+const index_1 = require("./index");
 class GracefulShutdown {
-    constructor(timeout) {
-        this.handlers = [];
-        this.isShuttingDown = false;
-        this.shutdownTimeout = 30000; // 30 seconds default
+    handlers = [];
+    isShuttingDown = false;
+    shutdownTimeout = 30000; // 30 seconds default
+    // MEDIUM FIX #106: Use Logger instead of console
+    logger;
+    constructor(timeout, logger) {
+        this.logger = logger || new index_1.Logger('GracefulShutdown');
         if (timeout) {
             this.shutdownTimeout = timeout;
         }
@@ -42,17 +46,17 @@ class GracefulShutdown {
     setupSignalHandlers() {
         // Handle SIGTERM (Docker stop, Kubernetes termination)
         process.on('SIGTERM', () => {
-            console.log('Received SIGTERM signal');
+            this.logger.info('Received SIGTERM signal');
             this.shutdown('SIGTERM');
         });
         // Handle SIGINT (Ctrl+C)
         process.on('SIGINT', () => {
-            console.log('Received SIGINT signal');
+            this.logger.info('Received SIGINT signal');
             this.shutdown('SIGINT');
         });
         // Handle SIGQUIT (Ctrl+\)
         process.on('SIGQUIT', () => {
-            console.log('Received SIGQUIT signal');
+            this.logger.info('Received SIGQUIT signal');
             this.shutdown('SIGQUIT');
         });
     }
@@ -62,12 +66,12 @@ class GracefulShutdown {
     setupErrorHandlers() {
         // Handle uncaught exceptions
         process.on('uncaughtException', (error) => {
-            console.error('Uncaught exception:', error);
+            this.logger.error('Uncaught exception:', error);
             this.shutdown('uncaughtException', 1);
         });
         // Handle unhandled promise rejections
         process.on('unhandledRejection', (reason, promise) => {
-            console.error('Unhandled rejection at:', promise, 'reason:', reason);
+            this.logger.error('Unhandled rejection', { promise, reason });
             this.shutdown('unhandledRejection', 1);
         });
     }
@@ -77,16 +81,16 @@ class GracefulShutdown {
     async shutdown(signal, exitCode = 0) {
         // Prevent multiple shutdown attempts
         if (this.isShuttingDown) {
-            console.log('Shutdown already in progress, ignoring signal');
+            this.logger.info('Shutdown already in progress, ignoring signal');
             return;
         }
         this.isShuttingDown = true;
-        console.log(`========================================`);
-        console.log(`Initiating graceful shutdown (${signal})`);
-        console.log(`========================================`);
+        this.logger.info(`========================================`);
+        this.logger.info(`Initiating graceful shutdown (${signal})`);
+        this.logger.info(`========================================`);
         // Set a hard timeout to force exit if cleanup takes too long
         const forceExitTimer = setTimeout(() => {
-            console.error(`Shutdown timeout exceeded (${this.shutdownTimeout}ms), forcing exit`);
+            this.logger.error(`Shutdown timeout exceeded (${this.shutdownTimeout}ms), forcing exit`);
             process.exit(1);
         }, this.shutdownTimeout);
         try {
@@ -94,7 +98,7 @@ class GracefulShutdown {
             const cleanupPromises = this.handlers.map(async (handler) => {
                 const handlerTimeout = handler.timeout || 10000; // 10 seconds default per handler
                 try {
-                    console.log(`Cleaning up: ${handler.name}...`);
+                    this.logger.info(`Cleaning up: ${handler.name}...`);
                     // Create a timeout promise
                     const timeoutPromise = new Promise((_, reject) => {
                         setTimeout(() => reject(new Error(`Timeout: ${handler.name}`)), handlerTimeout);
@@ -104,25 +108,25 @@ class GracefulShutdown {
                         handler.cleanup(),
                         timeoutPromise
                     ]);
-                    console.log(`✓ ${handler.name} cleaned up successfully`);
+                    this.logger.info(`✓ ${handler.name} cleaned up successfully`);
                 }
                 catch (error) {
-                    console.error(`✗ ${handler.name} cleanup failed:`, error);
+                    this.logger.error(`✗ ${handler.name} cleanup failed:`, error);
                     // Continue with other handlers even if one fails
                 }
             });
             // Wait for all cleanup handlers to complete
             await Promise.all(cleanupPromises);
-            console.log(`========================================`);
-            console.log(`Graceful shutdown complete`);
-            console.log(`========================================`);
+            this.logger.info(`========================================`);
+            this.logger.info(`Graceful shutdown complete`);
+            this.logger.info(`========================================`);
             // Clear the force exit timer
             clearTimeout(forceExitTimer);
             // Exit with appropriate code
             process.exit(exitCode);
         }
         catch (error) {
-            console.error('Error during shutdown:', error);
+            this.logger.error('Error during shutdown:', error);
             clearTimeout(forceExitTimer);
             process.exit(1);
         }

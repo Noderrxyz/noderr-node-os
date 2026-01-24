@@ -23,7 +23,8 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": false,
     "allowUnreachableCode": false,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "composite": true
   },
   "include": ["src/**/*"],
   "exclude": [

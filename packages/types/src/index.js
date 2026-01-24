@@ -269,4 +269,8 @@ var NodeType;
     NodeType["GUARDIAN"] = "GUARDIAN";
     NodeType["VALIDATOR"] = "VALIDATOR";
 })(NodeType || (exports.NodeType = NodeType = {}));
+// Alpha Exploitation Types
+__exportStar(require("./alpha-exploitation-types"), exports);
+// Strategy Types  
+__exportStar(require("./strategy-types"), exports);
 //# sourceMappingURL=index.js.map

@@ -2,12 +2,21 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "composite": true
+    "composite": true,
+    "skipLibCheck": true
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*"
+  ],
   "references": [
-    { "path": "../types" },
-    { "path": "../utils" },
-    { "path": "../telemetry" }
+    {
+      "path": "../types"
+    },
+    {
+      "path": "../utils"
+    },
+    {
+      "path": "../telemetry"
+    }
   ]
 }

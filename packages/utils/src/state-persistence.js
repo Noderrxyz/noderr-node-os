@@ -48,11 +48,13 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StatePersistenceManager = void 0;
 exports.createStatePersistence = createStatePersistence;
+const src_1 = require("@noderr/utils/src");
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const crypto = __importStar(require("crypto"));
 const zlib = __importStar(require("zlib"));
 const util_1 = require("util");
+const logger = new src_1.Logger('state-persistence');
 const writeFile = (0, util_1.promisify)(fs.writeFile);
 const readFile = (0, util_1.promisify)(fs.readFile);
 const rename = (0, util_1.promisify)(fs.rename);
@@ -63,8 +65,11 @@ const stat = (0, util_1.promisify)(fs.stat);
  * State Persistence Manager
  */
 class StatePersistenceManager {
+    config;
+    stateFile;
+    autoSaveTimer;
+    currentState = null;
     constructor(config) {
-        this.currentState = null;
         this.config = {
             stateDir: config.stateDir,
             serviceName: config.serviceName,
@@ -174,7 +179,7 @@ class StatePersistenceManager {
                 .update(checksumContent)
                 .digest('hex');
             if (calculatedChecksum !== persistedState.metadata.checksum) {
-                console.warn('State file checksum mismatch, attempting recovery from backup');
+                logger.warn('State file checksum mismatch, attempting recovery from backup');
                 return await this.loadFromBackup();
             }
             this.currentState = persistedState.data;
@@ -185,7 +190,7 @@ class StatePersistenceManager {
                 // File doesn't exist
                 return null;
             }
-            console.error('Error loading state, attempting recovery from backup:', error);
+            logger.error('Error loading state, attempting recovery from backup:', error);
             return await this.loadFromBackup();
         }
     }
@@ -205,7 +210,7 @@ class StatePersistenceManager {
                     const decompressed = await (0, util_1.promisify)(zlib.gunzip)(Buffer.from(content, 'base64'));
                     persistedState = JSON.parse(decompressed.toString('utf8'));
                 }
-                console.log(`Successfully recovered state from backup ${i}`);
+                logger.info(`Successfully recovered state from backup ${i}`);
                 this.currentState = persistedState.data;
                 return persistedState.data;
             }
@@ -214,7 +219,7 @@ class StatePersistenceManager {
                 continue;
             }
         }
-        console.error('Failed to recover state from any backup');
+        logger.error('Failed to recover state from any backup');
         return null;
     }
     /**
@@ -259,7 +264,7 @@ class StatePersistenceManager {
                     await this.save(this.currentState);
                 }
                 catch (error) {
-                    console.error('Auto-save failed:', error);
+                    logger.error('Auto-save failed:', error);
                 }
             }
         }, this.config.autoSaveInterval);

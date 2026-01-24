@@ -1,7 +1,7 @@
 /**
  * @noderr/utils - Shared utilities for Noderr Protocol
  */
-import winston from 'winston';
+import * as winston from 'winston';
 export declare class Logger {
     private logger;
     constructor(name: string, options?: winston.LoggerOptions);
@@ -10,6 +10,7 @@ export declare class Logger {
     warn(message: string, meta?: any): void;
     error(message: string, error?: Error | any, meta?: any): void;
     child(name: string): Logger;
+    getWinstonLogger(): winston.Logger;
 }
 export interface RetryOptions {
     maxAttempts: number;

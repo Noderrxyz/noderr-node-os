@@ -13,29 +13,49 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
 }));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.logger = exports.CircularBuffer = exports.RetryManager = exports.Logger = void 0;
 exports.generateId = generateId;
 exports.sleep = sleep;
 exports.deepClone = deepClone;
-const winston_1 = __importDefault(require("winston"));
+const winston = __importStar(require("winston"));
 const uuid_1 = require("uuid");
 // Logger
 class Logger {
+    logger;
     constructor(name, options) {
-        this.logger = winston_1.default.createLogger({
-            level: (options === null || options === void 0 ? void 0 : options.level) || 'info',
-            format: winston_1.default.format.combine(winston_1.default.format.timestamp(), winston_1.default.format.errors({ stack: true }), winston_1.default.format.json()),
+        this.logger = winston.createLogger({
+            level: options?.level || 'info',
+            format: winston.format.combine(winston.format.timestamp(), winston.format.errors({ stack: true }), winston.format.json()),
             defaultMeta: { service: name },
             transports: [
-                new winston_1.default.transports.Console({
-                    format: winston_1.default.format.combine(winston_1.default.format.colorize(), winston_1.default.format.simple())
+                new winston.transports.Console({
+                    format: winston.format.combine(winston.format.colorize(), winston.format.simple())
                 })
             ],
             ...options
@@ -59,12 +79,16 @@ class Logger {
         }
     }
     child(name) {
-        var _a;
-        return new Logger(`${(_a = this.logger.defaultMeta) === null || _a === void 0 ? void 0 : _a.service}.${name}`);
+        return new Logger(`${this.logger.defaultMeta?.service}.${name}`);
+    }
+    // Get the underlying winston logger instance for compatibility
+    getWinstonLogger() {
+        return this.logger;
     }
 }
 exports.Logger = Logger;
 class RetryManager {
+    options;
     constructor(options) {
         this.options = options;
     }
@@ -112,11 +136,13 @@ class RetryManager {
 exports.RetryManager = RetryManager;
 // Circular Buffer
 class CircularBuffer {
+    capacity;
+    buffer;
+    head = 0;
+    tail = 0;
+    count = 0;
     constructor(capacity) {
         this.capacity = capacity;
-        this.head = 0;
-        this.tail = 0;
-        this.count = 0;
         this.buffer = new Array(capacity);
     }
     push(item) {

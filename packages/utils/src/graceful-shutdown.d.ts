@@ -12,6 +12,7 @@
  * - Unhandled rejection handling
  * - Graceful connection closing
  */
+import { Logger } from './index';
 export interface ShutdownHandler {
     name: string;
     cleanup: () => Promise<void>;
@@ -21,7 +22,8 @@ export declare class GracefulShutdown {
     private handlers;
     private isShuttingDown;
     private shutdownTimeout;
-    constructor(timeout?: number);
+    private logger;
+    constructor(timeout?: number, logger?: Logger);
     /**
      * Register a cleanup handler
      */

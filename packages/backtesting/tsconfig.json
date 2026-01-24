@@ -3,12 +3,24 @@
   "compilerOptions": {
     "outDir": "./dist",
     "composite": true,
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "skipLibCheck": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ],
   "references": [
-    { "path": "../types" },
-    { "path": "../utils" }
+    {
+      "path": "../types"
+    },
+    {
+      "path": "../utils"
+    }
   ]
 }
