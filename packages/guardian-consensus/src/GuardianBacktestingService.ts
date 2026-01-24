@@ -18,7 +18,7 @@
 import { ethers } from 'ethers';
 import { EventEmitter } from 'events';
 import { Logger } from '@noderr/utils';
-import { BacktestingFramework } from '@noderr/backtesting';
+// import { BacktestingFramework } from '@noderr/backtesting'; // Commented out - not available in Docker build
 import { Strategy, BacktestResult, GuardianNodeConfig } from '@noderr/types';
 
 export interface BacktestMetrics {
@@ -55,7 +55,7 @@ export class GuardianBacktestingService extends EventEmitter {
   private lotteryContract: ethers.Contract;
   private consensusContract: ethers.Contract;
   private lifecycleContract: ethers.Contract;
-  private backtestingFramework: BacktestingFramework;
+  private backtestingFramework: any; // BacktestingFramework - using any due to Docker build constraints
   private config: GuardianNodeConfig;
   private activeRounds: Map<string, BacktestRound>;
   private isRunning: boolean;
@@ -95,7 +95,8 @@ export class GuardianBacktestingService extends EventEmitter {
       wallet
     );
 
-    this.backtestingFramework = new BacktestingFramework(config.backtestConfig);
+    // this.backtestingFramework = new BacktestingFramework(config.backtestConfig); // Commented out - not available in Docker build
+    this.backtestingFramework = null; // TODO: Initialize when backtesting package is available
   }
 
   /**
