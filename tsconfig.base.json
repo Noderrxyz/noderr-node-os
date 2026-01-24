@@ -17,10 +17,7 @@
     "types": ["node", "jest"],
     "baseUrl": ".",
     "paths": {
-      "@noderr/types": ["packages/types/src"],
-      "@noderr/utils": ["packages/utils/src"],
-      "@noderr/auth-api": ["auth-api/src"],
-      "@noderr/deployment-engine": ["deployment-engine/src"]
+      "@noderr/*": ["packages/*/dist/src", "packages/*/dist", "packages/*/src"]
     }
   }
 }

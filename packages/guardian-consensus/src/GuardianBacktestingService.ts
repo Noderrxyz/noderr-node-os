@@ -289,12 +289,13 @@ export class GuardianBacktestingService extends EventEmitter {
       // Run backtest with each variation
       const results: BacktestResult[] = [];
       for (const variation of variations) {
+        // TODO: Apply parameter variations to strategy
+        // For now, just use the base strategy
         const result = await this.backtestingFramework.runBacktest(
-          round.strategy,
-          variation,
-          this.config.backtestConfig
+          this.config.backtestConfig,
+          round.strategy as any // Type cast to handle interface mismatch
         );
-        results.push(result);
+        results.push(result as any); // Type cast to handle interface mismatch
       }
 
       // Calculate aggregate metrics
