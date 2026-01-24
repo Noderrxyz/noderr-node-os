@@ -381,6 +381,7 @@ export interface PerformanceMetrics {
   avgSlippage?: number;
   avgLatency?: number;
   maxDrawdown?: number;
+  tradesExecuted?: number;
 }
 
 export interface TransactionResult {
