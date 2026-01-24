@@ -152,6 +152,8 @@ COPY --chown=noderr:noderr package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY --from=builder --chown=noderr:noderr /build/node_modules ./node_modules
 COPY --from=builder --chown=noderr:noderr /build/packages/types ./packages/types
 COPY --from=builder --chown=noderr:noderr /build/packages/utils ./packages/utils
+COPY --from=builder --chown=noderr:noderr /build/packages/core ./packages/core
+COPY --from=builder --chown=noderr:noderr /build/packages/decentralized-core ./packages/decentralized-core
 COPY --from=builder --chown=noderr:noderr /build/packages/telemetry ./packages/telemetry
 COPY --from=builder --chown=noderr:noderr /build/packages/market-data ./packages/market-data
 COPY --from=builder --chown=noderr:noderr /build/packages/exchanges ./packages/exchanges
@@ -162,6 +164,7 @@ COPY --from=builder --chown=noderr:noderr /build/packages/guardian-consensus ./p
 COPY --from=builder --chown=noderr:noderr /build/packages/oracle-consensus ./packages/oracle-consensus
 COPY --from=builder --chown=noderr:noderr /build/packages/execution ./packages/execution
 COPY --from=builder --chown=noderr:noderr /build/packages/autonomous-execution ./packages/autonomous-execution
+COPY --from=builder --chown=noderr:noderr /build/packages/capital-ai ./packages/capital-ai
 COPY --from=builder --chown=noderr:noderr /build/packages/floor-engine ./packages/floor-engine
 COPY --from=builder --chown=noderr:noderr /build/packages/integration-layer ./packages/integration-layer
 COPY --from=builder --chown=noderr:noderr /build/packages/system-orchestrator ./packages/system-orchestrator
