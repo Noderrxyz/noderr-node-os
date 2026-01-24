@@ -910,6 +910,7 @@ export interface GuardianNodeConfig extends NodeTypeConfig {
         minLiquidity: number;
     };
     emergencyActions: string[];
+    backtestConfig?: any;
 }
 /**
  * Validator node specific configuration
