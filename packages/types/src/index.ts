@@ -372,6 +372,15 @@ export interface PerformanceMetrics {
   sharpeRatio: number;
   strategyId: string;
   totalValue?: number;
+  totalOpportunities?: number;
+  successfulTrades?: number;
+  totalPnL?: number;
+  winRate?: number;
+  uptime?: number;
+  startTime?: number;
+  avgSlippage?: number;
+  avgLatency?: number;
+  maxDrawdown?: number;
 }
 
 export interface TransactionResult {

@@ -54,6 +54,7 @@ export interface ModelPerformance {
     sharpe?: number;
     accuracy?: number;
     lastUpdated: number;
+    modelId?: string;
 }
 export declare enum ModelStatus {
     UNINITIALIZED = "uninitialized",
@@ -249,7 +250,10 @@ export declare enum MarketRegime {
     BULL_VOLATILE = "bull_volatile",
     BEAR_VOLATILE = "bear_volatile",
     RANGEBOUND_LOW_VOL = "rangebound_low_vol",
-    UNKNOWN = "unknown"
+    UNKNOWN = "unknown",
+    NORMAL = "normal",
+    TRENDING = "trending",
+    RISK_OFF = "risk_off"
 }
 export interface RegimeFeatures {
     trend: number;

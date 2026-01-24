@@ -46,6 +46,9 @@ var MarketRegime;
     MarketRegime["BEAR_VOLATILE"] = "bear_volatile";
     MarketRegime["RANGEBOUND_LOW_VOL"] = "rangebound_low_vol";
     MarketRegime["UNKNOWN"] = "unknown";
+    MarketRegime["NORMAL"] = "normal";
+    MarketRegime["TRENDING"] = "trending";
+    MarketRegime["RISK_OFF"] = "risk_off";
 })(MarketRegime || (exports.MarketRegime = MarketRegime = {}));
 var RLAlgorithm;
 (function (RLAlgorithm) {
