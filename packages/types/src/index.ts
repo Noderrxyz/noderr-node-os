@@ -455,6 +455,7 @@ export interface RateLimit {
 
 export enum ExecutionUrgency {
   LOW = 'low',
+  NORMAL = 'normal',
   MEDIUM = 'medium',
   HIGH = 'high',
   CRITICAL = 'critical'
