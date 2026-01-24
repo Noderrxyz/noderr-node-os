@@ -93,6 +93,7 @@ RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/risk-engine" build && \
     pnpm --filter "@noderr/compliance" build && \
     pnpm --filter "@noderr/decentralized-core" build && \
+    pnpm --filter "@noderr/backtesting" build && \
     pnpm --filter "@noderr/guardian-consensus" build && \
     pnpm --filter "@noderr/oracle-consensus" build && \
     pnpm --filter "@noderr/execution" build && \
