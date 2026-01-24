@@ -19,7 +19,7 @@ import { ethers } from 'ethers';
 import { EventEmitter } from 'events';
 import { Logger } from '@noderr/utils';
 import { BacktestingFramework } from '@noderr/backtesting';
-import { Strategy, BacktestResult, GuardianConfig } from '@noderr/types';
+import { Strategy, BacktestResult, GuardianNodeConfig } from '@noderr/types';
 
 export interface BacktestMetrics {
   sharpeRatio: number;      // Scaled by 10000 (e.g., 20000 = 2.0)
@@ -362,7 +362,7 @@ export class GuardianBacktestingService extends EventEmitter {
     const avgDrawdown = results.reduce((sum, r) => sum + r.maxDrawdown, 0) / results.length;
     const avgWinRate = results.reduce((sum, r) => sum + r.winRate, 0) / results.length;
     const avgReturn = results.reduce((sum, r) => sum + r.totalReturn, 0) / results.length;
-    const avgTrades = results.reduce((sum, r) => sum + r.tradesExecuted, 0) / results.length;
+    const avgTrades = results.reduce((sum, r) => sum + (r.tradesExecuted || 0), 0) / results.length;
 
     // Calculate variance to measure robustness
     const sharpeVariance = this.calculateVariance(results.map(r => r.sharpeRatio));

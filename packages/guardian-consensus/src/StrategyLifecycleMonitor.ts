@@ -401,10 +401,10 @@ export class StrategyLifecycleMonitor extends EventEmitter {
       this.logger.info(`Updating performance for ${strategyId}...`);
 
       // Scale metrics for smart contract (multiply by 10000)
-      const totalPnL = ethers.parseEther(metrics.totalPnL.toString());
-      const sharpeRatio = Math.round(metrics.sharpeRatio * 10000);
-      const maxDrawdown = Math.round(metrics.maxDrawdown * 10000);
-      const winRate = Math.round(metrics.winRate * 10000);
+      const totalPnL = ethers.parseEther((metrics.totalPnL || 0).toString());
+      const sharpeRatio = Math.round((metrics.sharpeRatio || 0) * 10000);
+      const maxDrawdown = Math.round((metrics.maxDrawdown || 0) * 10000);
+      const winRate = Math.round((metrics.winRate || 0) * 10000);
       const tradesExecuted = metrics.tradesExecuted;
 
       const tx = await this.lifecycleContract.updatePerformance(

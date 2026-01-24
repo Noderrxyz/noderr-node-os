@@ -15,6 +15,7 @@ export interface Strategy {
   ipfsHash?: string;
   maxCapital?: number;
   sampleSize?: number;
+  isActive?: boolean;
 }
 
 export interface MonitorConfig {
