@@ -50,7 +50,6 @@ COPY packages/data-connectors ./packages/data-connectors
 COPY packages/risk-engine ./packages/risk-engine
 COPY packages/compliance ./packages/compliance
 COPY packages/decentralized-core ./packages/decentralized-core
-COPY packages/backtesting ./packages/backtesting
 COPY packages/guardian-consensus ./packages/guardian-consensus
 COPY packages/oracle-consensus ./packages/oracle-consensus
 COPY packages/execution ./packages/execution
@@ -94,7 +93,6 @@ RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/risk-engine" build && \
     pnpm --filter "@noderr/compliance" build && \
     pnpm --filter "@noderr/decentralized-core" build && \
-    pnpm --filter "@noderr/backtesting" build && \
     pnpm --filter "@noderr/guardian-consensus" build && \
     pnpm --filter "@noderr/oracle-consensus" build && \
     pnpm --filter "@noderr/execution" build && \
@@ -156,7 +154,6 @@ COPY --from=builder --chown=noderr:noderr /build/packages/types ./packages/types
 COPY --from=builder --chown=noderr:noderr /build/packages/utils ./packages/utils
 COPY --from=builder --chown=noderr:noderr /build/packages/core ./packages/core
 COPY --from=builder --chown=noderr:noderr /build/packages/decentralized-core ./packages/decentralized-core
-COPY --from=builder --chown=noderr:noderr /build/packages/backtesting ./packages/backtesting
 COPY --from=builder --chown=noderr:noderr /build/packages/telemetry ./packages/telemetry
 COPY --from=builder --chown=noderr:noderr /build/packages/market-data ./packages/market-data
 COPY --from=builder --chown=noderr:noderr /build/packages/exchanges ./packages/exchanges
