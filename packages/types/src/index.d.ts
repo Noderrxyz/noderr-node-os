@@ -293,11 +293,21 @@ export interface OnChainServiceConfig {
     networkName: string;
     nodeRegistryAddress?: string;
     governanceManagerAddress?: string;
+    stakingManagerAddress?: string;
+    rewardDistributorAddress?: string;
+    rewardCalculatorAddress?: string;
+    penaltyManagerAddress?: string;
+    utilityNFTAddress?: string;
     maxCapitalRequest: bigint;
     dailyCapitalLimit: bigint;
     rateLimitRequestsPerHour: number;
     logLevel: string;
     logFile?: string;
+    telemetryServiceUrl?: string;
+    epochDurationSeconds?: number;
+    baseRewardRate?: string;
+    vestingDuration?: number;
+    trustSyncIntervalSeconds?: number;
 }
 export interface CapitalRequest {
     amount: bigint;
@@ -1037,4 +1047,6 @@ export interface Authorization {
     revokedBy?: string;
     revokedReason?: string;
 }
+export * from './alpha-exploitation-types';
+export * from './strategy-types';
 //# sourceMappingURL=index.d.ts.map

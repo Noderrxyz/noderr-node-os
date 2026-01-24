@@ -1249,3 +1249,9 @@ export interface Authorization {
   revokedBy?: string;
   revokedReason?: string;
 }
+
+// Alpha Exploitation Types
+export * from './alpha-exploitation-types';
+
+// Strategy Types  
+export * from './strategy-types';
