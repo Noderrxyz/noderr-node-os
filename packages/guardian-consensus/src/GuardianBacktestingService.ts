@@ -242,6 +242,7 @@ export class GuardianBacktestingService extends EventEmitter {
       const strategy: Strategy = {
         id: strategyId,
         name: strategyData.name,
+        type: 'ARBITRAGE', // Default type
         developer: strategyData.developer,
         ipfsHash: strategyData.ipfsHash,
         stage: strategyData.stage,
