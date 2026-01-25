@@ -12,6 +12,10 @@ COPY auth-api/package.json ./package.json
 # Install dependencies (skip workspace protocol)
 RUN pnpm install --ignore-workspace
 
+# Cache buster - forces Docker to rebuild from here
+ARG CACHEBUST=1
+RUN echo "Cache bust: $CACHEBUST"
+
 # Copy source code (after install to invalidate cache when source changes)
 COPY auth-api/src ./src
 COPY auth-api/tsconfig.json ./tsconfig.json
@@ -27,4 +31,3 @@ ENV NODE_ENV=production
 
 # Start the server
 CMD ["node", "dist/index.js"]
-# Build timestamp: 1769325708
