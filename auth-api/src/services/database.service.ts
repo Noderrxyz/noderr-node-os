@@ -220,6 +220,50 @@ export class DatabaseService {
       expiresAt: new Date(data.expires_at),
     };
   }
+
+  /**
+   * Update node with NFT token ID
+   * Called after NFT is minted for the node
+   */
+  async updateNodeTokenId(nodeId: string, tokenId: number): Promise<void> {
+    const { error } = await this.supabase
+      .from('node_identities')
+      .update({ nft_token_id: tokenId })
+      .eq('node_id', nodeId);
+
+    if (error) {
+      throw new Error(`Failed to update node token ID: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get node by NFT token ID
+   */
+  async getNodeByTokenId(tokenId: number): Promise<NodeIdentity | null> {
+    const { data, error } = await this.supabase
+      .from('node_identities')
+      .select('*')
+      .eq('nft_token_id', tokenId)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return {
+      id: data.id,
+      nodeId: data.node_id,
+      publicKey: data.public_key,
+      attestationData: data.attestation_data,
+      tier: data.tier,
+      os: data.os,
+      installTokenId: data.install_token_id,
+      status: data.status,
+      lastSeen: data.last_seen ? new Date(data.last_seen) : undefined,
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at),
+    };
+  }
 }
 
 // Singleton instance
