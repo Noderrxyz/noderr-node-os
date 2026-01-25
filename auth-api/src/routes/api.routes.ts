@@ -59,8 +59,13 @@ const HeartbeatRequestSchema = z.object({
     uptime: z.number().min(0),
     cpu: z.number().min(0).max(100),
     memory: z.number().min(0).max(100),
+    disk: z.number().min(0).max(100).optional(),
+    network: z.object({
+      rx: z.number().min(0),
+      tx: z.number().min(0),
+    }).optional(),
     version: z.string(),
-  }),
+  }).optional(),
 });
 
 export async function registerApiRoutes(fastify: FastifyInstance) {
