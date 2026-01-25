@@ -67,6 +67,7 @@ const HeartbeatRequestSchema = z.object({
     version: z.string(),
   }),
 });
+type HeartbeatRequest = z.infer<typeof HeartbeatRequestSchema>;
 
 export async function registerApiRoutes(fastify: FastifyInstance) {
   /**
