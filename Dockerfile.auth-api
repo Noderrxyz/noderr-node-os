@@ -16,6 +16,9 @@ COPY auth-api/tsconfig.json ./tsconfig.json
 # Install dependencies (skip workspace protocol)
 RUN pnpm install --ignore-workspace
 
+# Clean any stale TypeScript build artifacts
+RUN rm -rf dist tsconfig.tsbuildinfo
+
 # Build TypeScript
 RUN pnpm build
 
