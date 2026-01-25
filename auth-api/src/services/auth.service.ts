@@ -207,12 +207,12 @@ export class AuthService {
    * Process node heartbeat
    */
   async processHeartbeat(nodeId: string, jwtToken: string, metrics?: {
-    uptime: number;
-    cpu: number;
-    memory: number;
+    uptime?: number;
+    cpu?: number;
+    memory?: number;
     disk?: number;
-    network?: { rx: number; tx: number };
-    version: string;
+    network?: { rx?: number; tx?: number };
+    version?: string;
   }): Promise<void> {
     const db = getDatabaseService();
 
