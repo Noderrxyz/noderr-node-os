@@ -172,6 +172,32 @@ export class DatabaseService {
   }
 
   /**
+   * Store node metrics from heartbeat
+   */
+  async storeNodeMetrics(nodeId: string, metrics: {
+    uptime: number;
+    cpu: number;
+    memory: number;
+    disk?: number;
+    network?: { rx: number; tx: number };
+    version: string;
+  }): Promise<void> {
+    await this.supabase
+      .from('node_telemetry')
+      .insert({
+        node_id: nodeId,
+        uptime: metrics.uptime,
+        cpu_usage: metrics.cpu,
+        memory_usage: metrics.memory,
+        disk_usage: metrics.disk || 0,
+        network_rx: metrics.network?.rx || 0,
+        network_tx: metrics.network?.tx || 0,
+        version: metrics.version,
+        timestamp: new Date().toISOString(),
+      });
+  }
+
+  /**
    * Get node credentials by node ID
    */
   async getNodeCredentials(nodeId: string): Promise<NodeCredentials | null> {

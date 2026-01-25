@@ -206,7 +206,14 @@ export class AuthService {
   /**
    * Process node heartbeat
    */
-  async processHeartbeat(nodeId: string, jwtToken: string): Promise<void> {
+  async processHeartbeat(nodeId: string, jwtToken: string, metrics?: {
+    uptime: number;
+    cpu: number;
+    memory: number;
+    disk?: number;
+    network?: { rx: number; tx: number };
+    version: string;
+  }): Promise<void> {
     const db = getDatabaseService();
 
     // Verify JWT
@@ -228,6 +235,11 @@ export class AuthService {
 
     // Update last seen
     await db.updateNodeLastSeen(nodeId);
+
+    // Store metrics if provided
+    if (metrics) {
+      await db.storeNodeMetrics(nodeId, metrics);
+    }
   }
 
   /**

@@ -247,7 +247,8 @@ export async function registerApiRoutes(fastify: FastifyInstance) {
         // Process heartbeat
         await authService.processHeartbeat(
           validatedRequest.nodeId,
-          validatedRequest.jwtToken
+          validatedRequest.jwtToken,
+          validatedRequest.metrics
         );
 
         fastify.log.debug({

@@ -52,6 +52,7 @@ services:
       - GRPC_PORT=50051
       - MODEL_PATH=/app/models
       - LOG_LEVEL=INFO
+      - CUDA_VISIBLE_DEVICES=0  # Use first GPU
     volumes:
       - ml_models:/app/models
       - ml_logs:/app/logs
@@ -73,6 +74,10 @@ services:
         reservations:
           cpus: '2'
           memory: 4G
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 
   #   # Node Runtime
   node-runtime:
