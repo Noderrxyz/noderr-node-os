@@ -175,12 +175,12 @@ export class DatabaseService {
    * Store node metrics from heartbeat
    */
   async storeNodeMetrics(nodeId: string, metrics: {
-    uptime: number;
-    cpu: number;
-    memory: number;
+    uptime?: number;
+    cpu?: number;
+    memory?: number;
     disk?: number;
-    network?: { rx: number; tx: number };
-    version: string;
+    network?: { rx?: number; tx?: number };
+    version?: string;
   }): Promise<void> {
     await this.supabase
       .from('node_telemetry')
