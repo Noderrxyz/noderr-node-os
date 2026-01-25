@@ -10,7 +10,6 @@ import {
   InstallConfigRequest,
   RegisterNodeRequest,
   VerifyNodeRequest,
-  HeartbeatRequest,
   AttestationData,
   SystemInfo,
 } from '../models/types';
