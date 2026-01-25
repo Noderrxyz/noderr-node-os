@@ -65,7 +65,7 @@ const HeartbeatRequestSchema = z.object({
       tx: z.number().min(0),
     }).optional(),
     version: z.string(),
-  }).optional(),
+  }),
 });
 
 export async function registerApiRoutes(fastify: FastifyInstance) {
