@@ -12,7 +12,11 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 # Copy all packages (needed for workspace dependencies)
 COPY packages/ ./packages/
 
-# Copy auth-api
+# Cache buster - forces Docker to rebuild from here
+ARG CACHEBUST=1
+RUN echo "Cache bust: $CACHEBUST"
+
+# Copy auth-api (will be fresh every time due to ARG above)
 COPY auth-api/ ./auth-api/
 
 # Install dependencies using pnpm
@@ -33,4 +37,3 @@ EXPOSE 3000
 
 # Start the server
 CMD ["node", "dist/index.js"]
-# Build timestamp: 1769325703
