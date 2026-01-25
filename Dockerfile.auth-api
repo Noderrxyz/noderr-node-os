@@ -6,21 +6,18 @@ RUN npm install -g pnpm
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files first (for better layer caching)
 COPY auth-api/package.json ./package.json
-
-# Copy source code
-COPY auth-api/src ./src
-COPY auth-api/tsconfig.json ./tsconfig.json
 
 # Install dependencies (skip workspace protocol)
 RUN pnpm install --ignore-workspace
 
-# Clean any stale TypeScript build artifacts
-RUN rm -rf dist tsconfig.tsbuildinfo
+# Copy source code (after install to invalidate cache when source changes)
+COPY auth-api/src ./src
+COPY auth-api/tsconfig.json ./tsconfig.json
 
-# Build TypeScript
-RUN pnpm build
+# Clean any stale TypeScript build artifacts and build fresh
+RUN rm -rf dist tsconfig.tsbuildinfo node_modules/.cache && pnpm build
 
 # Expose port
 EXPOSE 3000
