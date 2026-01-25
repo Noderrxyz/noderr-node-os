@@ -18,12 +18,15 @@ COPY auth-api/ ./auth-api/
 # Install dependencies using pnpm
 RUN pnpm install --frozen-lockfile || pnpm install
 
-# Build all packages
+# Clean any stale build artifacts
+RUN rm -rf auth-api/dist auth-api/tsconfig.tsbuildinfo
+
+# Build all packages (ignore errors from optional packages)
 RUN pnpm -r build || true
 
 # Build auth-api specifically
 WORKDIR /app/auth-api
-RUN pnpm build
+RUN rm -rf dist tsconfig.tsbuildinfo && pnpm build
 
 # Expose port
 EXPOSE 3000
