@@ -13,4 +13,7 @@ COPY src/ ./src/
 EXPOSE 8080
 
 # Run the service
+# Run as non-root user for security
+USER node
+
 CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080"]

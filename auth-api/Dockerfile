@@ -36,4 +36,7 @@ RUN rm -rf dist tsconfig.tsbuildinfo && pnpm build
 EXPOSE 3000
 
 # Start the server
+# Run as non-root user for security
+USER node
+
 CMD ["node", "dist/index.js"]
