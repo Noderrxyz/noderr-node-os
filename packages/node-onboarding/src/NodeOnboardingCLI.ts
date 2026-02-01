@@ -135,15 +135,15 @@ export class NodeOnboardingCLI {
             value: NodeTier.MICRO
           },
           {
-            name: `${chalk.blue('Validator')} - Mid-tier (TF ≥0.60, 50,000 NODR stake, no GPU)`,
+            name: `${chalk.blue('Validator')} - Mid-tier (TF ≥0.60, 25,000 NODR stake, no GPU)`,
             value: NodeTier.VALIDATOR
           },
           {
-            name: `${chalk.yellow('Guardian')} - High-tier (TF ≥0.75, 100,000 NODR stake, optional GPU for bonus)`,
+            name: `${chalk.yellow('Guardian')} - High-tier (TF ≥0.75, 50,000 NODR stake, optional GPU for bonus)`,
             value: NodeTier.GUARDIAN
           },
           {
-            name: `${chalk.red('Oracle')} - Top-tier (TF ≥0.90, 500,000 NODR stake, GPU required)`,
+            name: `${chalk.red('Oracle')} - Top-tier (TF ≥0.90, 150,000 NODR stake, GPU required)`,
             value: NodeTier.ORACLE
           }
         ]
