@@ -4,9 +4,9 @@
  * These values MUST match the on-chain NodeRegistry.sol contract exactly.
  * Source of truth: contracts/contracts/core/NodeRegistry.sol
  * 
- * Oracle: 500,000 NODR (500000 ether)
- * Guardian: 100,000 NODR (100000 ether)
- * Validator: 50,000 NODR (50000 ether)
+ * Oracle: 150,000 NODR (150000 ether)
+ * Guardian: 50,000 NODR (50000 ether)
+ * Validator: 25,000 NODR (25000 ether)
  */
 
 import { ethers } from 'ethers';
@@ -27,9 +27,9 @@ export enum NodeTier {
  */
 export const STAKING_REQUIREMENTS = {
   [NodeTier.MICRO]: ethers.parseUnits('0', 18), // No stake required for Micro nodes
-  [NodeTier.VALIDATOR]: ethers.parseUnits('50000', 18), // 50,000 NODR
-  [NodeTier.GUARDIAN]: ethers.parseUnits('100000', 18), // 100,000 NODR
-  [NodeTier.ORACLE]: ethers.parseUnits('500000', 18), // 500,000 NODR
+  [NodeTier.VALIDATOR]: ethers.parseUnits('25000', 18), // 25,000 NODR
+  [NodeTier.GUARDIAN]: ethers.parseUnits('50000', 18), // 50,000 NODR
+  [NodeTier.ORACLE]: ethers.parseUnits('150000', 18), // 150,000 NODR
 } as const;
 
 /**
