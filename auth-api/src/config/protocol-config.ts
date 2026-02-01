@@ -4,9 +4,9 @@
  * These values MUST match the on-chain NodeRegistry.sol contract exactly.
  * Source of truth: contracts/contracts/core/NodeRegistry.sol
  * 
- * Oracle: 500,000 NODR (500000 ether)
- * Guardian: 100,000 NODR (100000 ether)
- * Validator: 50,000 NODR (50000 ether)
+ * Oracle: 150,000 NODR (protocol-provided, 24-month lock-up)
+ * Guardian: 50,000 NODR (protocol-provided, 24-month lock-up)
+ * Validator: 25,000 NODR (protocol-provided, 24-month lock-up)
  */
 import { ethers } from 'ethers';
 
@@ -26,9 +26,9 @@ export enum NodeTier {
  */
 export const STAKING_REQUIREMENTS = {
   [NodeTier.MICRO]: ethers.parseUnits('0', 18), // No stake required for Micro nodes
-  [NodeTier.VALIDATOR]: ethers.parseUnits('50000', 18), // 50,000 NODR
-  [NodeTier.GUARDIAN]: ethers.parseUnits('100000', 18), // 100,000 NODR
-  [NodeTier.ORACLE]: ethers.parseUnits('500000', 18), // 500,000 NODR
+  [NodeTier.VALIDATOR]: ethers.parseUnits('25000', 18), // 25,000 NODR
+  [NodeTier.GUARDIAN]: ethers.parseUnits('50000', 18), // 50,000 NODR
+  [NodeTier.ORACLE]: ethers.parseUnits('150000', 18), // 150,000 NODR
 } as const;
 
 /**
@@ -56,7 +56,7 @@ export function getStakingRequirement(tier: NodeTier | keyof typeof STAKING_REQU
 /**
  * Format staking requirement as human-readable NODR amount
  * @param tier - Node tier enum value or string name
- * @returns Formatted stake amount (e.g., "500000 NODR")
+ * @returns Formatted stake amount (e.g., "150000 NODR")
  */
 export function formatStakingRequirement(tier: NodeTier | keyof typeof STAKING_REQUIREMENTS_BY_NAME): string {
   const requirement = getStakingRequirement(tier);
