@@ -62,9 +62,9 @@ The NODERR network operates as a three-tier decentralized trading intelligence s
 
 | Tier | Node Type | Role | Stake Required | Reward Multiplier |
 |------|-----------|------|----------------|-------------------|
-| **2** | **Validator** | On-chain validation & network consensus | 50,000 NODERR | 1.0x |
-| **3** | **Guardian** | Risk management & trade execution | 100,000 NODERR | 2.5x |
-| **4** | **Oracle** | ML/AI alpha generation & data science | 500,000 NODERR | 5.0x |
+| **2** | **Validator** | On-chain validation & network consensus | 25,000 NODERR | 1.0x |
+| **3** | **Guardian** | Risk management & trade execution | 50,000 NODERR | 2.5x |
+| **4** | **Oracle** | ML/AI alpha generation & data science | 150,000 NODERR | 5.0x |
 
 ### Validator Node (Tier 2) - Entry Level
 
@@ -546,7 +546,7 @@ Daily Reward = Base Reward × Tier Multiplier × Uptime Multiplier × (1 - Error
 
 ### Example Calculations
 
-**Validator (50,000 NODERR staked, 99% uptime):**
+**Validator (25,000 NODERR staked, 99% uptime):**
 ```
 Base: 10 NODERR/day
 Multiplier: 1.0x
@@ -554,7 +554,7 @@ Uptime: 0.99
 Daily: 10 × 1.0 × 0.99 = 9.9 NODERR
 ```
 
-**Guardian (100,000 NODERR staked, 99.5% uptime):**
+**Guardian (50,000 NODERR staked, 99.5% uptime):**
 ```
 Base: 10 NODERR/day
 Multiplier: 2.5x
@@ -562,7 +562,7 @@ Uptime: 0.995
 Daily: 10 × 2.5 × 0.995 = 24.875 NODERR
 ```
 
-**Oracle (500,000 NODERR staked, 99.9% uptime):**
+**Oracle (150,000 NODERR staked, 99.9% uptime):**
 ```
 Base: 10 NODERR/day
 Multiplier: 5.0x
