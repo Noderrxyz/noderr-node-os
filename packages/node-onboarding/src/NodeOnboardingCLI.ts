@@ -139,11 +139,11 @@ export class NodeOnboardingCLI {
             value: NodeTier.VALIDATOR
           },
           {
-            name: `${chalk.yellow('Guardian')} - High-tier (TF ≥0.75, 50,000 NODR stake, optional GPU for bonus)`,
+            name: `${chalk.yellow('Guardian')} - High-tier (TF ≥0.75, 25,000 NODR stake, optional GPU for bonus)`,
             value: NodeTier.GUARDIAN
           },
           {
-            name: `${chalk.red('Oracle')} - Top-tier (TF ≥0.90, 150,000 NODR stake, GPU required)`,
+            name: `${chalk.red('Oracle')} - Top-tier (TF ≥0.90, 125,000 NODR stake, GPU required)`,
             value: NodeTier.ORACLE
           }
         ]

@@ -16,8 +16,8 @@ This document outlines the production Docker image architecture for the three No
 
 ### Oracle Node (Tier 3)
 **Responsibility**: Intelligence & Consensus  
-**Staking Requirement**: 150,000 NODR  
-**Token Airdrop**: 150,000 NODR
+**Staking Requirement**: 125,000 NODR  
+**Token Airdrop**: 125,000 NODR
 
 **Included Packages**:
 - `oracle-consensus` - BFT consensus engine
@@ -45,8 +45,8 @@ This document outlines the production Docker image architecture for the three No
 
 ### Guardian Node (Tier 2)
 **Responsibility**: Risk & Compliance  
-**Staking Requirement**: 50,000 NODR  
-**Token Airdrop**: 50,000 NODR
+**Staking Requirement**: 25,000 NODR  
+**Token Airdrop**: 25,000 NODR
 
 **Included Packages**:
 - `guardian-consensus` - Majority voting system
