@@ -627,13 +627,13 @@ export class RewardOrchestrator {
   private getStakeRequirementForTier(tier: number): bigint {
     switch (tier) {
       case 4:
-        return ethers.parseEther('500000'); // Oracle
+        return ethers.parseEther('150000'); // Oracle
       case 3:
-        return ethers.parseEther('100000'); // Guardian
+        return ethers.parseEther('50000'); // Guardian
       case 2:
-        return ethers.parseEther('50000'); // Validator
+        return ethers.parseEther('25000'); // Validator
       default:
-        return ethers.parseEther('50000'); // Default to Validator
+        return ethers.parseEther('25000'); // Default to Validator
     }
   }
 
