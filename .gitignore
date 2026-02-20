@@ -92,4 +92,8 @@ Thumbs.db
 *.swp
 *.swo
 
+# Foundry/Forge build output
+contracts/out/
+contracts/cache/
+
 # === End Safe Repository Fixes ===
