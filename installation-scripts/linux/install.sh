@@ -6,6 +6,22 @@
 # Usage: curl -fsSL https://install.noderr.xyz/linux | bash -s -- <INSTALL_TOKEN>
 #
 
+
+# Bootstrap: ensure curl is available before anything else
+if ! command -v curl &>/dev/null; then
+    echo "[NODERR] curl not found. Installing curl..."
+    if command -v apt-get &>/dev/null; then
+        apt-get update -qq && apt-get install -y -qq curl
+    elif command -v yum &>/dev/null; then
+        yum install -y curl
+    elif command -v dnf &>/dev/null; then
+        dnf install -y curl
+    else
+        echo "[ERROR] Please install curl manually and re-run this script."
+        exit 1
+    fi
+fi
+
 set -euo pipefail
 
 # ============================================================================
