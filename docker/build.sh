@@ -50,6 +50,16 @@ docker build \
 
 echo "✅ GUARDIAN tier image built successfully"
 
+# Build VALIDATOR tier image
+echo ""
+echo "Building VALIDATOR tier image..."
+docker build \
+  -f docker/validator/Dockerfile \
+  -t ${REGISTRY}/noderr-node-os:${VERSION}-validator \
+  -t ${REGISTRY}/noderr-node-os:latest-validator \
+  --build-arg VERSION=${VERSION} \
+  .
+
 echo ""
 echo "========================================="
 echo "All images built successfully!"
@@ -59,9 +69,11 @@ echo "Images:"
 echo "  - ${REGISTRY}/noderr-node-os:${VERSION}-all"
 echo "  - ${REGISTRY}/noderr-node-os:${VERSION}-oracle"
 echo "  - ${REGISTRY}/noderr-node-os:${VERSION}-guardian"
+echo "  - ${REGISTRY}/noderr-node-os:${VERSION}-validator"
 echo ""
 echo "To push images:"
 echo "  docker push ${REGISTRY}/noderr-node-os:${VERSION}-all"
 echo "  docker push ${REGISTRY}/noderr-node-os:${VERSION}-oracle"
 echo "  docker push ${REGISTRY}/noderr-node-os:${VERSION}-guardian"
+echo "  docker push ${REGISTRY}/noderr-node-os:${VERSION}-validator"
 echo "========================================="

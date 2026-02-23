@@ -157,7 +157,7 @@ check_tpm() {
     
     # Check if TPM device exists
     if [[ ! -e /dev/tpm0 ]] && [[ ! -e /dev/tpmrm0 ]]; then
-        error_exit "TPM device not found. TPM 2.0 is required for Noderr Node OS."
+        log_warning "TPM device not found. Proceeding without TPM-based attestation."; return 0
     fi
     
     # Check TPM version using tpm2_getcap (will be installed if needed)
@@ -327,6 +327,7 @@ get_install_config() {
 
 register_node() {
     local install_token="$1"
+    local no_tpm_flag=${2:-}
     
     log "Registering node with authentication API..."
     
@@ -358,6 +359,67 @@ register_node() {
     
     # Create registration request
     local request
+    if [[ -z "${no_tpm_flag}" ]]; then
+        # Read public key
+        local public_key
+        public_key=$(cat "${CONFIG_DIR}/public_key.pem" | tr -d ' ')
+        
+        # Read attestation data
+        local quote_b64
+        local sig_b64
+        quote_b64=$(base64 -w 0 "${CONFIG_DIR}/quote.msg")
+        sig_b64=$(base64 -w 0 "${CONFIG_DIR}/quote.sig")
+        
+        # Parse PCR values
+        local pcr_json
+        pcr_json=$(tpm2_pcrread sha256:0,7 -o - 2>/dev/null | \
+            awk '/sha256:/{getline; print}' | \
+            jq -R -s 'split("\n") | map(select(length > 0)) | map(split(":") | {(.[0]): .[1]}) | add')
+
+        request=$(jq -n \
+            --arg token "${install_token}" \
+            --arg pubkey "${public_key}" \
+            --arg quote "${quote_b64}" \
+            --arg sig "${sig_b64}" \
+            --argjson pcr "${pcr_json}" \
+            --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg hostname "${hostname}" \
+            --argjson cpu "${cpu_cores}" \
+            --argjson mem "${memory_gb}" \
+            --argjson disk "${disk_gb}" \
+            '{
+                installToken: $token,
+                publicKey: $pubkey,
+                attestation: {
+                    quote: $quote,
+                    signature: $sig,
+                    pcrValues: $pcr,
+                    timestamp: $timestamp
+                },
+                systemInfo: {
+                    hostname: $hostname,
+                    cpuCores: $cpu,
+                    memoryGB: $mem,
+                    diskGB: $disk
+                }
+            }')
+    else
+        request=$(jq -n \
+            --arg token "${install_token}" \
+            --arg hostname "${hostname}" \
+            --argjson cpu "${cpu_cores}" \
+            --argjson mem "${memory_gb}" \
+            --argjson disk "${disk_gb}" \
+            '{
+                installToken: $token,
+                systemInfo: {
+                    hostname: $hostname,
+                    cpuCores: $cpu,
+                    memoryGB: $mem,
+                    diskGB: $disk
+                }
+            }')
+    fi
     request=$(jq -n \
         --arg token "${install_token}" \
         --arg pubkey "${public_key}" \
@@ -437,14 +499,15 @@ setup_docker_container() {
     # Determine Docker image based on tier
     local docker_image
     case "${tier}" in
-        ALL)
-            docker_image="${docker_registry}/noderr-node-os:latest-all"
-            ;;
+
         ORACLE)
             docker_image="${docker_registry}/noderr-node-os:latest-oracle"
             ;;
         GUARDIAN)
             docker_image="${docker_registry}/noderr-node-os:latest-guardian"
+            ;;
+        VALIDATOR)
+            docker_image="${docker_registry}/noderr-node-os:latest-validator"
             ;;
         *)
             error_exit "Unknown tier: ${tier}"
@@ -483,14 +546,15 @@ create_systemd_service() {
     
     local docker_image
     case "${tier}" in
-        ALL)
-            docker_image="${docker_registry}/noderr-node-os:latest-all"
-            ;;
+
         ORACLE)
             docker_image="${docker_registry}/noderr-node-os:latest-oracle"
             ;;
         GUARDIAN)
             docker_image="${docker_registry}/noderr-node-os:latest-guardian"
+            ;;
+        VALIDATOR)
+            docker_image="${docker_registry}/noderr-node-os:latest-validator"
             ;;
     esac
     
@@ -603,12 +667,18 @@ main() {
     install_docker
     
     # TPM key generation and attestation
-    generate_tpm_key
-    create_attestation
+    if [[ -e /dev/tpm0 ]] || [[ -e /dev/tpmrm0 ]]; then
+        generate_tpm_key
+        create_attestation
+    fi
     
     # Node registration
     get_install_config "${install_token}"
-    register_node "${install_token}"
+        if [[ -e /dev/tpm0 ]] || [[ -e /dev/tpmrm0 ]]; then
+        register_node "${install_token}"
+    else
+        register_node "${install_token}" "--no-tpm"
+    fi
     
     # Docker setup
     setup_docker_container
