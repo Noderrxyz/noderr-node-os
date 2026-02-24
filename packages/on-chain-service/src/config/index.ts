@@ -43,6 +43,11 @@ export function loadConfig(): OnChainServiceConfig {
     governanceManagerAddress: process.env.GOVERNANCE_MANAGER_ADDRESS || defaults.governanceManagerAddress,
     stakingManagerAddress: process.env.STAKING_MANAGER_ADDRESS || defaults.stakingManagerAddress,
     rewardCalculatorAddress: process.env.REWARD_CALCULATOR_ADDRESS || defaults.rewardCalculatorAddress,
+    penaltyManagerAddress: process.env.PENALTY_MANAGER_ADDRESS || defaults.penaltyManagerAddress,
+    utilityNFTAddress: process.env.UTILITY_NFT_ADDRESS || defaults.utilityNFTAddress,
+    nodrTokenAddress: process.env.NODR_TOKEN_ADDRESS || defaults.nodrTokenAddress,
+    rewardDistributorAddress: process.env.REWARD_DISTRIBUTOR_ADDRESS || defaults.rewardDistributorAddress,
+    guardianWorkloadManagerAddress: process.env.GUARDIAN_WORKLOAD_MANAGER_ADDRESS || defaults.guardianWorkloadManagerAddress,
 
     // Security Configuration
     maxCapitalRequest: process.env.MAX_CAPITAL_REQUEST
