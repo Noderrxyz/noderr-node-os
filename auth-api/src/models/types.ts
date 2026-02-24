@@ -80,6 +80,11 @@ export interface InstallConfigResponse {
   nodeId: string;
   tier: NodeTier;
   os: OperatingSystem;
+  hardwareRequirements?: {
+    minCpuCores: number;
+    minRamGb: number;
+    minDiskGb: number;
+  };
   config: {
     deploymentEngineUrl: string;
     authApiUrl: string;
