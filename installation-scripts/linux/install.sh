@@ -141,9 +141,10 @@ check_internet() {
 }
 
 check_hardware() {
+    # Initial basic check (OS-level sanity). Tier-specific checks happen in check_hardware_for_tier()
     log "Validating hardware requirements..."
     
-    # Check CPU cores
+    # Check CPU cores (minimum 4 for any tier)
     local cpu_cores
     cpu_cores=$(nproc)
     if [[ ${cpu_cores} -lt ${MIN_CPU_CORES} ]]; then
@@ -151,7 +152,7 @@ check_hardware() {
     fi
     log_success "CPU cores: ${cpu_cores} (minimum: ${MIN_CPU_CORES})"
     
-    # Check RAM
+    # Check RAM (minimum 8GB for any tier)
     local ram_gb
     ram_gb=$(free -g | awk '/^Mem:/{print $2}')
     if [[ ${ram_gb} -lt ${MIN_RAM_GB} ]]; then
@@ -168,6 +169,77 @@ check_hardware() {
         log_warning "Disk space: ${disk_gb}GB available (recommended: 100GB, minimum: ${MIN_DISK_GB}GB). Consider expanding storage."
     else
         log_success "Disk space: ${disk_gb}GB available (minimum: ${MIN_DISK_GB}GB)"
+    fi
+}
+
+check_hardware_for_tier() {
+    # Tier-specific hardware validation using API-provided requirements
+    local tier
+    tier=$(echo "${install_config}" | jq -r '.tier')
+    
+    # Use API-provided requirements if available, otherwise fall back to built-in defaults
+    local required_cpu required_ram required_disk
+    if echo "${install_config}" | jq -e '.hardwareRequirements' >/dev/null 2>&1; then
+        required_cpu=$(echo "${install_config}" | jq -r '.hardwareRequirements.minCpuCores')
+        required_ram=$(echo "${install_config}" | jq -r '.hardwareRequirements.minRamGb')
+        required_disk=$(echo "${install_config}" | jq -r '.hardwareRequirements.minDiskGb')
+    else
+        # Fallback defaults (should not be needed with updated auth API)
+        case "${tier}" in
+            ORACLE)
+                required_cpu=8
+                required_ram=24
+                required_disk=200
+                ;;
+            GUARDIAN)
+                required_cpu=16
+                required_ram=32
+                required_disk=200
+                ;;
+            VALIDATOR)
+                required_cpu=4
+                required_ram=8
+                required_disk=80
+                ;;
+            *)
+                log_warning "Unknown tier '${tier}' - skipping tier-specific hardware check"
+                return 0
+                ;;
+        esac
+    fi
+    
+    log "Validating hardware requirements for ${tier} tier..."
+    
+    local cpu_cores ram_gb disk_gb
+    cpu_cores=$(nproc)
+    ram_gb=$(free -g | awk '/^Mem:/{print $2}')
+    disk_gb=$(df -BG / | awk 'NR==2 {print $4}' | tr -d 'G')
+    
+    local failed=0
+    
+    if [[ ${cpu_cores} -lt ${required_cpu} ]]; then
+        log_error "Insufficient CPU for ${tier} node. Required: ${required_cpu} cores, Found: ${cpu_cores} cores"
+        failed=1
+    else
+        log_success "CPU: ${cpu_cores} cores (${tier} minimum: ${required_cpu})"
+    fi
+    
+    if [[ ${ram_gb} -lt ${required_ram} ]]; then
+        log_error "Insufficient RAM for ${tier} node. Required: ${required_ram}GB, Found: ${ram_gb}GB"
+        failed=1
+    else
+        log_success "RAM: ${ram_gb}GB (${tier} minimum: ${required_ram}GB)"
+    fi
+    
+    if [[ ${disk_gb} -lt ${required_disk} ]]; then
+        log_error "Insufficient disk for ${tier} node. Required: ${required_disk}GB, Found: ${disk_gb}GB"
+        failed=1
+    else
+        log_success "Disk: ${disk_gb}GB (${tier} minimum: ${required_disk}GB)"
+    fi
+    
+    if [[ ${failed} -eq 1 ]]; then
+        error_exit "Hardware requirements not met for ${tier} node. See above for details."
     fi
 }
 
@@ -730,6 +802,7 @@ main() {
     
     # Node registration
     get_install_config "${install_token}"
+    check_hardware_for_tier
     register_node "${install_token}" "${wallet_address}"
     
     # Docker setup

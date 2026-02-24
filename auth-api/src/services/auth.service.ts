@@ -76,10 +76,19 @@ export class AuthService {
     // Generate temporary node ID
     const tempNodeId = `temp-${randomUUID().replace(/-/g, '').substring(0, 16)}`;
 
+    // Hardware requirements per tier (must match Dockerfile ecosystem configs)
+    const HARDWARE_REQUIREMENTS: Record<string, { minCpuCores: number; minRamGb: number; minDiskGb: number }> = {
+      VALIDATOR: { minCpuCores: 4, minRamGb: 8, minDiskGb: 80 },
+      GUARDIAN: { minCpuCores: 16, minRamGb: 32, minDiskGb: 200 },
+      ORACLE: { minCpuCores: 8, minRamGb: 24, minDiskGb: 200 },
+    };
+    const hardwareReqs = HARDWARE_REQUIREMENTS[token.tier] ?? HARDWARE_REQUIREMENTS['VALIDATOR'];
+
     return {
       nodeId: tempNodeId,
       tier: token.tier,
       os: token.os,
+      hardwareRequirements: hardwareReqs,
       config: {
         deploymentEngineUrl: process.env.DEPLOYMENT_ENGINE_URL || 'https://deploy.noderr.xyz',
         authApiUrl: this.getAuthApiUrl(),
