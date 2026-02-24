@@ -266,15 +266,24 @@ export class ValidatorExecutionWrapper extends EventEmitter {
     // Simulate 80% success rate
     const success = Math.random() > 0.2;
 
+    const executedPrice = request.signal.targetPrice * (1 + (Math.random() - 0.5) * 0.01);
+    const executedQuantity = Number(ethers.formatUnits(request.capitalRequired, 18)) / executedPrice;
+    const startTime = Date.now() - 2000;
     return {
       success,
-      asset: request.signal.asset,
-      action: request.signal.action,
-      executedPrice: request.signal.targetPrice * (1 + (Math.random() - 0.5) * 0.01),
-      executedAmount: Number(ethers.formatUnits(request.capitalRequired, 18)),
+      executedQuantity,
+      averagePrice: executedPrice,
+      totalCost: executedQuantity * executedPrice,
       slippage: Math.random() * 0.005,
-      gasUsed: BigInt(150000),
-      timestamp: Date.now()
+      duration: Date.now() - startTime,
+      fills: [
+        {
+          timestamp: startTime,
+          quantity: executedQuantity,
+          price: executedPrice,
+          venue: 'simulated'
+        }
+      ]
     } as ExecutionResult;
   }
 
