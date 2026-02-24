@@ -55,9 +55,12 @@ async function main(): Promise<void> {
   // Load configuration from environment
   const config: ValidatorConsensusConfig = {
     nodeId: process.env.NODE_ID || `validator-${Date.now()}`,
-    privateKey: process.env.VALIDATOR_PRIVATE_KEY || '',
+    privateKey: (() => {
+      const key = process.env.VALIDATOR_PRIVATE_KEY || '';
+      return key && !key.startsWith('0x') ? `0x${key}` : key;
+    })(),
     rpcUrl: process.env.RPC_URL || 'https://sepolia.base.org',
-    nodeRegistryAddress: process.env.NODE_REGISTRY_ADDRESS || '0x0C38842F8D2A0DF613d5Bf0f0B45E9E0a7a14F7c',
+    nodeRegistryAddress: process.env.NODE_REGISTRY_ADDRESS || '0x0C384F177b11FDf39360e6d1030608AfE670cF7c',
     consensusContractAddress: process.env.CONSENSUS_CONTRACT_ADDRESS || '0x0000000000000000000000000000000000000000',
     roundDurationMs: parseInt(process.env.ROUND_DURATION_MS || '60000', 10),
     minAttestations: parseInt(process.env.MIN_ATTESTATIONS || '3', 10),

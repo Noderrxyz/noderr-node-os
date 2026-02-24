@@ -30,8 +30,10 @@ export function loadConfig(): OnChainServiceConfig {
     chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : defaults.chainId,
     networkName: process.env.NETWORK_NAME || defaults.networkName,
 
-    // Wallet Configuration
-    privateKey: process.env.PRIVATE_KEY!,
+    // Wallet Configuration — normalise to 0x-prefixed format
+    privateKey: process.env.PRIVATE_KEY!.startsWith('0x')
+      ? process.env.PRIVATE_KEY!
+      : `0x${process.env.PRIVATE_KEY!}`,
 
     // Contract Addresses (use defaults from deployed contracts)
     treasuryManagerAddress: process.env.TREASURY_MANAGER_ADDRESS || defaults.treasuryManagerAddress,
