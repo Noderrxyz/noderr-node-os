@@ -512,10 +512,12 @@ setup_docker_container() {
     local docker_registry
     local node_id
     local api_key
+    local jwt_token
     tier=$(echo "${install_config}" | jq -r '.tier')
     docker_registry=$(echo "${install_config}" | jq -r '.config.dockerRegistry')
     node_id=$(echo "${credentials}" | jq -r '.nodeId')
     api_key=$(echo "${credentials}" | jq -r '.apiKey')
+    jwt_token=$(echo "${credentials}" | jq -r '.jwtToken')
     
     # Determine Docker image based on tier
     # Images are distributed via R2, not GHCR
@@ -555,11 +557,15 @@ setup_docker_container() {
     # Create Docker network
     docker network create noderr-network 2>/dev/null || true
     
-    # Create environment file
+    # Create environment file for the node container
+    # JWT_TOKEN is included so the heartbeat client can authenticate immediately
+    # CREDENTIALS_PATH points to the mounted credentials file inside the container
     cat > "${CONFIG_DIR}/node.env" <<EOF
 NODE_ID=${node_id}
 NODE_TIER=${tier}
 API_KEY=${api_key}
+JWT_TOKEN=${jwt_token}
+CREDENTIALS_PATH=/app/config/credentials.json
 DEPLOYMENT_ENGINE_URL=$(echo "${install_config}" | jq -r '.config.deploymentEngineUrl')
 AUTH_API_URL=$(echo "${install_config}" | jq -r '.config.authApiUrl')
 TELEMETRY_ENDPOINT=$(echo "${install_config}" | jq -r '.config.telemetryEndpoint')
@@ -612,6 +618,7 @@ ExecStart=/usr/bin/docker run \\
     --name noderr-node \\
     --network noderr-network \\
     --env-file ${CONFIG_DIR}/node.env \\
+    --volume ${CONFIG_DIR}/credentials.json:/app/config/credentials.json:ro \\
     --restart unless-stopped \\
     ${docker_image}
 ExecStop=/usr/bin/docker stop noderr-node
