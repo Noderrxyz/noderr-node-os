@@ -28,6 +28,29 @@ export class AuthService {
   }
 
   /**
+   * Derive the public URL of this auth API service.
+   * Priority:
+   *   1. AUTH_API_URL  — explicit override (set in Railway Variables or .env)
+   *   2. RAILWAY_PUBLIC_DOMAIN — injected by Railway for every deployed service
+   *   3. Hard-coded fallback (should never be reached in production)
+   */
+  private getAuthApiUrl(): string {
+    if (process.env.AUTH_API_URL) {
+      return process.env.AUTH_API_URL;
+    }
+    if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+      return `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
+    }
+    // Last-resort fallback — log a warning so operators know this is misconfigured
+    console.warn(
+      '[AuthService] WARNING: Neither AUTH_API_URL nor RAILWAY_PUBLIC_DOMAIN is set. ' +
+      'Nodes will receive an incorrect authApiUrl in their install config. ' +
+      'Set AUTH_API_URL in the Railway service variables.'
+    );
+    return 'https://auth.noderr.xyz';
+  }
+
+  /**
    * Get installation configuration using install token
    */
   async getInstallConfig(installToken: string): Promise<InstallConfigResponse> {
@@ -59,7 +82,7 @@ export class AuthService {
       os: token.os,
       config: {
         deploymentEngineUrl: process.env.DEPLOYMENT_ENGINE_URL || 'https://deploy.noderr.xyz',
-        authApiUrl: process.env.AUTH_API_URL || 'https://auth.noderr.xyz',
+        authApiUrl: this.getAuthApiUrl(),
         dockerRegistry: process.env.DOCKER_REGISTRY || 'ghcr.io/noderrxyz',
         telemetryEndpoint: process.env.TELEMETRY_ENDPOINT || 'https://telemetry.noderr.xyz',
       },
