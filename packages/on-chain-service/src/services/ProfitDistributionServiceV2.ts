@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
-import { Logger } from '@noderr/telemetry';
+import { Logger } from '@noderr/utils';
+import { EventLog } from 'ethers';
 import { EventEmitter } from 'events';
 
 /**
@@ -156,7 +157,7 @@ export class ProfitDistributionServiceV2 extends EventEmitter {
       const events = await this.strategyRegistryContract.queryFilter(filter);
       
       for (const event of events) {
-        const strategyId = event.args?.strategyId;
+        const strategyId = (event as EventLog).args?.strategyId;
         if (strategyId) {
           await this.loadStrategyStake(strategyId);
         }

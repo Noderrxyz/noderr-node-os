@@ -26,7 +26,9 @@
     "dotenv": "^16.3.1",
     "winston": "^3.11.0",
     "merkletreejs": "^0.3.11",
-    "keccak256": "^1.0.6"
+    "keccak256": "^1.0.6",
+    "@noderr/utils": "workspace:*",
+    "@noderr/telemetry": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

@@ -2,7 +2,9 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "commonjs",
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2022"
+    ],
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
@@ -14,12 +16,26 @@
     "sourceMap": true,
     "composite": true,
     "moduleResolution": "node",
-    "types": ["node", "jest"]
+    "types": [
+      "node",
+      "jest"
+    ],
+    "rootDir": "./src"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests"],
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests"
+  ],
   "references": [
-    { "path": "../types" },
-    { "path": "../utils" }
+    {
+      "path": "../types"
+    },
+    {
+      "path": "../utils"
+    }
   ]
 }
