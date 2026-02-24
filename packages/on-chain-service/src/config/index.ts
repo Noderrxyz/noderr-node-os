@@ -41,6 +41,8 @@ export function loadConfig(): OnChainServiceConfig {
     trustFingerprintAddress: process.env.TRUST_FINGERPRINT_ADDRESS || defaults.trustFingerprintAddress,
     nodeRegistryAddress: process.env.NODE_REGISTRY_ADDRESS || defaults.nodeRegistryAddress,
     governanceManagerAddress: process.env.GOVERNANCE_MANAGER_ADDRESS || defaults.governanceManagerAddress,
+    stakingManagerAddress: process.env.STAKING_MANAGER_ADDRESS || defaults.stakingManagerAddress,
+    rewardCalculatorAddress: process.env.REWARD_CALCULATOR_ADDRESS || defaults.rewardCalculatorAddress,
 
     // Security Configuration
     maxCapitalRequest: process.env.MAX_CAPITAL_REQUEST
