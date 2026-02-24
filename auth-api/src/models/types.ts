@@ -7,7 +7,6 @@ export enum NodeTier {
   ORACLE = 'ORACLE',
   GUARDIAN = 'GUARDIAN',
   VALIDATOR = 'VALIDATOR',
-} VALIDATOR = 'VALIDATOR',
 }
 
 export enum OperatingSystem {
