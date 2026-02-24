@@ -518,25 +518,39 @@ setup_docker_container() {
     api_key=$(echo "${credentials}" | jq -r '.apiKey')
     
     # Determine Docker image based on tier
-    local docker_image
+    # Images are distributed via R2, not GHCR
+    readonly R2_PUBLIC_URL="https://pub-66ad852cb9e54582bd0af64bce8d0a04.r2.dev"
+    local docker_image_name
+    local r2_image_url
     case "${tier}" in
-
         ORACLE)
-            docker_image="${docker_registry}/noderr-node-os:latest-oracle"
+            docker_image_name="noderr-oracle:latest"
+            r2_image_url="${R2_PUBLIC_URL}/oracle/oracle-latest.tar.gz"
             ;;
         GUARDIAN)
-            docker_image="${docker_registry}/noderr-node-os:latest-guardian"
+            docker_image_name="noderr-guardian:latest"
+            r2_image_url="${R2_PUBLIC_URL}/guardian/guardian-latest.tar.gz"
             ;;
         VALIDATOR)
-            docker_image="${docker_registry}/noderr-node-os:latest-validator"
+            docker_image_name="noderr-validator:latest"
+            r2_image_url="${R2_PUBLIC_URL}/validator/validator-latest.tar.gz"
             ;;
         *)
             error_exit "Unknown tier: ${tier}"
             ;;
     esac
     
-    log "Pulling Docker image: ${docker_image}"
-    docker pull "${docker_image}" >/dev/null 2>&1
+    log "Downloading Docker image from R2: ${r2_image_url}"
+    local tmp_image="/tmp/noderr-${tier,,}-image.tar.gz"
+    if ! curl -fsSL --progress-bar "${r2_image_url}" -o "${tmp_image}"; then
+        error_exit "Failed to download Docker image from R2"
+    fi
+    log "Loading Docker image..."
+    if ! docker load < "${tmp_image}"; then
+        error_exit "Failed to load Docker image"
+    fi
+    rm -f "${tmp_image}"
+    local docker_image="${docker_image_name}"
     
     # Create Docker network
     docker network create noderr-network 2>/dev/null || true
@@ -567,15 +581,17 @@ create_systemd_service() {
     
     local docker_image
     case "${tier}" in
-
         ORACLE)
-            docker_image="${docker_registry}/noderr-node-os:latest-oracle"
+            docker_image="noderr-oracle:latest"
             ;;
         GUARDIAN)
-            docker_image="${docker_registry}/noderr-node-os:latest-guardian"
+            docker_image="noderr-guardian:latest"
             ;;
         VALIDATOR)
-            docker_image="${docker_registry}/noderr-node-os:latest-validator"
+            docker_image="noderr-validator:latest"
+            ;;
+        *)
+            error_exit "Unknown tier: ${tier}"
             ;;
     esac
     
