@@ -41,12 +41,13 @@ export class AttestationService {
         }
       }
 
-      // Verify timestamp is recent (within last 5 minutes)
+      // Verify timestamp is recent (within last 30 minutes)
+      // Note: 30 minutes allows for slow installs and network delays
       const attestationTime = new Date(attestation.timestamp);
       const now = new Date();
-      const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+      const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
 
-      if (attestationTime < fiveMinutesAgo || attestationTime > now) {
+      if (attestationTime < thirtyMinutesAgo || attestationTime > now) {
         return false;
       }
 
