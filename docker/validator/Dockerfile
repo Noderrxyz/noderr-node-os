@@ -108,6 +108,8 @@ COPY --chown=noderr:noderr package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY --from=builder --chown=noderr:noderr /build/node_modules ./node_modules
 COPY --from=builder --chown=noderr:noderr /build/packages/types ./packages/types
 COPY --from=builder --chown=noderr:noderr /build/packages/utils ./packages/utils
+COPY --from=builder --chown=noderr:noderr /build/packages/core ./packages/core
+COPY --from=builder --chown=noderr:noderr /build/packages/decentralized-core ./packages/decentralized-core
 COPY --from=builder --chown=noderr:noderr /build/packages/telemetry ./packages/telemetry
 COPY --from=builder --chown=noderr:noderr /build/packages/market-data ./packages/market-data
 COPY --from=builder --chown=noderr:noderr /build/packages/data-connectors ./packages/data-connectors

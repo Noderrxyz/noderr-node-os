@@ -228,8 +228,14 @@ export async function startMarketDataService(): Promise<void> {
     
     logger.info('Market Data Service started successfully');
     
-    // Keep process alive
-    await new Promise(() => {});  // Never resolves
+    // Keep process alive using a timer-based approach so the Node.js event loop
+    // stays active even when there are no other pending async operations.
+    await new Promise<void>((resolve) => {
+      const keepAlive = setInterval(() => {
+        // intentional no-op — just keeps the event loop ticking
+      }, 60_000);
+      process.once('exit', () => clearInterval(keepAlive));
+    });
   } catch (error) {
     logger.error('Failed to start Market Data Service', error);
     throw error;
@@ -243,10 +249,14 @@ if (require.main === module) {
   // Initialize graceful shutdown
   getShutdownHandler(30000);  // 30 second global timeout
   
-  // LOW FIX: Use logger instead of console.error
   const logger = new Logger('MarketDataService');
-  startMarketDataService().catch((error) => {
-    logger.error('Fatal error starting Market Data Service', error);
-    process.exit(1);
-  });
+  // Top-level await via IIFE so the pending promise keeps the event loop alive
+  (async () => {
+    try {
+      await startMarketDataService();
+    } catch (error) {
+      logger.error('Fatal error starting Market Data Service', error);
+      process.exit(1);
+    }
+  })();
 }

@@ -78,7 +78,17 @@ export async function startDataConnectorsService(): Promise<void> {
     }, 15000);
     
     logger.info('Data Connectors Service started successfully');
-    await new Promise(() => {});
+    // Keep the process alive indefinitely until a shutdown signal is received.
+    // Using a timer-based keep-alive ensures the Node.js event loop stays active
+    // even when there are no other pending async operations.
+    await new Promise<void>((resolve) => {
+      const keepAlive = setInterval(() => {
+        // intentional no-op — just keeps the event loop ticking
+      }, 60_000);
+      // The GracefulShutdown handler will call process.exit(), which clears
+      // the interval automatically. But we also clear it explicitly on resolve.
+      process.once('exit', () => clearInterval(keepAlive));
+    });
   } catch (error) {
     logger.error('Failed to start Data Connectors Service', error);
     throw error;
@@ -87,8 +97,13 @@ export async function startDataConnectorsService(): Promise<void> {
 
 if (require.main === module) {
   getShutdownHandler(30000);
-  startDataConnectorsService().catch((error) => {
-    logger.error('Fatal error starting Data Connectors Service:', error);
-    process.exit(1);
-  });
+  // Top-level await via IIFE so the pending promise keeps the event loop alive
+  (async () => {
+    try {
+      await startDataConnectorsService();
+    } catch (error) {
+      logger.error('Fatal error starting Data Connectors Service:', error);
+      process.exit(1);
+    }
+  })();
 }
