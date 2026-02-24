@@ -36,8 +36,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY .npmrc* ./
 COPY tsconfig.base.json ./
 
-# Install pnpm
-RUN npm install -g pnpm@9
+# Install pnpm and tsc-alias (needed for build scripts)
+RUN npm install -g pnpm@9 tsc-alias
 
 # Copy GUARDIAN-specific packages (EXPANDED SET with execution services)
 COPY packages/types ./packages/types

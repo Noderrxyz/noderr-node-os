@@ -28,8 +28,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY .npmrc* ./
 COPY tsconfig.base.json ./
 
-# Install pnpm
-RUN npm install -g pnpm@9
+# Install pnpm and tsc-alias (needed for build scripts)
+RUN npm install -g pnpm@9 tsc-alias
 
 # Copy VALIDATOR-specific packages (REDUCED SET)
 COPY packages/types ./packages/types
