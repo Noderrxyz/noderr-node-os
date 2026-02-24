@@ -5,11 +5,17 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "clean": "rimraf dist",
     "test": "jest"
   },
-  "keywords": ["backtesting", "trading", "algorithmic", "strategy", "testing"],
+  "keywords": [
+    "backtesting",
+    "trading",
+    "algorithmic",
+    "strategy",
+    "testing"
+  ],
   "author": "Noderr",
   "license": "MIT",
   "dependencies": {

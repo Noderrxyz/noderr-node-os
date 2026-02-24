@@ -5,7 +5,7 @@
  * for /health and /metrics endpoints.
  */
 
-import { Logger, getShutdownHandler, onShutdown } from '@noderr/utils/src';
+import { Logger, getShutdownHandler, onShutdown } from '@noderr/utils';
 import { createLogger, format, transports } from 'winston';
 import { TelemetryService } from './TelemetryService';
 import { LogLevel } from './types/telemetry';

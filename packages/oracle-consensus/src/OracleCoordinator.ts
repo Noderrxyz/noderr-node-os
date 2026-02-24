@@ -15,7 +15,7 @@
  * @module OracleCoordinator
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { EventEmitter } from 'events';
 import { BFTConsensusEngine, ConsensusResult } from './BFTConsensusEngine';
 

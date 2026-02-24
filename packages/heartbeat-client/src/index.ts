@@ -11,7 +11,7 @@
  * - Graceful shutdown handling
  * - JWT token refresh
  */
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';

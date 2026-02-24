@@ -20,8 +20,8 @@ export type { CommitteeSelection, LotteryConfig } from './OracleLotterySelector'
 // Main Entry Point
 // ============================================================================
 
-import { Logger, createStatePersistence, StatePersistenceManager } from '@noderr/utils/src';
-import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
+import { Logger, createStatePersistence, StatePersistenceManager } from '@noderr/utils';
+import { getShutdownHandler, onShutdown } from '@noderr/utils';
 import { BFTConsensusEngine } from './BFTConsensusEngine';
 import { OracleLotterySelector } from './OracleLotterySelector';
 import { OracleCoordinator } from './OracleCoordinator';

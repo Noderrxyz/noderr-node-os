@@ -12,7 +12,7 @@
  * Integration Complete - Phase 6
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import * as tf from '@tensorflow/tfjs-node';
 import { createHash } from 'crypto';
 import { createWriteStream, createReadStream, promises as fs } from 'fs';

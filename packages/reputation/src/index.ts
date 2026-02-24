@@ -1,5 +1,5 @@
-import { Logger, onShutdown } from '@noderr/utils/src';
-import { ReputationSystem, ReputationConfig } from '@noderr/decentralized-core/src/ReputationSystem';
+import { Logger, onShutdown } from '@noderr/utils';
+import { ReputationSystem, ReputationConfig } from '@noderr/decentralized-core';
 import * as winston from 'winston';
 
 let reputationSystem: ReputationSystem | null = null;
@@ -54,4 +54,4 @@ if (require.main === module) {
 }
 
 // Re-export types and classes from decentralized-core
-export { ReputationSystem, ReputationConfig, ReputationTier, NodePerformance, ReputationUpdate } from '@noderr/decentralized-core/src/ReputationSystem';
+export { ReputationSystem, ReputationConfig, ReputationTier, NodePerformance, ReputationUpdate } from '@noderr/decentralized-core';

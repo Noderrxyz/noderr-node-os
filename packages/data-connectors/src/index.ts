@@ -11,8 +11,8 @@
  * - Alternative data sources
  */
 
-import { Logger } from '@noderr/utils/src';
-import { getShutdownHandler, onShutdown } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
+import { getShutdownHandler, onShutdown } from '@noderr/utils';
 const logger = new Logger('data-connectors');
 
 /**

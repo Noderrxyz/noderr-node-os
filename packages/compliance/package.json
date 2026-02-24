@@ -5,11 +5,17 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "clean": "rimraf dist",
     "test": "jest"
   },
-  "keywords": ["compliance", "regulatory", "trading", "finra", "sec"],
+  "keywords": [
+    "compliance",
+    "regulatory",
+    "trading",
+    "finra",
+    "sec"
+  ],
   "author": "Noderr",
   "license": "MIT",
   "dependencies": {

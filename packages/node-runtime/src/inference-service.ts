@@ -11,7 +11,7 @@
  * Integration Complete - Phase 7
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import * as tf from '@tensorflow/tfjs-node';
 import { ModelLoader, LoadedModel } from './model-loader';
 import { createClient } from '@supabase/supabase-js';

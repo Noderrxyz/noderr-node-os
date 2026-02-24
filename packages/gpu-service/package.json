@@ -5,10 +5,15 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "test": "jest"
   },
-  "keywords": ["noderr", "gpu", "attestation", "oracle"],
+  "keywords": [
+    "noderr",
+    "gpu",
+    "attestation",
+    "oracle"
+  ],
   "author": "Noderr Team",
   "license": "MIT",
   "devDependencies": {

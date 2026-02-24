@@ -9,7 +9,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { safeValidateEventPayload, EventTopic } from './EventSchemas';
 
 export interface SimulationEvent {

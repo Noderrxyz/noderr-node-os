@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "clean": "rimraf dist",
     "test": "jest",
     "backtest": "ts-node src/tools/backtest.ts",
@@ -38,4 +38,4 @@
     "@noderr/ml": "workspace:*",
     "@noderr/market-intel": "workspace:*"
   }
-} 
+}

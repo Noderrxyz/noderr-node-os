@@ -1,4 +1,4 @@
-import { CircuitBreakerStatus } from '@noderr/types/src';
+import { CircuitBreakerStatus } from '@noderr/types';
 
 /**
  * Circuit breaker to halt operations on suspicious activity

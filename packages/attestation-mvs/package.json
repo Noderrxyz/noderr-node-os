@@ -5,10 +5,15 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "test": "jest"
   },
-  "keywords": ["noderr", "attestation", "tpm", "security"],
+  "keywords": [
+    "noderr",
+    "attestation",
+    "tpm",
+    "security"
+  ],
   "author": "Noderr",
   "license": "MIT",
   "dependencies": {

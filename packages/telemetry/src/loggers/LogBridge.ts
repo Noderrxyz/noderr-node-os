@@ -5,7 +5,7 @@
  * and streaming to multiple outputs including Loki and S3.
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { EventEmitter } from 'events';
 import winston, { format, transports } from 'winston';
 import LokiTransport from 'winston-loki';

@@ -5,10 +5,14 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "test": "jest"
   },
-  "keywords": ["noderr", "protocol", "config"],
+  "keywords": [
+    "noderr",
+    "protocol",
+    "config"
+  ],
   "author": "Noderr Team",
   "license": "MIT",
   "devDependencies": {

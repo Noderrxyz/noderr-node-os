@@ -7,7 +7,7 @@
 
 import { EventEmitter } from 'events';
 import { ethers } from 'ethers';
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 
 // MEDIUM FIX #44: Use Logger instead of console
 const logger = new Logger('FloorEngine');

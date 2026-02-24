@@ -1,4 +1,4 @@
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import Redis from 'ioredis';
 import * as winston from 'winston';
 

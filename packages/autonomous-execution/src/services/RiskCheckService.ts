@@ -8,7 +8,7 @@
  * @module RiskCheckService
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 
 const logger = new Logger('RiskCheckService');
 import { EventEmitter } from 'events';

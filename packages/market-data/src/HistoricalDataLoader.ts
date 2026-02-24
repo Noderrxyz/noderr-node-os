@@ -12,7 +12,7 @@
  * - Data caching to disk
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { z } from 'zod';

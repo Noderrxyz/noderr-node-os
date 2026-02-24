@@ -3,7 +3,7 @@ import {
   Exchange,
   RateLimit,
   ExecutionUrgency
-} from '@noderr/types/src';
+} from '@noderr/types';
 import { Logger } from 'winston';
 import EventEmitter from 'events';
 

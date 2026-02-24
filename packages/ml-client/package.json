@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "proto:generate": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./src --grpc_out=grpc_js:./src --ts_out=grpc_js:./src -I ../../ml-service/proto ../../ml-service/proto/ml_service.proto"
   },
   "dependencies": {

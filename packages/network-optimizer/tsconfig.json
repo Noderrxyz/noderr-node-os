@@ -2,7 +2,9 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
-    "lib": ["ES2020"],
+    "lib": [
+      "ES2020"
+    ],
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
@@ -12,8 +14,298 @@
     "declarationMap": true,
     "sourceMap": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "paths": {
+      "@noderr/alpha-edge": [
+        "../alpha-edge/dist"
+      ],
+      "@noderr/alpha-edge/*": [
+        "../alpha-edge/dist/*"
+      ],
+      "@noderr/alpha-exploitation": [
+        "../alpha-exploitation/dist"
+      ],
+      "@noderr/alpha-exploitation/*": [
+        "../alpha-exploitation/dist/*"
+      ],
+      "@noderr/attestation-hardening": [
+        "../attestation-hardening/dist"
+      ],
+      "@noderr/attestation-hardening/*": [
+        "../attestation-hardening/dist/*"
+      ],
+      "@noderr/attestation-mvs": [
+        "../attestation-mvs/dist"
+      ],
+      "@noderr/attestation-mvs/*": [
+        "../attestation-mvs/dist/*"
+      ],
+      "@noderr/auto-updater": [
+        "../auto-updater/dist"
+      ],
+      "@noderr/auto-updater/*": [
+        "../auto-updater/dist/*"
+      ],
+      "@noderr/autonomous-execution": [
+        "../autonomous-execution/dist"
+      ],
+      "@noderr/autonomous-execution/*": [
+        "../autonomous-execution/dist/*"
+      ],
+      "@noderr/backtesting": [
+        "../backtesting/dist"
+      ],
+      "@noderr/backtesting/*": [
+        "../backtesting/dist/*"
+      ],
+      "@noderr/capital-ai": [
+        "../capital-ai/dist"
+      ],
+      "@noderr/capital-ai/*": [
+        "../capital-ai/dist/*"
+      ],
+      "@noderr/compliance": [
+        "../compliance/dist"
+      ],
+      "@noderr/compliance/*": [
+        "../compliance/dist/*"
+      ],
+      "@noderr/config": [
+        "../config/dist"
+      ],
+      "@noderr/config/*": [
+        "../config/dist/*"
+      ],
+      "@noderr/core": [
+        "../core/dist"
+      ],
+      "@noderr/core/*": [
+        "../core/dist/*"
+      ],
+      "@noderr/data-connectors": [
+        "../data-connectors/dist"
+      ],
+      "@noderr/data-connectors/*": [
+        "../data-connectors/dist/*"
+      ],
+      "@noderr/decentralized-core": [
+        "../decentralized-core/dist"
+      ],
+      "@noderr/decentralized-core/*": [
+        "../decentralized-core/dist/*"
+      ],
+      "@noderr/exchanges": [
+        "../exchanges/dist"
+      ],
+      "@noderr/exchanges/*": [
+        "../exchanges/dist/*"
+      ],
+      "@noderr/execution": [
+        "../execution/dist"
+      ],
+      "@noderr/execution/*": [
+        "../execution/dist/*"
+      ],
+      "@noderr/floor-engine": [
+        "../floor-engine/dist"
+      ],
+      "@noderr/floor-engine/*": [
+        "../floor-engine/dist/*"
+      ],
+      "@noderr/gpu-service-mvs": [
+        "../gpu-service-mvs/dist"
+      ],
+      "@noderr/gpu-service-mvs/*": [
+        "../gpu-service-mvs/dist/*"
+      ],
+      "@noderr/gpu-service": [
+        "../gpu-service/dist"
+      ],
+      "@noderr/gpu-service/*": [
+        "../gpu-service/dist/*"
+      ],
+      "@noderr/guardian-consensus": [
+        "../guardian-consensus/dist"
+      ],
+      "@noderr/guardian-consensus/*": [
+        "../guardian-consensus/dist/*"
+      ],
+      "@noderr/heartbeat-client": [
+        "../heartbeat-client/dist"
+      ],
+      "@noderr/heartbeat-client/*": [
+        "../heartbeat-client/dist/*"
+      ],
+      "@noderr/human-oversight": [
+        "../human-oversight/dist"
+      ],
+      "@noderr/human-oversight/*": [
+        "../human-oversight/dist/*"
+      ],
+      "@noderr/integration-layer": [
+        "../integration-layer/dist"
+      ],
+      "@noderr/integration-layer/*": [
+        "../integration-layer/dist/*"
+      ],
+      "@noderr/market-data": [
+        "../market-data/dist"
+      ],
+      "@noderr/market-data/*": [
+        "../market-data/dist/*"
+      ],
+      "@noderr/market-intel": [
+        "../market-intel/dist"
+      ],
+      "@noderr/market-intel/*": [
+        "../market-intel/dist/*"
+      ],
+      "@noderr/ml-client": [
+        "../ml-client/dist"
+      ],
+      "@noderr/ml-client/*": [
+        "../ml-client/dist/*"
+      ],
+      "@noderr/ml-deployment": [
+        "../ml-deployment/dist"
+      ],
+      "@noderr/ml-deployment/*": [
+        "../ml-deployment/dist/*"
+      ],
+      "@noderr/ml": [
+        "../ml/dist"
+      ],
+      "@noderr/ml/*": [
+        "../ml/dist/*"
+      ],
+      "@noderr/node-dashboard": [
+        "../node-dashboard/dist"
+      ],
+      "@noderr/node-dashboard/*": [
+        "../node-dashboard/dist/*"
+      ],
+      "@noderr/node-onboarding": [
+        "../node-onboarding/dist"
+      ],
+      "@noderr/node-onboarding/*": [
+        "../node-onboarding/dist/*"
+      ],
+      "@noderr/node-runtime": [
+        "../node-runtime/dist"
+      ],
+      "@noderr/node-runtime/*": [
+        "../node-runtime/dist/*"
+      ],
+      "@noderr/on-chain-service": [
+        "../on-chain-service/dist"
+      ],
+      "@noderr/on-chain-service/*": [
+        "../on-chain-service/dist/*"
+      ],
+      "@noderr/on-chain-settlement": [
+        "../on-chain-settlement/dist"
+      ],
+      "@noderr/on-chain-settlement/*": [
+        "../on-chain-settlement/dist/*"
+      ],
+      "@noderr/oracle-consensus": [
+        "../oracle-consensus/dist"
+      ],
+      "@noderr/oracle-consensus/*": [
+        "../oracle-consensus/dist/*"
+      ],
+      "@noderr/performance": [
+        "../performance/dist"
+      ],
+      "@noderr/performance/*": [
+        "../performance/dist/*"
+      ],
+      "@noderr/protocol-config": [
+        "../protocol-config/dist"
+      ],
+      "@noderr/protocol-config/*": [
+        "../protocol-config/dist/*"
+      ],
+      "@noderr/quant-research": [
+        "../quant-research/dist"
+      ],
+      "@noderr/quant-research/*": [
+        "../quant-research/dist/*"
+      ],
+      "@noderr/reputation": [
+        "../reputation/dist"
+      ],
+      "@noderr/reputation/*": [
+        "../reputation/dist/*"
+      ],
+      "@noderr/risk-engine": [
+        "../risk-engine/dist"
+      ],
+      "@noderr/risk-engine/*": [
+        "../risk-engine/dist/*"
+      ],
+      "@noderr/safety-control": [
+        "../safety-control/dist"
+      ],
+      "@noderr/safety-control/*": [
+        "../safety-control/dist/*"
+      ],
+      "@noderr/strategy": [
+        "../strategy/dist"
+      ],
+      "@noderr/strategy/*": [
+        "../strategy/dist/*"
+      ],
+      "@noderr/system-orchestrator": [
+        "../system-orchestrator/dist"
+      ],
+      "@noderr/system-orchestrator/*": [
+        "../system-orchestrator/dist/*"
+      ],
+      "@noderr/telemetry": [
+        "../telemetry/dist"
+      ],
+      "@noderr/telemetry/*": [
+        "../telemetry/dist/*"
+      ],
+      "@noderr/testing": [
+        "../testing/dist"
+      ],
+      "@noderr/testing/*": [
+        "../testing/dist/*"
+      ],
+      "@noderr/typeform-integration": [
+        "../typeform-integration/dist"
+      ],
+      "@noderr/typeform-integration/*": [
+        "../typeform-integration/dist/*"
+      ],
+      "@noderr/types": [
+        "../types/dist"
+      ],
+      "@noderr/types/*": [
+        "../types/dist/*"
+      ],
+      "@noderr/utils": [
+        "../utils/dist"
+      ],
+      "@noderr/utils/*": [
+        "../utils/dist/*"
+      ],
+      "@noderr/validator-consensus": [
+        "../validator-consensus/dist"
+      ],
+      "@noderr/validator-consensus/*": [
+        "../validator-consensus/dist/*"
+      ]
+    }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
-} 
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts"
+  ]
+}

@@ -1,4 +1,4 @@
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import * as winston from 'winston';
 import { CircuitBreaker } from '../../core/src/CircuitBreaker';
 

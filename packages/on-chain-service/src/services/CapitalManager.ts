@@ -5,7 +5,7 @@ import {
   CapitalRequest,
   PerformanceMetrics,
   TransactionResult,
-} from '@noderr/types/src';
+} from '@noderr/types';
 import { RateLimiter } from '../utils/rateLimiter';
 import { CircuitBreaker } from '../utils/circuitBreaker';
 

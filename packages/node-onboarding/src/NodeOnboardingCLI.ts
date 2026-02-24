@@ -10,7 +10,7 @@
  * @module node-onboarding
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import ora from 'ora';

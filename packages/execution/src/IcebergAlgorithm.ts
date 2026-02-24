@@ -12,7 +12,7 @@ import {
   OrderStatus,
   ExecutionError,
   ExecutionErrorCode
-} from '@noderr/types/src';
+} from '@noderr/types';
 import { Logger } from 'winston';
 import EventEmitter from 'events';
 

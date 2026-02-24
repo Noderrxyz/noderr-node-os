@@ -2,10 +2,10 @@
   "name": "@noderr/utils",
   "version": "1.0.0",
   "description": "Shared utilities for Noderr Protocol",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "build:watch": "tsc -w",
     "test": "jest",
     "test:watch": "jest --watch",

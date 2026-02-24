@@ -28,7 +28,7 @@
  * @module OracleLotterySelector
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { ethers } from 'ethers';
 import { EventEmitter } from 'events';
 

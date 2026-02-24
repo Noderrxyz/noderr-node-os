@@ -1,6 +1,6 @@
-import { Logger } from '@noderr/utils/src';
-import { eventBus, EventTopics } from '@noderr/core/src';
-import { TradingSignal } from '@noderr/core/src';
+import { Logger } from '@noderr/utils';
+import { eventBus, EventTopics } from '@noderr/core';
+import { TradingSignal } from '@noderr/core';
 import { v4 as uuidv4 } from 'uuid';
 
 /**

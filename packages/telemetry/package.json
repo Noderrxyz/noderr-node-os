@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "build:watch": "tsc -w",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -80,4 +80,4 @@
     "url": "git+https://github.com/noderr/protocol.git",
     "directory": "packages/telemetry"
   }
-} 
+}

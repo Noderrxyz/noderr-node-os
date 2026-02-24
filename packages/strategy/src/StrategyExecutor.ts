@@ -1,4 +1,4 @@
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { Worker, isMainThread, parentPort, workerData } from 'worker_threads';
 import { EventEmitter } from 'events';
 import * as os from 'os';

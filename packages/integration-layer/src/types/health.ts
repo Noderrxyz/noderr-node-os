@@ -1,4 +1,4 @@
-import { HealthCheckResult } from "@noderr/types/src";
+import { HealthCheckResult } from "@noderr/types";
 /**
  * Health Types - System health monitoring and recovery types
  * 

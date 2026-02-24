@@ -8,7 +8,7 @@
  * @module MLSignalService
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { EventEmitter } from 'events';
 
 // Types for ML predictions

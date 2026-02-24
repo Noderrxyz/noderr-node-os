@@ -16,8 +16,8 @@ import {
   ExecutionResult,
   ExecutionStatus,
   OrderSide
-} from '@noderr/types/src';
-import { Logger } from '@noderr/utils/src';
+} from '@noderr/types';
+import { Logger } from '@noderr/utils';
 
 // LOW FIX: Use real Logger instead of console-based mock
 const createLogger = (name: string) => new Logger(name);

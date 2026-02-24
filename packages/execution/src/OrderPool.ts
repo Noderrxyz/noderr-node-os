@@ -1,6 +1,6 @@
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import * as winston from 'winston';
-import { Order, OrderStatus, OrderType, OrderSide, TimeInForce } from '@noderr/types/src';
+import { Order, OrderStatus, OrderType, OrderSide, TimeInForce } from '@noderr/types';
 
 const logger = new Logger('OrderPool');
 export interface OrderPoolConfig {

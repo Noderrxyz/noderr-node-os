@@ -10,9 +10,9 @@
  * @module AutonomousExecutionOrchestrator
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { EventEmitter } from 'events';
-import { OracleCoordinator, TradingSignal } from '@noderr/oracle-consensus/src';
+import { OracleCoordinator, TradingSignal } from '@noderr/oracle-consensus';
 import { MLSignalService, MLPrediction as MLPred } from './services/MLSignalService';
 import { RiskCheckService, RiskAssessment as RiskAssess, PortfolioState } from './services/RiskCheckService';
 import { ExecutionService, ExecutionPlan as ExecPlan, ExecutionResult as ExecResult } from './services/ExecutionService';

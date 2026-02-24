@@ -4,7 +4,7 @@
  * This example shows how to integrate GPU detection into the node registration flow
  */
 
-import { Logger } from '@noderr/utils/src';
+import { Logger } from '@noderr/utils';
 import { getSystemInfoWithGpu, hasGpu } from './gpu-integration';
 
 /**
