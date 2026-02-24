@@ -65,8 +65,10 @@ export class DatabaseService {
         attestation_data: identity.attestationData,
         tier: identity.tier,
         os: identity.os,
+        wallet_address: (identity as any).walletAddress ?? null,
         install_token_id: identity.installTokenId,
         status: identity.status,
+        system_info: (identity as any).systemInfo ?? null,
         last_seen: identity.lastSeen,
       })
       .select()

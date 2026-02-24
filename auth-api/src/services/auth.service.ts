@@ -127,7 +127,10 @@ export class AuthService {
       installTokenId: token.id,
       status: NodeStatus.ACTIVE,
       lastSeen: new Date(),
-    });
+      // Extended fields stored via cast in database service
+      ...(request.walletAddress ? { walletAddress: request.walletAddress } : {}),
+      ...(request.systemInfo ? { systemInfo: request.systemInfo } : {}),
+    } as any);
 
     // Mark token as used
     await db.markTokenAsUsed(token.id);
