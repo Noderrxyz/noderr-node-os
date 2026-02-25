@@ -38,9 +38,8 @@ echo "========================================="
 
 # Start all services using PM2
 # --no-daemon keeps PM2 in foreground (required for Docker)
-# --update-env updates environment variables
+# Note: --update-env is not supported by pm2-runtime; env is read from ecosystem.config.js at start
 pm2-runtime start /app/ecosystem.config.js \
-    --update-env \
     --no-daemon
 
 # This line is never reached unless PM2 exits
