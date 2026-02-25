@@ -60,7 +60,7 @@ async function main(): Promise<void> {
       return key && !key.startsWith('0x') ? `0x${key}` : key;
     })(),
     rpcUrl: process.env.RPC_URL || 'https://sepolia.base.org',
-    nodeRegistryAddress: process.env.NODE_REGISTRY_ADDRESS || '0x0C384F177b11FDf39360e6d1030608AfE670cF7c',
+    nodeRegistryAddress: process.env.NODE_REGISTRY_ADDRESS || '0x1F236Ea17338937f7f4005013E346F7cC216A16E',
     consensusContractAddress: process.env.CONSENSUS_CONTRACT_ADDRESS || '0x0000000000000000000000000000000000000000',
     roundDurationMs: parseInt(process.env.ROUND_DURATION_MS || '60000', 10),
     minAttestations: parseInt(process.env.MIN_ATTESTATIONS || '3', 10),

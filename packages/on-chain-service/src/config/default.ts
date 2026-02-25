@@ -16,7 +16,7 @@ export const DEFAULT_CONFIG = {
   stakingManagerAddress: '0x382343dCCe23017e9b14DC68AD066250E07b2994',
   rewardDistributorAddress: '0x6A143A66652140C04079716EceF8d5A353aeC49B',
   governanceManagerAddress: '0x83f8254C25aEa57217CD1A6Aa03DFa06d6816156',
-  nodeRegistryAddress: '0x0C384F177b11FDf39360e6d1030608AfE670cF7c',
+  nodeRegistryAddress: '0x1F236Ea17338937f7f4005013E346F7cC216A16E',
   guardianWorkloadManagerAddress: '0x8a55C0ab60FAD4ef913c6dfddB403a454B0818c0',
   rewardCalculatorAddress: '0xD815fe075539e6f97861E6aF1CE2706d640A8fCe', // ✅ Deployed Jan 20, 2026
   penaltyManagerAddress: '0x64E91FBDFE38Fe2e0865FFBBEB2d2Ad88eEB7Dd8', // ✅ Deployed Jan 20, 2026

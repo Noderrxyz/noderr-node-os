@@ -18,7 +18,7 @@ import { ethers } from 'ethers';
 const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY || 'Z6Vsdc0TcuwUWBvlIzOqT';
 const RPC_URL = `https://base-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
 const UTILITY_NFT_ADDRESS = '0xD67326eE24F3a5fcb8a12AaD294Dc610642F96cC';
-const NODE_REGISTRY_ADDRESS = '0x0C384F177b11FDf39360e6d1030608AfE670cF7c';
+const NODE_REGISTRY_ADDRESS = '0x1F236Ea17338937f7f4005013E346F7cC216A16E';
 
 // ABIs
 const UTILITY_NFT_ABI = [
