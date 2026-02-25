@@ -277,6 +277,34 @@ function setupShutdownHandlers(): void {
 }
 
 /**
+ * Wait for credentials to become available (polling loop).
+ * The node may still be completing its initial registration with the auth-api
+ * when this service starts. Instead of exiting immediately, we poll the
+ * credentials file until credentials appear or the timeout is reached.
+ */
+async function waitForCredentials(maxWaitMs: number = 300000): Promise<boolean> {
+  const pollInterval = 10000; // poll every 10 seconds
+  const maxAttempts = Math.floor(maxWaitMs / pollInterval);
+  
+  logger.info(`⏳ Waiting for credentials to become available (up to ${maxWaitMs / 1000}s)...`);
+  
+  for (let attempt = 0; attempt < maxAttempts && isRunning; attempt++) {
+    await sleep(pollInterval);
+    loadCredentials();
+    
+    if (currentJwtToken || config.apiKey) {
+      logger.info('✅ Credentials loaded after waiting');
+      return true;
+    }
+    
+    const elapsed = ((attempt + 1) * pollInterval / 1000);
+    logger.info(`⏳ Still waiting for credentials... (${elapsed}s elapsed)`);
+  }
+  
+  return false;
+}
+
+/**
  * Main entry point
  */
 async function main(): Promise<void> {
@@ -292,13 +320,26 @@ async function main(): Promise<void> {
     process.exit(1);
   }
   
+  // If credentials are not yet available, the node may still be registering.
+  // Wait up to 5 minutes for credentials to appear before giving up.
   if (!currentJwtToken && !config.apiKey) {
-    logger.error('❌ JWT_TOKEN or API_KEY is required');
-    process.exit(1);
+    logger.warn('⚠️  No JWT_TOKEN or API_KEY found — node may still be registering. Waiting...');
+    
+    // Setup shutdown handlers early so we can exit cleanly if needed
+    setupShutdownHandlers();
+    
+    const credentialsFound = await waitForCredentials(300000);
+    
+    if (!credentialsFound) {
+      logger.error('❌ Timed out waiting for credentials after 5 minutes.');
+      logger.error('   Ensure the node registered successfully with the auth-api.');
+      logger.error('   PM2 will restart this service and retry.');
+      process.exit(1); // PM2 will restart with restart_delay
+    }
+  } else {
+    // Setup shutdown handlers
+    setupShutdownHandlers();
   }
-  
-  // Setup shutdown handlers
-  setupShutdownHandlers();
   
   // Start heartbeat loop
   await heartbeatLoop();
