@@ -36,11 +36,8 @@ echo "========================================="
 echo "Starting Guardian services with PM2..."
 echo "========================================="
 
-# Start all services using PM2
-# --no-daemon keeps PM2 in foreground (required for Docker)
-# Note: --update-env is not supported by pm2-runtime; env is read from ecosystem.config.js at start
-pm2-runtime start /app/ecosystem.config.js \
-    --no-daemon
+# Start all services using PM2 (same pattern as validator)
+pm2-runtime start /app/ecosystem.config.js --env production
 
 # This line is never reached unless PM2 exits
 echo "PM2 exited unexpectedly"
