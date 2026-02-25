@@ -33,7 +33,7 @@ module.exports = {
       watch: false,
       env: {
         NODE_ENV: 'production',
-        SERVICE_NAME: 'telemetry'
+        SERVICE_NAME: 'telemetry',
         METRICS_PORT: '8080',
       }
     },
