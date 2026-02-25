@@ -274,24 +274,30 @@ export async function startMLService(): Promise<void> {
       autoReconnect: true,
     });
     
-    // Wait for ML service to be healthy
-    logger.info('Waiting for ML service to be ready...');
+    // Wait for ML service to be healthy — retry indefinitely with backoff.
+    // The gRPC ML backend may not be running yet (e.g., during testnet bootstrap).
+    // The service will keep retrying and start processing once the backend is available.
+    logger.info('Waiting for ML gRPC backend to be ready (will retry indefinitely)...');
     let retries = 0;
-    const maxRetries = 30;  // 30 seconds
+    let backoffMs = 5000;  // Start with 5 second backoff
+    const maxBackoffMs = 60000;  // Cap at 60 seconds
     
-    while (retries < maxRetries) {
+    while (true) {
       const healthy = await mlService.isHealthy();
       if (healthy) {
-        logger.info('ML service is healthy');
+        logger.info('ML gRPC backend is healthy');
         break;
       }
       
       retries++;
-      if (retries >= maxRetries) {
-        throw new Error('ML service did not become healthy within 30 seconds');
+      if (retries % 12 === 0) {
+        // Log a reminder every ~minute that we're still waiting
+        logger.warn(`ML gRPC backend not yet available (${retries} retries) — still waiting...`);
       }
       
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, backoffMs));
+      // Exponential backoff up to max
+      backoffMs = Math.min(backoffMs * 1.5, maxBackoffMs);
     }
     
     // Get status

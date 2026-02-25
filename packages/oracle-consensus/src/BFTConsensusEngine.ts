@@ -151,30 +151,43 @@ export class BFTConsensusEngine extends EventEmitter {
    * Load oracle registry from smart contract
    */
   private async loadOracleRegistry(): Promise<void> {
-    const oracleCount = await this.contract.activeOracleCount();
-    
-    for (let i = 0; i < oracleCount; i++) {
-      const oracleAddress = await this.contract.oracleList(i);
-      const info = await this.contract.getOracleInfo(oracleAddress);
+    try {
+      const oracleCount = await this.contract.activeOracleCount();
       
-      const oracleInfo: OracleInfo = {
-        address: oracleAddress,
-        stake: info.stake,
-        reputation: Number(info.reputation),
-        weight: this.calculateWeight(info.stake, info.reputation),
-        isActive: info.isActive,
-        isSlashed: info.isSlashed,
-      };
-      
-      if (oracleInfo.isActive && !oracleInfo.isSlashed) {
-        this.oracleRegistry.set(oracleAddress.toLowerCase(), oracleInfo);
+      for (let i = 0; i < oracleCount; i++) {
+        const oracleAddress = await this.contract.oracleList(i);
+        const info = await this.contract.getOracleInfo(oracleAddress);
+        
+        const oracleInfo: OracleInfo = {
+          address: oracleAddress,
+          stake: info.stake,
+          reputation: Number(info.reputation),
+          weight: this.calculateWeight(info.stake, info.reputation),
+          isActive: info.isActive,
+          isSlashed: info.isSlashed,
+        };
+        
+        if (oracleInfo.isActive && !oracleInfo.isSlashed) {
+          this.oracleRegistry.set(oracleAddress.toLowerCase(), oracleInfo);
+        }
       }
-    }
-    
-    // Update lottery selector if enabled
-    if (this.lotterySelector) {
-      const oracleList = Array.from(this.oracleRegistry.values());
-      this.lotterySelector.updateOraclePool(oracleList);
+      
+      // Update lottery selector if enabled
+      if (this.lotterySelector) {
+        const oracleList = Array.from(this.oracleRegistry.values());
+        this.lotterySelector.updateOraclePool(oracleList);
+      }
+      
+      logger.info(`Loaded ${this.oracleRegistry.size} active oracles from registry`);
+    } catch (error: any) {
+      // OracleVerifier contract not yet deployed or no oracles registered.
+      // This is expected during testnet bootstrap — start with empty registry
+      // and wait for oracles to register on-chain.
+      logger.warn('Oracle registry unavailable — starting with empty registry (expected during testnet bootstrap)', {
+        reason: error?.message || String(error),
+        verifierAddress: this.config.oracleVerifierAddress,
+      });
+      // Do not rethrow — allow the service to start and wait for oracles to register
     }
   }
   
