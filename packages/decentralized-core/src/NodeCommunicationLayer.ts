@@ -544,12 +544,17 @@ export class NodeCommunicationLayer extends EventEmitter {
       const data = new TextEncoder().encode(JSON.stringify(heartbeat));
 
       const pubsub = this.node.services.pubsub as any;
-      // Broadcast to all topics
+      // Broadcast to all topics — silently ignore NoPeersSubscribedToTopic,
+      // which is expected when the node has no peers yet.
       await Promise.all([
         pubsub.publish(this.SIGNAL_TOPIC, data),
         pubsub.publish(this.EXECUTION_TOPIC, data),
         pubsub.publish(this.METRICS_TOPIC, data)
-      ]);
+      ]).catch((err: any) => {
+        if (err?.name !== 'PublishError.NoPeersSubscribedToTopic') {
+          this.logger.warn('Heartbeat publish error', { error: err?.message });
+        }
+      });
 
     }, 30000); // Every 30 seconds
   }

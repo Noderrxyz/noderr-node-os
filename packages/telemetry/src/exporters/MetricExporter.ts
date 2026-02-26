@@ -92,8 +92,16 @@ export class MetricExporter extends EventEmitter {
       this.registry.setDefaultLabels(this.config.defaultLabels);
     }
     
-    // Initialize core metrics
+    // Initialize core metrics and index them in this.metrics so recordMetric() can find them
     this.systemMetrics = this.initializeSystemMetrics();
+    this.metrics[`${this.config.prefix}_memory_usage_bytes`] = this.systemMetrics.memoryUsage;
+    this.metrics[`${this.config.prefix}_cpu_usage_percent`] = this.systemMetrics.cpuUsage;
+    this.metrics[`${this.config.prefix}_requests_total`] = this.systemMetrics.requestsTotal;
+    this.metrics[`${this.config.prefix}_errors_total`] = this.systemMetrics.errorsTotal;
+    this.metrics[`${this.config.prefix}_request_duration_seconds`] = this.systemMetrics.latencyHistogram;
+    this.metrics[`${this.config.prefix}_active_connections`] = this.systemMetrics.activeConnections;
+    this.metrics[`${this.config.prefix}_message_queue_size`] = this.systemMetrics.messageQueueSize;
+    this.metrics[`${this.config.prefix}_module_status`] = this.systemMetrics.moduleStatus;
     
     // Collect default Node.js metrics
     if (this.config.collectDefaultMetrics) {
