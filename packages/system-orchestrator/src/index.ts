@@ -88,3 +88,31 @@ export function createSystemOrchestrator(config: SystemConfig): SystemOrchestrat
 }
 
 export default SystemOrchestrator;
+
+// ============================================================================
+// Main Entry Point
+// ============================================================================
+
+if (require.main === module) {
+  const shutdown = new (require('@noderr/utils').GracefulShutdown)(30000);
+
+  (async () => {
+    try {
+      const orchestrator = new SystemOrchestrator({
+        mode: (process.env.NODE_ENV === 'production' ? 'production' : 'staging') as 'production' | 'staging' | 'local',
+        initialCapital: parseFloat(process.env.INITIAL_CAPITAL || '0'),
+      });
+
+      await orchestrator.start();
+
+      shutdown.onShutdown('system-orchestrator', async () => {
+        await orchestrator.stop();
+      }, 10000);
+
+      await new Promise(() => {});
+    } catch (error) {
+      console.error('[system-orchestrator] Fatal startup error:', error);
+      process.exit(1);
+    }
+  })();
+}

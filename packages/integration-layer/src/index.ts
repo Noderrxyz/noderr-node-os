@@ -32,4 +32,33 @@ export * from './types';
  * Version information
  */
 export const VERSION = '1.0.0';
-export const API_VERSION = 'v1'; 
+export const API_VERSION = 'v1';
+
+// ============================================================================
+// Main Entry Point
+// ============================================================================
+
+import { Logger, getShutdownHandler, onShutdown } from '@noderr/utils';
+
+if (require.main === module) {
+  const logger = new Logger('integration-layer');
+  getShutdownHandler(30000);
+
+  (async () => {
+    try {
+      logger.info('Starting Integration Layer Service...');
+      logger.info(`Integration Layer v${VERSION} initialized`);
+
+      onShutdown('integration-layer', async () => {
+        logger.info('Integration Layer Service shut down complete');
+      }, 5000);
+
+      logger.info('Integration Layer Service started successfully');
+
+      await new Promise(() => {});
+    } catch (error) {
+      logger.error('Fatal error starting Integration Layer Service:', error);
+      process.exit(1);
+    }
+  })();
+}
