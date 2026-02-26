@@ -79,9 +79,14 @@ export class GracefulShutdown {
     });
     
     // Handle unhandled promise rejections
-    process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
-      this.logger.error('Unhandled rejection', { promise, reason });
-      this.shutdown('unhandledRejection', 1);
+    // Log and continue — do NOT shut down the process. Unhandled rejections are
+    // often caused by transient network errors (e.g. heartbeat JWT failures) and
+    // should never bring down the entire node. Callers are responsible for
+    // catching their own rejections; this handler is a last-resort safety net.
+    process.on('unhandledRejection', (reason: any, _promise: Promise<any>) => {
+      this.logger.warn('Unhandled promise rejection (non-fatal)', {
+        reason: reason instanceof Error ? reason.message : String(reason),
+      });
     });
   }
   
