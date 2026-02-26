@@ -6,7 +6,7 @@ import { ethers } from 'ethers';
 // package compiles to CommonJS, we load them via dynamic import() inside
 // the async initialize() method. Type-only imports are used here so that
 // TypeScript can still type-check the usage without a static require().
-import type { Libp2p } from 'libp2p';
+import type { Libp2p } from 'libp2p' assert { 'resolution-mode': 'import' };
 
 /**
  * Node identity and metadata
