@@ -94,7 +94,9 @@ export default SystemOrchestrator;
 // ============================================================================
 
 if (require.main === module) {
-  const shutdown = new (require('@noderr/utils').GracefulShutdown)(30000);
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { getShutdownHandler, onShutdown } = require('@noderr/utils');
+  getShutdownHandler(30000);
 
   (async () => {
     try {
@@ -105,7 +107,7 @@ if (require.main === module) {
 
       await orchestrator.start();
 
-      shutdown.onShutdown('system-orchestrator', async () => {
+      onShutdown('system-orchestrator', async () => {
         await orchestrator.stop();
       }, 10000);
 
