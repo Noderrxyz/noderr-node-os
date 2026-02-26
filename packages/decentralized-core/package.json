@@ -19,7 +19,8 @@
     "@libp2p/websockets": "^9.2.13",
     "ethers": "^6.9.0",
     "libp2p": "^2.8.8",
-    "winston": "^3.11.0"
+    "winston": "^3.11.0",
+    "@libp2p/ping": "^3.0.10"
   },
   "devDependencies": {
     "@types/node": "^20.10.5",

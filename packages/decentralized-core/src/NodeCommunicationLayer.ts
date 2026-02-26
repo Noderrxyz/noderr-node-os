@@ -138,6 +138,7 @@ export class NodeCommunicationLayer extends EventEmitter {
         { kadDHT },
         { gossipsub },
         { identify },
+        { ping },
       ] = await Promise.all([
         import('libp2p'),
         import('@libp2p/tcp'),
@@ -147,6 +148,7 @@ export class NodeCommunicationLayer extends EventEmitter {
         import('@libp2p/kad-dht'),
         import('@chainsafe/libp2p-gossipsub'),
         import('@libp2p/identify'),
+        import('@libp2p/ping'),
       ]);
 
       // Create libp2p node
@@ -173,7 +175,8 @@ export class NodeCommunicationLayer extends EventEmitter {
             floodPublish: true,
             doPX: true
           }),
-          identify: identify()
+          identify: identify(),
+          ping: ping() as any
         }
       });
 
