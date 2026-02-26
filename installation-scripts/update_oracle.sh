@@ -1,23 +1,23 @@
 #!/bin/bash
 #
-# Noderr Validator Node - Update Script
-# Run this inside the Validator LXC container as root.
+# Noderr Oracle Node - Update Script
+# Run this inside the Oracle LXC container as root.
 #
 # Usage (from inside the container):
-#   bash /tmp/update_validator.sh
+#   bash /tmp/update_oracle.sh
 #
-# Usage (from the Proxmox host shell — replace CT_ID with your Validator CT ID):
-#   pct exec <CT_ID> -- bash -s < /tmp/update_validator.sh
+# Usage (from the Proxmox host shell — replace CT_ID with your Oracle CT ID):
+#   pct exec <CT_ID> -- bash -s < /tmp/update_oracle.sh
 #
-# To find your Validator CT ID on Proxmox:
-#   pct list | grep -i validator
+# To find your Oracle CT ID on Proxmox:
+#   pct list | grep -i oracle
 #
 set -euo pipefail
 
 # ── Config ────────────────────────────────────────────────────────────────────
 readonly R2_PUBLIC_URL="https://pub-66ad852cb9e54582bd0af64bce8d0a04.r2.dev"
-readonly IMAGE_URL="${R2_PUBLIC_URL}/validator/validator-latest.tar.gz"
-readonly TMP_IMAGE="/tmp/noderr-validator-latest.tar.gz"
+readonly IMAGE_URL="${R2_PUBLIC_URL}/oracle/oracle-latest.tar.gz"
+readonly TMP_IMAGE="/tmp/noderr-oracle-latest.tar.gz"
 readonly CONTAINER_NAME="noderr-node"
 readonly CONFIG_DIR="/etc/noderr"
 readonly LOG_FILE="/var/log/noderr-update.log"
@@ -29,7 +29,7 @@ warn()    { echo -e "${YELLOW}[$(date '+%H:%M:%S')] ⚠ $*${RESET}" | tee -a "$L
 die()     { echo -e "${RED}[$(date '+%H:%M:%S')] ✗ $*${RESET}" | tee -a "$LOG_FILE"; exit 1; }
 
 echo "=========================================================="
-echo "  Noderr Validator Node - Image Update"
+echo "  Noderr Oracle Node - Image Update"
 echo "  $(date)"
 echo "=========================================================="
 
@@ -45,7 +45,7 @@ log "Current container state:"
 docker ps -a --filter "name=${CONTAINER_NAME}" --format "  ID: {{.ID}}  Status: {{.Status}}  Image: {{.Image}}" 2>/dev/null || true
 
 # ── Download new image from R2 ────────────────────────────────────────────────
-log "Downloading new validator image from R2..."
+log "Downloading new oracle image from R2..."
 log "  URL: ${IMAGE_URL}"
 
 rm -f "${TMP_IMAGE}"
@@ -58,10 +58,10 @@ log "Downloaded ${FILESIZE} → ${TMP_IMAGE}"
 
 # ── Verify checksum (optional but recommended) ────────────────────────────────
 log "Verifying SHA256 checksum..."
-CHECKSUM_URL="${R2_PUBLIC_URL}/validator/validator-latest.tar.gz.sha256"
-if curl -fsSL "${CHECKSUM_URL}" -o /tmp/validator-latest.tar.gz.sha256 2>/dev/null; then
+CHECKSUM_URL="${R2_PUBLIC_URL}/oracle/oracle-latest.tar.gz.sha256"
+if curl -fsSL "${CHECKSUM_URL}" -o /tmp/oracle-latest.tar.gz.sha256 2>/dev/null; then
     # R2 checksum file format: "<hash>  <filename>"
-    EXPECTED_HASH=$(awk '{print $1}' /tmp/validator-latest.tar.gz.sha256)
+    EXPECTED_HASH=$(awk '{print $1}' /tmp/oracle-latest.tar.gz.sha256)
     ACTUAL_HASH=$(sha256sum "${TMP_IMAGE}" | awk '{print $1}')
     if [[ "${EXPECTED_HASH}" == "${ACTUAL_HASH}" ]]; then
         log "Checksum verified: ${ACTUAL_HASH:0:16}..."
@@ -79,7 +79,7 @@ docker load < "${TMP_IMAGE}" | tee -a "$LOG_FILE"
 log "Image loaded successfully"
 
 # ── Verify the image is now available ────────────────────────────────────────
-docker images noderr-validator:latest --format "  Repository: {{.Repository}}  Tag: {{.Tag}}  Size: {{.Size}}  Created: {{.CreatedAt}}" | tee -a "$LOG_FILE"
+docker images noderr-oracle:latest --format "  Repository: {{.Repository}}  Tag: {{.Tag}}  Size: {{.Size}}  Created: {{.CreatedAt}}" | tee -a "$LOG_FILE"
 
 # ── Stop and remove the old container ────────────────────────────────────────
 log "Stopping existing container (${CONTAINER_NAME})..."
@@ -111,7 +111,7 @@ else
         --env-file "${CONFIG_DIR}/node.env" \
         --volume "${CONFIG_DIR}/credentials.json:/app/config/credentials.json:ro" \
         --restart unless-stopped \
-        noderr-validator:latest
+        noderr-oracle:latest
 
     sleep 8
 fi
@@ -139,7 +139,7 @@ log "Tailing container logs for 10 seconds..."
 timeout 10 docker logs -f "${CONTAINER_NAME}" 2>&1 | tee -a "$LOG_FILE" || true
 
 # ── Cleanup ───────────────────────────────────────────────────────────────────
-rm -f "${TMP_IMAGE}" /tmp/validator-latest.tar.gz.sha256
+rm -f "${TMP_IMAGE}" /tmp/oracle-latest.tar.gz.sha256
 log "Temporary files cleaned up"
 
 echo ""
