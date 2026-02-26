@@ -12,7 +12,7 @@
 # Total Memory: ~5.3 GB
 # Total CPU: ~4 cores
 
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache \
@@ -84,7 +84,7 @@ RUN pnpm install --frozen-lockfile --prod \
 # ============================================================================
 # Production Stage
 # ============================================================================
-FROM node:20-alpine
+FROM node:22-alpine
 
 # Install runtime dependencies
 RUN apk add --no-cache \

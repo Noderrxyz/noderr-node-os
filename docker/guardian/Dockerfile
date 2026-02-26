@@ -20,7 +20,7 @@
 # Total CPU: ~16 cores
 # NO GPU REQUIRED
 
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache \
@@ -128,7 +128,7 @@ RUN pnpm install --frozen-lockfile --prod \
 # ============================================================================
 # Production Stage
 # ============================================================================
-FROM node:20-alpine
+FROM node:22-alpine
 
 # Install runtime dependencies
 RUN apk add --no-cache \
