@@ -16,8 +16,9 @@ if [ -z "$NODE_ID" ]; then
 fi
 
 if [ -z "$DEPLOYMENT_ENGINE_URL" ]; then
-    echo "ERROR: DEPLOYMENT_ENGINE_URL environment variable is required"
-    exit 1
+    echo "WARNING: DEPLOYMENT_ENGINE_URL not set. Auto-updates will be disabled until deployment engine is configured."
+    # Temporarily fall back to auth-api URL; replace with actual deployment engine URL when deployed.
+    export DEPLOYMENT_ENGINE_URL="https://noderrauth-api-production-cca0.up.railway.app"
 fi
 
 # Check version from Deployment Engine

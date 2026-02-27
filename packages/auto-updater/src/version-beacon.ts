@@ -62,12 +62,16 @@ const VERSION_BEACON_ABI = [
 ];
 
 /**
- * Tier enum (matches contract)
+ * Tier enum — MUST match VersionBeacon.sol NodeTier enum exactly.
+ * Contract: contracts/core/VersionBeacon.sol lines 74-78
+ *   enum NodeTier { VALIDATOR, GUARDIAN, ORACLE }
+ * Solidity enums are 0-indexed in declaration order, so:
+ *   VALIDATOR = 0, GUARDIAN = 1, ORACLE = 2
  */
 export enum Tier {
-  ALL = 0,
-  ORACLE = 1,
-  GUARDIAN = 2,
+  VALIDATOR = 0,
+  GUARDIAN  = 1,
+  ORACLE    = 2,
 }
 
 /**
@@ -96,7 +100,7 @@ export class VersionBeaconClient {
   /**
    * Get tier enum value from string
    */
-  private getTierValue(tier: 'ALL' | 'ORACLE' | 'GUARDIAN'): Tier {
+  private getTierValue(tier: 'VALIDATOR' | 'GUARDIAN' | 'ORACLE'): Tier {
     return Tier[tier];
   }
   

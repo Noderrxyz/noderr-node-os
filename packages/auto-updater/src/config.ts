@@ -27,12 +27,13 @@ export interface AutoUpdaterConfig {
   checkInterval: number;
   
   /**
-   * Node tier (determines which version to track)
-   * - ALL: Basic tier, all nodes
-   * - ORACLE: Enhanced tier with ML capabilities
-   * - GUARDIAN: Full-featured tier
+   * Node tier (determines which version to track).
+   * MUST match the VersionBeacon.sol NodeTier enum:
+   *   VALIDATOR = 0 (data validation nodes, 50k NODR stake)
+   *   GUARDIAN  = 1 (backtesting nodes, 100k NODR stake)
+   *   ORACLE    = 2 (ML inference nodes, 500k NODR stake)
    */
-  nodeTier: 'ALL' | 'ORACLE' | 'GUARDIAN';
+  nodeTier: 'VALIDATOR' | 'GUARDIAN' | 'ORACLE';
   
   /**
    * Unique node identifier (from registration)
@@ -140,9 +141,9 @@ export function loadConfig(): AutoUpdaterConfig {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
   }
   
-  const tier = process.env.NODE_TIER as 'ALL' | 'ORACLE' | 'GUARDIAN';
-  if (!['ALL', 'ORACLE', 'GUARDIAN'].includes(tier)) {
-    throw new Error(`Invalid NODE_TIER: ${tier}. Must be ALL, ORACLE, or GUARDIAN`);
+  const tier = process.env.NODE_TIER as 'VALIDATOR' | 'GUARDIAN' | 'ORACLE';
+  if (!['VALIDATOR', 'GUARDIAN', 'ORACLE'].includes(tier)) {
+    throw new Error(`Invalid NODE_TIER: ${tier}. Must be VALIDATOR, GUARDIAN, or ORACLE`);
   }
   
   return {
