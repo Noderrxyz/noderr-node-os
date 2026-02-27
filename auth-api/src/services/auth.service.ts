@@ -95,6 +95,9 @@ export class AuthService {
         authApiUrl: this.getAuthApiUrl(),
         dockerRegistry: process.env.DOCKER_REGISTRY || 'ghcr.io/noderrxyz',
         telemetryEndpoint: process.env.TELEMETRY_ENDPOINT || 'https://telemetry.noderr.xyz',
+        // Latest version — nodes stamp this in NODE_VERSION and heartbeat-client compares it
+        // against LATEST_VERSION from the auth-api to trigger auto-updates.
+        ...(process.env.LATEST_VERSION && { latestVersion: process.env.LATEST_VERSION }),
         // Oracle-specific: include contract address and RPC URL for oracle-consensus service
         ...(token.tier === NodeTier.ORACLE && {
           oracleVerifierAddress: process.env.ORACLE_VERIFIER_ADDRESS || '',

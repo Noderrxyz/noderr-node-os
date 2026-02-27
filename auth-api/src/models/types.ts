@@ -90,6 +90,8 @@ export interface InstallConfigResponse {
     authApiUrl: string;
     dockerRegistry: string;
     telemetryEndpoint: string;
+    /** Current latest version string — used by heartbeat-client to detect if an update is needed */
+    latestVersion?: string;
     /** Oracle tier only: OracleVerifier contract address on Base Sepolia */
     oracleVerifierAddress?: string;
     /** Oracle tier only: Base Sepolia RPC endpoint for on-chain submissions */

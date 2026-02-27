@@ -15,6 +15,7 @@ import { Logger } from '@noderr/utils';
 import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
+import { execFile } from 'child_process';
 
 const logger = new Logger('heartbeat-client');
 
@@ -126,8 +127,8 @@ async function sendHeartbeat(): Promise<boolean> {
       
       // Check if we need to update node software
       if (data.shouldUpdate && data.targetVersion) {
-        logger.info(`📦 Update available: ${data.targetVersion}`);
-        // TODO: Trigger auto-update process
+        logger.info(`📦 Update available: ${data.targetVersion} — triggering auto-update...`);
+        triggerAutoUpdate();
       }
       
       consecutiveFailures = 0;
@@ -148,6 +149,40 @@ async function sendHeartbeat(): Promise<boolean> {
     logger.error('❌ Heartbeat error:', error);
     return false;
   }
+}
+
+/**
+ * Trigger the tier-specific update script.
+ * Downloads the latest image from R2 and restarts the container.
+ * Runs in the background so the heartbeat loop is not blocked.
+ */
+let isUpdating = false;
+function triggerAutoUpdate(): void {
+  if (isUpdating) {
+    logger.info('⏳ Update already in progress — skipping duplicate trigger');
+    return;
+  }
+  isUpdating = true;
+
+  const tier = (process.env.NODE_TIER || 'validator').toLowerCase();
+  const scriptUrl = `https://raw.githubusercontent.com/Noderrxyz/noderr-node-os/master/installation-scripts/update_${tier}.sh`;
+  const scriptPath = `/tmp/noderr-update-${tier}.sh`;
+
+  logger.info(`🔄 Downloading update script for tier: ${tier}`);
+
+  // Download the update script then execute it as root via bash
+  execFile('bash', ['-c', `curl -fsSL "${scriptUrl}" -o "${scriptPath}" && chmod +x "${scriptPath}" && bash "${scriptPath}"`], {
+    timeout: 600000, // 10 minute timeout for download + docker load
+  }, (error, stdout, stderr) => {
+    isUpdating = false;
+    if (error) {
+      logger.error(`❌ Auto-update failed: ${error.message}`);
+      if (stderr) logger.error(`stderr: ${stderr.slice(0, 500)}`);
+    } else {
+      logger.info(`✅ Auto-update completed successfully`);
+      if (stdout) logger.info(`stdout: ${stdout.slice(0, 500)}`);
+    }
+  });
 }
 
 /**

@@ -635,6 +635,7 @@ setup_docker_container() {
     cat > "${CONFIG_DIR}/node.env" <<EOF
 NODE_ID=${node_id}
 NODE_TIER=${tier}
+NODE_VERSION=$(echo "${install_config}" | jq -r '.config.latestVersion // "1.0.0"')
 API_KEY=${api_key}
 JWT_TOKEN=${jwt_token}
 CREDENTIALS_PATH=/app/config/credentials.json

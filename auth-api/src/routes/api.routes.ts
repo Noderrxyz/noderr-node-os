@@ -261,10 +261,15 @@ export async function registerApiRoutes(fastify: FastifyInstance) {
           metrics: validatedRequest.metrics,
         }, 'Heartbeat received');
 
+        // Check if a newer version is available via LATEST_VERSION env var
+        const latestVersion = process.env.LATEST_VERSION;
+        const nodeVersion = validatedRequest.metrics?.version;
+        const shouldUpdate = !!(latestVersion && nodeVersion && latestVersion !== nodeVersion);
+
         return reply.code(200).send({
           acknowledged: true,
-          shouldUpdate: false,
-          targetVersion: validatedRequest.metrics.version,
+          shouldUpdate,
+          targetVersion: latestVersion || nodeVersion,
         });
       } catch (error) {
         fastify.log.error(error);
