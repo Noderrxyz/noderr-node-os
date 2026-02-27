@@ -641,7 +641,29 @@ CREDENTIALS_PATH=/app/config/credentials.json
 DEPLOYMENT_ENGINE_URL=$(echo "${install_config}" | jq -r '.config.deploymentEngineUrl')
 AUTH_API_URL=$(echo "${install_config}" | jq -r '.config.authApiUrl')
 TELEMETRY_ENDPOINT=$(echo "${install_config}" | jq -r '.config.telemetryEndpoint')
+
+# Node Wallet (Hot Wallet) - replace with your node wallet private key
+PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>
 EOF
+
+    # For Oracle tier: append oracle-specific env vars from install config
+    if [[ "${tier}" == "ORACLE" ]]; then
+        local oracle_verifier_address
+        local rpc_url
+        oracle_verifier_address=$(echo "${install_config}" | jq -r '.config.oracleVerifierAddress // empty')
+        rpc_url=$(echo "${install_config}" | jq -r '.config.rpcUrl // "https://sepolia.base.org"')
+        cat >> "${CONFIG_DIR}/node.env" <<ORACLE_EOF
+
+# Oracle Consensus (Oracle tier only)
+ORACLE_VERIFIER_ADDRESS=${oracle_verifier_address}
+RPC_URL=${rpc_url}
+# ORACLE_PRIVATE_KEY must match PRIVATE_KEY (your node hot wallet private key).
+# Set this after adding PRIVATE_KEY below.
+ORACLE_PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>
+ORACLE_EOF
+        log "Oracle-specific env vars written to node.env"
+    fi
+
     chmod 600 "${CONFIG_DIR}/node.env"
     
     log_success "Docker container configured"
@@ -701,6 +723,38 @@ EOF
     
     systemctl daemon-reload
     log_success "Systemd service created"
+}
+
+# ============================================================================
+# Private Key Configuration
+# ============================================================================
+prompt_private_key() {
+    local install_config
+    local tier
+    install_config=$(cat "${CONFIG_DIR}/install_config.json")
+    tier=$(echo "${install_config}" | jq -r '.tier')
+
+    echo ""
+    log_warning "ACTION REQUIRED: Configure your node wallet private key."
+    log_warning "Your node requires a hot wallet private key to sign transactions."
+    echo ""
+    echo "  Edit ${CONFIG_DIR}/node.env and replace the placeholder:"
+    echo "    PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>"
+    if [[ "${tier}" == "ORACLE" ]]; then
+        echo "    ORACLE_PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>"
+        echo ""
+        echo "  For Oracle nodes, ORACLE_PRIVATE_KEY must be the same value as PRIVATE_KEY."
+    fi
+    echo ""
+    read -rp "  Press ENTER once you have set the private key(s) to continue..."
+
+    # Verify PRIVATE_KEY was set (if present in node.env)
+    if grep -q "PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>" "${CONFIG_DIR}/node.env" 2>/dev/null; then
+        log_error "PRIVATE_KEY placeholder was not replaced. Please edit ${CONFIG_DIR}/node.env and re-run."
+        exit 1
+    fi
+
+    log_success "Private key configured"
 }
 
 start_node() {
@@ -808,6 +862,10 @@ main() {
     # Docker setup
     setup_docker_container
     create_systemd_service
+
+    # Prompt operator to configure private key before starting node
+    prompt_private_key
+
     start_node
     
     # Display summary

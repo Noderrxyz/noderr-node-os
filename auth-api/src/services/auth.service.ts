@@ -12,6 +12,7 @@ import {
   RegisterNodeRequest,
   RegisterNodeResponse,
   NodeStatus,
+  NodeTier,
 } from '../models/types';
 import { FastifyInstance } from 'fastify';
 import '@fastify/jwt';
@@ -94,6 +95,11 @@ export class AuthService {
         authApiUrl: this.getAuthApiUrl(),
         dockerRegistry: process.env.DOCKER_REGISTRY || 'ghcr.io/noderrxyz',
         telemetryEndpoint: process.env.TELEMETRY_ENDPOINT || 'https://telemetry.noderr.xyz',
+        // Oracle-specific: include contract address and RPC URL for oracle-consensus service
+        ...(token.tier === NodeTier.ORACLE && {
+          oracleVerifierAddress: process.env.ORACLE_VERIFIER_ADDRESS || '',
+          rpcUrl: process.env.RPC_URL || 'https://sepolia.base.org',
+        }),
       },
     };
   }

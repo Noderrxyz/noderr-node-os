@@ -40,6 +40,8 @@ COPY packages/capital-ai ./packages/capital-ai
 COPY packages/backtesting ./packages/backtesting
 COPY packages/compliance ./packages/compliance
 COPY packages/testing ./packages/testing
+COPY packages/oracle-consensus ./packages/oracle-consensus
+COPY packages/heartbeat-client ./packages/heartbeat-client
 
 # Install dependencies for all packages
 RUN pnpm install --frozen-lockfile \
@@ -59,7 +61,9 @@ RUN pnpm install --frozen-lockfile \
     --filter "@noderr/capital-ai" \
     --filter "@noderr/backtesting" \
     --filter "@noderr/compliance" \
-    --filter "@noderr/testing"
+    --filter "@noderr/testing" \
+    --filter "@noderr/oracle-consensus" \
+    --filter "@noderr/heartbeat-client"
 
 # Build packages in dependency order
 RUN pnpm --filter "@noderr/types" build && \
@@ -78,7 +82,9 @@ RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/capital-ai" build && \
     pnpm --filter "@noderr/backtesting" build && \
     pnpm --filter "@noderr/compliance" build && \
-    pnpm --filter "@noderr/testing" build
+    pnpm --filter "@noderr/testing" build && \
+    pnpm --filter "@noderr/oracle-consensus" build && \
+    pnpm --filter "@noderr/heartbeat-client" build
 
 # Remove dev dependencies
 RUN pnpm install --frozen-lockfile --prod \
@@ -98,7 +104,9 @@ RUN pnpm install --frozen-lockfile --prod \
     --filter "@noderr/capital-ai" \
     --filter "@noderr/backtesting" \
     --filter "@noderr/compliance" \
-    --filter "@noderr/testing"
+    --filter "@noderr/testing" \
+    --filter "@noderr/oracle-consensus" \
+    --filter "@noderr/heartbeat-client"
 
 # ============================================================================
 # Production Stage
@@ -142,6 +150,8 @@ COPY --from=builder --chown=noderr:noderr /build/packages/capital-ai ./packages/
 COPY --from=builder --chown=noderr:noderr /build/packages/backtesting ./packages/backtesting
 COPY --from=builder --chown=noderr:noderr /build/packages/compliance ./packages/compliance
 COPY --from=builder --chown=noderr:noderr /build/packages/testing ./packages/testing
+COPY --from=builder --chown=noderr:noderr /build/packages/oracle-consensus ./packages/oracle-consensus
+COPY --from=builder --chown=noderr:noderr /build/packages/heartbeat-client ./packages/heartbeat-client
 
 # Copy PM2 ecosystem configuration
 COPY --chown=noderr:noderr docker/oracle/ecosystem.config.js /app/ecosystem.config.js
