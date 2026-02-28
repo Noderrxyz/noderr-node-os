@@ -528,6 +528,12 @@ function Register-Node {
 
 function Get-DockerImageFromR2 {
     param([string]$Tier, [string]$ImageName, [string]$R2Path)
+    # Skip download if image already exists in Docker (idempotent on retry)
+    $existing = docker images --format "{{.Repository}}:{{.Tag}}" 2>$null | Where-Object { $_ -eq $ImageName }
+    if ($existing) {
+        Write-Log -Message "$ImageName already loaded in Docker - skipping download" -Level Success
+        return
+    }
     $tmpPath = "$env:TEMP\noderr-$($Tier.ToLower())-image.tar.gz"
     $url     = "$Script:R2_PUBLIC_URL/$R2Path"
     Write-Log -Message "Downloading $ImageName from R2 (this may take several minutes for large images)..."
@@ -573,8 +579,14 @@ function Install-DockerContainer {
         Get-DockerImageFromR2 -Tier "ml-service" -ImageName "noderr-ml-service:latest" -R2Path "ml-service/ml-service-latest.tar.gz"
     }
 
-    # Create Docker network
-    docker network create noderr-network 2>$null
+    # Create Docker network (idempotent - skip if already exists)
+    $netExists = docker network ls --filter "name=noderr-network" --format "{{.Name}}" 2>$null | Where-Object { $_ -eq "noderr-network" }
+    if (-not $netExists) {
+        docker network create noderr-network 2>&1 | Out-Null
+        Write-Log -Message "Docker network noderr-network created" -Level Success
+    } else {
+        Write-Log -Message "Docker network noderr-network already exists - reusing" -Level Success
+    }
 
     # Build node.env content
     $nodeVersion = if ($InstallConfig.config.latestVersion) { $InstallConfig.config.latestVersion } else { "1.0.0" }
@@ -710,6 +722,8 @@ function Start-NodeService {
     Write-Log -Message "Starting Noderr Node OS..."
 
     if ($Tier -eq "ORACLE") {
+        # Stop and remove any existing containers before starting fresh
+        docker compose -f "$Script:CONFIG_DIR\docker-compose.yml" down 2>&1 | Out-Null
         # Use docker compose for Oracle (two containers)
         $result = docker compose -f "$Script:CONFIG_DIR\docker-compose.yml" up -d 2>&1
         $exitCode = $LASTEXITCODE
