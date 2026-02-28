@@ -109,7 +109,7 @@ else
         --name "${CONTAINER_NAME}" \
         --network noderr-network \
         --env-file "${CONFIG_DIR}/node.env" \
-        --volume "${CONFIG_DIR}/credentials.json:/app/config/credentials.json:ro" \
+        --volume "${CONFIG_DIR}/credentials.json:/app/config/credentials.json:rw" \
         --restart unless-stopped \
         noderr-guardian:latest
 

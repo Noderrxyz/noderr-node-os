@@ -713,7 +713,7 @@ ExecStart=/usr/bin/docker run \\
     --name noderr-node \\
     --network noderr-network \\
     --env-file ${CONFIG_DIR}/node.env \\
-    --volume ${CONFIG_DIR}/credentials.json:/app/config/credentials.json:ro \\
+    --volume ${CONFIG_DIR}/credentials.json:/app/config/credentials.json:rw \\
     --restart unless-stopped \\
     ${docker_image}
 ExecStop=/usr/bin/docker stop noderr-node

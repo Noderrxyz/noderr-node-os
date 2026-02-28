@@ -170,8 +170,9 @@ function triggerAutoUpdate(): void {
 
   logger.info(`🔄 Downloading update script for tier: ${tier}`);
 
-  // Download the update script then execute it as root via bash
-  execFile('bash', ['-c', `curl -fsSL "${scriptUrl}" -o "${scriptPath}" && chmod +x "${scriptPath}" && bash "${scriptPath}"`], {
+  // Download the update script then execute it as root.
+  // Use /bin/sh (always available) rather than bash (not present in Alpine/distroless images).
+  execFile('/bin/sh', ['-c', `curl -fsSL "${scriptUrl}" -o "${scriptPath}" && chmod +x "${scriptPath}" && /bin/sh "${scriptPath}"`], {
     timeout: 600000, // 10 minute timeout for download + docker load
   }, (error, stdout, stderr) => {
     isUpdating = false;
@@ -243,8 +244,16 @@ function saveCredentials(): void {
     }
     
     fs.writeFileSync(config.credentialsPath, JSON.stringify(credentials, null, 2));
-  } catch (error) {
-    logger.error('❌ Failed to save credentials:', error);
+    logger.info('✅ Credentials saved to disk');
+  } catch (error: any) {
+    // Read-only filesystem (EROFS) is expected when credentials.json is mounted :ro.
+    // The refreshed JWT is still held in memory — heartbeats will continue to work.
+    // To persist across restarts, remount credentials.json as :rw in the systemd service.
+    if (error?.code === 'EROFS') {
+      logger.warn('⚠️  credentials.json is read-only — JWT refresh held in memory only (will re-refresh on restart)');
+    } else {
+      logger.error('❌ Failed to save credentials:', error);
+    }
   }
 }
 
