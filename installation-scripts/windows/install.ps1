@@ -288,7 +288,7 @@ function New-SoftwareKey {
         # ECDsa.Create(ECCurve) and Export*() methods require .NET Core 3+ / .NET 5+
         $rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new(2048)
 
-        # Export public key as XML (PS 5.1 compatible)
+        # Export public key as XML (used for signing/verification internally)
         $pubKeyXml = $rsa.ToXmlString($false)  # $false = public key only
         Set-Content -Path "$Script:CONFIG_DIR\public_key.xml" -Value $pubKeyXml -NoNewline
 
@@ -296,8 +296,51 @@ function New-SoftwareKey {
         $privKeyXml = $rsa.ToXmlString($true)   # $true = include private key
         Set-Content -Path "$Script:CONFIG_DIR\private_key.xml" -Value $privKeyXml -NoNewline
 
-        # Also store a simple node identity fingerprint (SHA256 of public key XML)
-        $pubKeyBytes  = [System.Text.Encoding]::UTF8.GetBytes($pubKeyXml)
+        # Export public key as PEM (required by auth API: -----BEGIN PUBLIC KEY-----)
+        # Build SubjectPublicKeyInfo DER encoding manually (.NET Framework 4.x compatible)
+        # Note: inline (if ...) inside @() array concat does not work in PS 5.1 - use separate variables
+        $params   = $rsa.ExportParameters($false)
+        $modBytes = [byte[]]$params.Modulus
+        $expBytes = [byte[]]$params.Exponent
+
+        # Prepend 0x00 to modulus if high bit is set (DER positive integer encoding)
+        if ($modBytes[0] -band 0x80) { $modBytes = ([byte[]]@(0x00)) + $modBytes }
+
+        # Encode INTEGER for modulus (RSA-2048 modulus is always 256 bytes, needs 2-byte DER length)
+        $modLen  = $modBytes.Length
+        # Use 2-byte length: 0x82 <hi> <lo> for lengths > 127
+        $modDer  = ([byte[]]@(0x02, 0x82, [byte]($modLen -shr 8), [byte]($modLen -band 0xFF))) + $modBytes
+
+        # Encode INTEGER for exponent (always 3 bytes: 0x01 0x00 0x01)
+        $expLen  = $expBytes.Length
+        $expDer  = ([byte[]]@(0x02, [byte]$expLen)) + $expBytes
+
+        # Encode SEQUENCE (RSAPublicKey) - length > 127, use 2-byte encoding
+        $rsaSeq    = $modDer + $expDer
+        $rsaSeqLen = $rsaSeq.Length
+        $rsaSeqDer = ([byte[]]@(0x30, 0x82, [byte]($rsaSeqLen -shr 8), [byte]($rsaSeqLen -band 0xFF))) + $rsaSeq
+
+        # SubjectPublicKeyInfo: SEQUENCE { AlgorithmIdentifier, BIT STRING }
+        # AlgorithmIdentifier for rsaEncryption OID 1.2.840.113549.1.1.1
+        $algId   = [byte[]]@(0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00)
+        # BIT STRING wrapping RSAPublicKey: 03 82 <hi> <lo> 00 <rsaSeqDer>
+        $bitLen  = $rsaSeqDer.Length + 1
+        $bitStr  = ([byte[]]@(0x03, 0x82, [byte]($bitLen -shr 8), [byte]($bitLen -band 0xFF), 0x00)) + $rsaSeqDer
+        # Outer SEQUENCE (SubjectPublicKeyInfo) - always ~294 bytes for RSA-2048
+        $spki    = $algId + $bitStr
+        $spkiLen = $spki.Length
+        $spkiDer = ([byte[]]@(0x30, 0x82, [byte]($spkiLen -shr 8), [byte]($spkiLen -band 0xFF))) + $spki
+
+        $pemB64  = [System.Convert]::ToBase64String([byte[]]$spkiDer)
+        # Wrap at 64 chars per line
+        $pemLines = for ($i = 0; $i -lt $pemB64.Length; $i += 64) {
+            $pemB64.Substring($i, [Math]::Min(64, $pemB64.Length - $i))
+        }
+        $pemContent = "-----BEGIN PUBLIC KEY-----`r`n" + ($pemLines -join "`r`n") + "`r`n-----END PUBLIC KEY-----"
+        Set-Content -Path "$Script:CONFIG_DIR\public_key.pem" -Value $pemContent -NoNewline
+
+        # Fingerprint: SHA256 of PEM content
+        $pubKeyBytes  = [System.Text.Encoding]::UTF8.GetBytes($pemContent)
         $sha          = [System.Security.Cryptography.SHA256]::Create()
         $hashBytes    = $sha.ComputeHash($pubKeyBytes)
         $pubKeyHash   = [System.BitConverter]::ToString($hashBytes) -replace "-",""
@@ -390,7 +433,7 @@ function Register-Node {
     param([string]$Token, [PSObject]$InstallConfig)
     Write-Log -Message "Registering node..."
     try {
-        $publicKey  = Get-Content -Path "$Script:CONFIG_DIR\public_key.xml" -Raw
+        $publicKey  = Get-Content -Path "$Script:CONFIG_DIR\public_key.pem" -Raw
         $challenge  = Get-Content -Path "$Script:CONFIG_DIR\challenge.txt"  -Raw
         $signature  = Get-Content -Path "$Script:CONFIG_DIR\signature.txt"  -Raw
         $pcrValues  = Get-Content -Path "$Script:CONFIG_DIR\pcr_values.json" -Raw | ConvertFrom-Json
