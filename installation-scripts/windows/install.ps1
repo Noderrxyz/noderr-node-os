@@ -470,7 +470,7 @@ function Register-Node {
         $signatureEsc = $signature.Trim().Replace('"', '\"')
         $hostnameEsc  = $env:COMPUTERNAME.Replace('"', '\"')
         $osVersionEsc = $osVersion.Replace('"', '\"')
-        $tierEsc      = $InstallConfig.tier.Replace('"', '\"')
+        $tierEsc      = $InstallConfig.tier.ToLower().Replace('"', '\"')
         $walletEsc    = $WalletAddress.Replace('"', '\"')
         $tokenEsc     = $Token.Replace('"', '\"')
 
