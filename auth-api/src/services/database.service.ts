@@ -239,6 +239,35 @@ export class DatabaseService {
   }
 
   /**
+   * Get node by install token ID (used to check if a token was already used for registration)
+   */
+  async getNodeByInstallToken(installTokenId: string): Promise<NodeIdentity | null> {
+    const { data, error } = await this.supabase
+      .from('node_identities')
+      .select('*')
+      .eq('install_token_id', installTokenId)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return {
+      id: data.id,
+      nodeId: data.node_id,
+      publicKey: data.public_key,
+      attestationData: data.attestation_data,
+      tier: data.tier,
+      os: data.os,
+      installTokenId: data.install_token_id,
+      status: data.status,
+      lastSeen: data.last_seen ? new Date(data.last_seen) : undefined,
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at),
+    };
+  }
+
+  /**
    * Get node by NFT token ID
    */
   async getNodeByTokenId(tokenId: number): Promise<NodeIdentity | null> {

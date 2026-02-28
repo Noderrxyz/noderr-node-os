@@ -424,13 +424,24 @@ function Invoke-ApiPost {
 
 function Get-InstallConfig {
     param([string]$Token)
+    # Reuse cached config on retry (avoids hitting the token-used check again)
+    $configCache = "$Script:CONFIG_DIR\install_config.json"
+    if (Test-Path $configCache) {
+        try {
+            $cached = Get-Content $configCache -Raw | ConvertFrom-Json
+            if ($cached.tier) {
+                Write-Log -Message "Install config loaded from cache (tier: $($cached.tier))" -Level Success
+                return $cached
+            }
+        } catch { <# corrupt cache - re-fetch #> }
+    }
     Write-Log -Message "Fetching installation configuration..."
     try {
         $body     = "{`"installToken`":`"$Token`"}"
         $rawJson  = Invoke-ApiPost -Url "$Script:AUTH_API_URL/api/v1/install/config" -JsonBody $body
         $response = $rawJson | ConvertFrom-Json
         if ($response.error) { Write-ErrorAndExit "API error: $($response.message)" }
-        $rawJson | Set-Content -Path "$Script:CONFIG_DIR\install_config.json" -NoNewline
+        $rawJson | Set-Content -Path $configCache -NoNewline
         Write-Log -Message "Install config received (tier: $($response.tier))" -Level Success
         return $response
     } catch {

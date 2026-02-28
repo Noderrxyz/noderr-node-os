@@ -70,8 +70,14 @@ export class AuthService {
     }
 
     // Check if token is already used
+    // Allow retry: if the token is used but a node was registered with it, return config anyway
+    // This lets operators re-run the installer if it failed after registration
     if (token.isUsed) {
-      throw new Error('Installation token has already been used');
+      const registeredNode = await db.getNodeByInstallToken(token.id);
+      if (!registeredNode) {
+        throw new Error('Installation token has already been used');
+      }
+      // Token was used for a successful registration - allow config fetch for retry
     }
 
     // Generate temporary node ID
