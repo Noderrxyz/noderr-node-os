@@ -745,14 +745,18 @@ function Start-NodeService {
 
     if ($Tier -eq "ORACLE") {
         # Stop and remove any existing containers before starting fresh
-        docker compose -f "$Script:CONFIG_DIR\docker-compose.yml" down 2>&1 | Out-Null
+        # Run down synchronously and discard all output (status messages like "Stopping" are not errors)
+        $null = & docker compose -f "$Script:CONFIG_DIR\docker-compose.yml" down --timeout 30 2>&1
         # Use docker compose for Oracle (two containers)
-        $result = docker compose -f "$Script:CONFIG_DIR\docker-compose.yml" up -d 2>&1
+        # Capture exit code separately - do NOT use 2>&1 as it mixes status messages into error detection
+        $upOutput = & docker compose -f "$Script:CONFIG_DIR\docker-compose.yml" up -d 2>&1
         $exitCode = $LASTEXITCODE
-        # Filter out non-fatal warnings (e.g. obsolete 'version' attribute)
-        $errors = $result | Where-Object { $_ -match 'level=error|Error response|cannot|failed' }
-        if ($exitCode -ne 0 -and $errors) {
-            Write-ErrorAndExit "Failed to start Oracle node with docker compose: $($errors -join ' ')"
+        if ($exitCode -ne 0) {
+            # Only fail on actual errors, not informational status messages
+            $actualErrors = $upOutput | Where-Object { $_ -match 'Error response|cannot|failed to|no such' }
+            if ($actualErrors) {
+                Write-ErrorAndExit "Failed to start Oracle node: $($actualErrors -join ' ')"
+            }
         }
         Start-Sleep -Seconds 10
         $oracleStatus = docker ps --filter "name=noderr-node" --format "{{.Status}}"
