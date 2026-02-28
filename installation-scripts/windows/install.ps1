@@ -353,6 +353,18 @@ function Invoke-ApiPost {
     try {
         $responseBytes = $wc.UploadData($Url, "POST", [System.Text.Encoding]::UTF8.GetBytes($JsonBody))
         return [System.Text.Encoding]::UTF8.GetString($responseBytes)
+    } catch [System.Net.WebException] {
+        # Capture the HTTP error response body so we can show the actual API error message
+        $errorResponse = $_.Exception.Response
+        if ($errorResponse -ne $null) {
+            $stream = $errorResponse.GetResponseStream()
+            $reader = New-Object System.IO.StreamReader($stream)
+            $body   = $reader.ReadToEnd()
+            $reader.Dispose()
+            $stream.Dispose()
+            throw "HTTP $([int]$errorResponse.StatusCode) from $Url`: $body"
+        }
+        throw
     } finally {
         $wc.Dispose()
     }
