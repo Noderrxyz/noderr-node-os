@@ -15,7 +15,6 @@ import { Logger } from '@noderr/utils';
 import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
-import { execFile } from 'child_process';
 
 const logger = new Logger('heartbeat-client');
 
@@ -170,20 +169,25 @@ function triggerAutoUpdate(): void {
 
   logger.info(`🔄 Downloading update script for tier: ${tier}`);
 
-  // Download the update script then execute it as root.
-  // Use /bin/sh (always available) rather than bash (not present in Alpine/distroless images).
-  execFile('/bin/sh', ['-c', `curl -fsSL "${scriptUrl}" -o "${scriptPath}" && chmod +x "${scriptPath}" && /bin/sh "${scriptPath}"`], {
-    timeout: 600000, // 10 minute timeout for download + docker load
-  }, (error, stdout, stderr) => {
-    isUpdating = false;
-    if (error) {
-      logger.error(`❌ Auto-update failed: ${error.message}`);
-      if (stderr) logger.error(`stderr: ${stderr.slice(0, 500)}`);
-    } else {
-      logger.info(`✅ Auto-update completed successfully`);
-      if (stdout) logger.info(`stdout: ${stdout.slice(0, 500)}`);
-    }
-  });
+  // Download the update script using node-fetch (no curl/wget PATH dependency),
+  // write it to disk, then execute it via the host shell using /proc/1/exe trick
+  // or a known shell path. The update script runs on the LXC host, not inside
+  // the container — so we need to break out via nsenter or rely on the host
+  // having curl available. Since the container cannot run host-level docker
+  // commands anyway, we log a clear message and skip the in-container trigger.
+  //
+  // The correct auto-update flow is:
+  //   1. Heartbeat server sets shouldUpdate=true
+  //   2. heartbeat-client logs the intent (this message)
+  //   3. The host-level noderr-update systemd timer (or operator) runs the update script
+  //
+  // In-container auto-update is not supported because:
+  //   - curl may not be in PATH inside the container
+  //   - The update script requires docker CLI (not available inside the container)
+  //   - The update script must restart the container itself (impossible from within)
+  logger.warn(`⚠️  Auto-update requested for version ${tier} — in-container execution not supported.`);
+  logger.warn(`   Run manually on the LXC host: curl -fsSL https://raw.githubusercontent.com/Noderrxyz/noderr-node-os/master/installation-scripts/update_${tier}.sh -o /tmp/update_${tier}.sh && bash /tmp/update_${tier}.sh`);
+  isUpdating = false;
 }
 
 /**
