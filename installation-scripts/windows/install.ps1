@@ -43,7 +43,7 @@ param(
 # Constants and Configuration
 # ============================================================================
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
 $ProgressPreference = "SilentlyContinue"
 
 $Script:VERSION    = "1.1.0"
@@ -745,8 +745,10 @@ function Start-NodeService {
 
     if ($Tier -eq "ORACLE") {
         # Stop and remove any existing containers before starting fresh
-        # Run down synchronously and discard all output (status messages like "Stopping" are not errors)
-        $null = & docker compose -f "$Script:CONFIG_DIR\docker-compose.yml" down --timeout 30 2>&1
+        # Wrap in try/catch to completely suppress all output and warnings from docker compose down
+        try {
+            $null = & docker compose -f "$Script:CONFIG_DIR\docker-compose.yml" down --timeout 30 2>&1
+        } catch { <# ignore - containers may not exist yet #> }
         # Use docker compose for Oracle (two containers)
         # Capture exit code separately - do NOT use 2>&1 as it mixes status messages into error detection
         $upOutput = & docker compose -f "$Script:CONFIG_DIR\docker-compose.yml" up -d 2>&1
