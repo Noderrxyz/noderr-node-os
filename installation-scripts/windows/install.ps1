@@ -344,13 +344,29 @@ function New-SoftwareAttestation {
 # Node Registration
 # ============================================================================
 
+function Invoke-ApiPost {
+    param([string]$Url, [string]$JsonBody)
+    # Use .NET WebClient directly to avoid PS 5.1 Invoke-RestMethod hang issues
+    $wc = New-Object System.Net.WebClient
+    $wc.Headers.Add("Content-Type", "application/json")
+    $wc.Headers.Add("User-Agent", "Noderr-Installer/1.1.0")
+    try {
+        $responseBytes = $wc.UploadData($Url, "POST", [System.Text.Encoding]::UTF8.GetBytes($JsonBody))
+        return [System.Text.Encoding]::UTF8.GetString($responseBytes)
+    } finally {
+        $wc.Dispose()
+    }
+}
+
 function Get-InstallConfig {
     param([string]$Token)
     Write-Log -Message "Fetching installation configuration..."
     try {
-        $body     = @{ installToken = $Token } | ConvertTo-Json
-        $response = Invoke-RestMethod -Uri "$Script:AUTH_API_URL/api/v1/install/config" -Method Post -Body $body -ContentType "application/json" -ErrorAction Stop
-        $response | ConvertTo-Json -Depth 10 | Set-Content -Path "$Script:CONFIG_DIR\install_config.json" -NoNewline
+        $body     = "{`"installToken`":`"$Token`"}"
+        $rawJson  = Invoke-ApiPost -Url "$Script:AUTH_API_URL/api/v1/install/config" -JsonBody $body
+        $response = $rawJson | ConvertFrom-Json
+        if ($response.error) { Write-ErrorAndExit "API error: $($response.message)" }
+        $rawJson | Set-Content -Path "$Script:CONFIG_DIR\install_config.json" -NoNewline
         Write-Log -Message "Install config received (tier: $($response.tier))" -Level Success
         return $response
     } catch {
@@ -406,7 +422,10 @@ function Register-Node {
             nodeTier     = $InstallConfig.tier
         } | ConvertTo-Json -Depth 10
 
-        $response = Invoke-RestMethod -Uri "$Script:AUTH_API_URL/api/v1/auth/register" -Method Post -Body $body -ContentType "application/json" -ErrorAction Stop
+        Write-Log -Message "Sending registration request to $Script:AUTH_API_URL..."
+        $rawJson  = Invoke-ApiPost -Url "$Script:AUTH_API_URL/api/v1/auth/register" -JsonBody $body
+        $response = $rawJson | ConvertFrom-Json
+        if ($response.error) { Write-ErrorAndExit "Registration API error: $($response.message)" }
 
         $credPath = "$Script:CONFIG_DIR\credentials.json"
         $response | ConvertTo-Json | Set-Content -Path $credPath -NoNewline
@@ -439,11 +458,17 @@ function Get-DockerImageFromR2 {
     param([string]$Tier, [string]$ImageName, [string]$R2Path)
     $tmpPath = "$env:TEMP\noderr-$($Tier.ToLower())-image.tar.gz"
     $url     = "$Script:R2_PUBLIC_URL/$R2Path"
-    Write-Log -Message "Downloading $ImageName from R2..."
+    Write-Log -Message "Downloading $ImageName from R2 (this may take several minutes for large images)..."
     Write-Log -Message "  URL: $url"
+    Write-Log -Message "  Saving to: $tmpPath"
     try {
-        Invoke-WebRequest -Uri $url -OutFile $tmpPath -UseBasicParsing
-        Write-Log -Message "Loading $ImageName into Docker..."
+        # Use .NET WebClient for reliable large-file downloads (avoids PS 5.1 progress bar overhead)
+        $wc = New-Object System.Net.WebClient
+        $wc.Headers.Add("User-Agent", "Noderr-Installer/1.1.0")
+        $wc.DownloadFile($url, $tmpPath)
+        $wc.Dispose()
+        $sizeMB = [Math]::Round((Get-Item $tmpPath).Length / 1MB)
+        Write-Log -Message "Download complete ($($sizeMB)MB). Loading $ImageName into Docker..." -Level Success
         $result = docker load -i $tmpPath 2>&1
         if ($LASTEXITCODE -ne 0) { Write-ErrorAndExit "Failed to load Docker image: $result" }
         Remove-Item -Path $tmpPath -Force -ErrorAction SilentlyContinue
