@@ -55,7 +55,10 @@ if (require.main === module) {
 
       logger.info('Integration Layer Service started successfully');
 
-      await new Promise(() => {});
+      const _keepAlive = setInterval(() => { /* no-op */ }, 30_000);
+      await new Promise<void>((resolve) => {
+        onShutdown('integration-layer-main', async () => { clearInterval(_keepAlive); resolve(); }, 5000);
+      });
     } catch (error) {
       logger.error('Fatal error starting Integration Layer Service:', error);
       process.exit(1);

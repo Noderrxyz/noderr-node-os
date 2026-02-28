@@ -241,8 +241,11 @@ export async function startExchangeService(): Promise<void> {
     
     logger.info('Exchange Connectivity Service started successfully');
     
-    // Keep process alive
-    await new Promise(() => {});  // Never resolves
+    // Keepalive: setInterval prevents the event loop from draining
+    const _keepAlive = setInterval(() => { /* no-op */ }, 30_000);
+    await new Promise<void>((resolve) => {
+      onShutdown('exchanges-main', async () => { clearInterval(_keepAlive); resolve(); }, 5000);
+    });
   } catch (error) {
     logger.error('Failed to start Exchange Connectivity Service', error);
     throw error;

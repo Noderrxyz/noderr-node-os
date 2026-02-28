@@ -34,7 +34,10 @@ if (require.main === module) {
 
       logger.info('Floor Engine Service started successfully');
 
-      await new Promise(() => {});
+      const _keepAlive = setInterval(() => { /* no-op */ }, 30_000);
+      await new Promise<void>((resolve) => {
+        onShutdown('floor-engine-main', async () => { clearInterval(_keepAlive); resolve(); }, 5000);
+      });
     } catch (error) {
       logger.error('Fatal error starting Floor Engine Service:', error);
       process.exit(1);

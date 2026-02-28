@@ -258,10 +258,24 @@ export async function startOnChainService(): Promise<void> {
       console.log('On-chain service shut down complete');
     }, 10000);
     
+    // Start schedulers so they keep the event loop alive with their setIntervals
+    onChainService.rewardEpochScheduler.start();
+    onChainService.trustFingerprintSyncScheduler.start();
+    
     console.log('On-Chain Service started successfully');
     
-    // Keep process alive
-    await new Promise(() => {});
+    // Keepalive: prevents the event loop from draining if all other handles
+    // are cleared (e.g. ethers provider polling is paused). The schedulers
+    // above also keep the loop alive, but this is a belt-and-suspenders guard.
+    const _keepAlive = setInterval(() => { /* no-op */ }, 30_000);
+    
+    // Wait forever (resolved only by graceful shutdown)
+    await new Promise<void>((resolve) => {
+      onShutdown('on-chain-service-main', async () => {
+        clearInterval(_keepAlive);
+        resolve();
+      }, 5000);
+    });
   } catch (error) {
     console.error('Failed to start On-Chain Service:', error);
     throw error;

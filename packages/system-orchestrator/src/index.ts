@@ -111,7 +111,10 @@ if (require.main === module) {
         await orchestrator.stop();
       }, 10000);
 
-      await new Promise(() => {});
+      const _keepAlive = setInterval(() => { /* no-op */ }, 30_000);
+      await new Promise<void>((resolve) => {
+        onShutdown('system-orchestrator-main', async () => { clearInterval(_keepAlive); resolve(); }, 5000);
+      });
     } catch (error) {
       console.error('[system-orchestrator] Fatal startup error:', error);
       process.exit(1);

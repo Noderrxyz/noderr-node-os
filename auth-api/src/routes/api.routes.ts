@@ -275,7 +275,15 @@ export async function registerApiRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
 
         if (error instanceof Error) {
-          if (error.message.includes('not found') || error.message.includes('status')) {
+          if (
+            error.message.includes('not found') ||
+            error.message.includes('status') ||
+            error.message.includes('Invalid JWT') ||
+            error.message.includes('jwt') ||
+            error.message.includes('token') ||
+            error.message.includes('expired') ||
+            error.message.includes('signature')
+          ) {
             return reply.code(401).send({
               error: 'Unauthorized',
               message: error.message,

@@ -43,7 +43,13 @@ export async function startComplianceService(): Promise<void> {
     }, 10000);
     
     logger.info('Compliance Service started successfully');
-    await new Promise(() => {});
+    // Keepalive: setInterval prevents the event loop from draining when there
+    // are no other active handles (timers/I/O). Without this, Node.js exits
+    // cleanly (code 0) even though the service is "running".
+    const _keepAlive = setInterval(() => { /* no-op */ }, 30_000);
+    await new Promise<void>((resolve) => {
+      onShutdown('compliance-main', async () => { clearInterval(_keepAlive); resolve(); }, 5000);
+    });
   } catch (error) {
     logger.error('Failed to start Compliance Service', error);
     throw error;
