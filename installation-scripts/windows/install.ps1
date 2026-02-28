@@ -463,19 +463,27 @@ function Register-Node {
             }
         }
 
-        $body = @{
-            installToken = $Token
-            publicKey    = $publicKey
-            attestation  = @{
-                quote      = $challenge
-                signature  = $signature
-                pcrValues  = $pcrValues
-                timestamp  = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-            }
-            systemInfo   = $systemInfo
-            walletAddress = $WalletAddress
-            nodeTier     = $InstallConfig.tier
-        } | ConvertTo-Json -Depth 10
+        # Build JSON body as raw string to avoid PS 5.1 ConvertTo-Json hang on PSCustomObject
+        $timestamp    = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+        $pubKeyEsc    = $publicKey.Replace('\', '\\').Replace('"', '\"').Replace("`r", '\r').Replace("`n", '\n')
+        $challengeEsc = $challenge.Trim().Replace('"', '\"')
+        $signatureEsc = $signature.Trim().Replace('"', '\"')
+        $hostnameEsc  = $env:COMPUTERNAME.Replace('"', '\"')
+        $osVersionEsc = $osVersion.Replace('"', '\"')
+        $tierEsc      = $InstallConfig.tier.Replace('"', '\"')
+        $walletEsc    = $WalletAddress.Replace('"', '\"')
+        $tokenEsc     = $Token.Replace('"', '\"')
+
+        # Build systemInfo JSON fragment
+        $sysInfoJson = "{`"hostname`":`"$hostnameEsc`",`"cpuCores`":$cpuCores,`"memoryGB`":$memoryGB,`"diskGB`":$diskGB,`"osVersion`":`"$osVersionEsc`""
+        if ($systemInfo.gpuHardwareId) {
+            $gpuIdEsc   = $systemInfo.gpuHardwareId.Replace('"', '\"')
+            $gpuNameEsc = $systemInfo.gpuName.Replace('"', '\"')
+            $sysInfoJson += ",`"gpuHardwareId`":`"$gpuIdEsc`",`"gpuName`":`"$gpuNameEsc`""
+        }
+        $sysInfoJson += "}"
+
+        $body = "{`"installToken`":`"$tokenEsc`",`"publicKey`":`"$pubKeyEsc`",`"attestation`":{`"quote`":`"$challengeEsc`",`"signature`":`"$signatureEsc`",`"pcrValues`":{`"0`":`"$('0' * 64)`",`"7`":`"$('0' * 64)`"},`"timestamp`":`"$timestamp`"},`"systemInfo`":$sysInfoJson,`"walletAddress`":`"$walletEsc`",`"nodeTier`":`"$tierEsc`"}"
 
         Write-Log -Message "Sending registration request to $Script:AUTH_API_URL..."
         $rawJson  = Invoke-ApiPost -Url "$Script:AUTH_API_URL/api/v1/auth/register" -JsonBody $body
