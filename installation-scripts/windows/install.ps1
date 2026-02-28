@@ -441,6 +441,17 @@ function Get-InstallConfig {
 function Register-Node {
     param([string]$Token, [PSObject]$InstallConfig, [string]$WalletAddress)
     Write-Log -Message "Registering node..."
+    # Skip re-registration if credentials already exist (idempotent on retry)
+    $credPath = "$Script:CONFIG_DIR\credentials.json"
+    if (Test-Path $credPath) {
+        try {
+            $existing = Get-Content $credPath -Raw | ConvertFrom-Json
+            if ($existing.nodeId -and $existing.apiKey) {
+                Write-Log -Message "Node already registered (ID: $($existing.nodeId)) - reusing credentials" -Level Success
+                return $existing
+            }
+        } catch { <# corrupt file - re-register #> }
+    }
     try {
         $publicKey  = Get-Content -Path "$Script:CONFIG_DIR\public_key.pem" -Raw
         $challenge  = Get-Content -Path "$Script:CONFIG_DIR\challenge.txt"  -Raw
