@@ -430,7 +430,7 @@ function Get-InstallConfig {
 }
 
 function Register-Node {
-    param([string]$Token, [PSObject]$InstallConfig)
+    param([string]$Token, [PSObject]$InstallConfig, [string]$WalletAddress)
     Write-Log -Message "Registering node..."
     try {
         $publicKey  = Get-Content -Path "$Script:CONFIG_DIR\public_key.pem" -Raw
@@ -470,7 +470,7 @@ function Register-Node {
         $signatureEsc = $signature.Trim().Replace('"', '\"')
         $hostnameEsc  = $env:COMPUTERNAME.Replace('"', '\"')
         $osVersionEsc = $osVersion.Replace('"', '\"')
-        $tierEsc      = $InstallConfig.tier.ToLower().Replace('"', '\"')
+        $tierEsc      = ([string]$InstallConfig.tier).ToLower().Replace('"', '\"')
         $walletEsc    = $WalletAddress.Replace('"', '\"')
         $tokenEsc     = $Token.Replace('"', '\"')
 
@@ -830,7 +830,7 @@ function Main {
     Test-HardwareForTier -InstallConfig $installConfig
 
     # Register node
-    $credentials = Register-Node -Token $InstallToken -InstallConfig $installConfig
+    $credentials = Register-Node -Token $InstallToken -InstallConfig $installConfig -WalletAddress $WalletAddress
 
     # Download images and configure containers
     Install-DockerContainer -InstallConfig $installConfig -Credentials $credentials
