@@ -3,11 +3,14 @@
 # Noderr Oracle Node - Update Script
 # Run this inside the Oracle LXC container as root.
 #
-# Usage (from inside the container):
-#   bash /tmp/update_oracle.sh
+# Usage (from inside the Oracle LXC — recommended):
+#   curl -fsSL https://raw.githubusercontent.com/Noderrxyz/noderr-node-os/master/installation-scripts/update_oracle.sh -o /tmp/update_oracle.sh && bash /tmp/update_oracle.sh
 #
 # Usage (from the Proxmox host shell — replace CT_ID with your Oracle CT ID):
-#   pct exec <CT_ID> -- bash -s < /tmp/update_oracle.sh
+#   pct exec <CT_ID> -- bash -c "curl -fsSL https://raw.githubusercontent.com/Noderrxyz/noderr-node-os/master/installation-scripts/update_oracle.sh -o /tmp/update_oracle.sh && bash /tmp/update_oracle.sh"
+#
+# NOTE: Do NOT pipe directly into sh/bash (| bash) — the shebang requires bash
+#       and piping bypasses it, causing 'Illegal option -o pipefail' on dash systems.
 #
 # To find your Oracle CT ID on Proxmox:
 #   pct list | grep -i oracle

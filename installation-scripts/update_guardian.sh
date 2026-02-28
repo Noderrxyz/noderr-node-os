@@ -3,11 +3,14 @@
 # Noderr Guardian Node - Update Script
 # Run this inside the Guardian LXC container as root.
 #
-# Usage (from inside the container):
-#   bash /tmp/update_guardian.sh
+# Usage (from inside the Guardian LXC — recommended):
+#   curl -fsSL https://raw.githubusercontent.com/Noderrxyz/noderr-node-os/master/installation-scripts/update_guardian.sh -o /tmp/update_guardian.sh && bash /tmp/update_guardian.sh
 #
 # Usage (from the Proxmox host shell — replace CT_ID with your Guardian CT ID):
-#   pct exec <CT_ID> -- bash -s < /tmp/update_guardian.sh
+#   pct exec <CT_ID> -- bash -c "curl -fsSL https://raw.githubusercontent.com/Noderrxyz/noderr-node-os/master/installation-scripts/update_guardian.sh -o /tmp/update_guardian.sh && bash /tmp/update_guardian.sh"
+#
+# NOTE: Do NOT pipe directly into sh/bash (| bash) — the shebang requires bash
+#       and piping bypasses it, causing 'Illegal option -o pipefail' on dash systems.
 #
 # To find your Guardian CT ID on Proxmox:
 #   pct list | grep -i guardian
