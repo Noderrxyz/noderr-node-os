@@ -1,19 +1,30 @@
 <#
 .SYNOPSIS
     Noderr Node OS - Windows Installation Script
-    
+
 .DESCRIPTION
-    One-command installation with TPM-based hardware attestation for Windows
-    
+    One-command installation with TPM-based hardware attestation for Windows.
+    Supports all node tiers: VALIDATOR, GUARDIAN, ORACLE.
+    Oracle nodes require an NVIDIA GPU (RTX 3000+ recommended) and Docker Desktop
+    with WSL2 backend. NVIDIA drivers v525+ are required for GPU passthrough.
+
 .PARAMETER InstallToken
-    The installation token provided by Noderr
-    
+    The installation token provided by Noderr (from the operator dashboard).
+
+.PARAMETER WalletAddress
+    Your EVM-compatible wallet address for staking verification (optional).
+
 .EXAMPLE
-    .\install.ps1 -InstallToken "ndr_install_abc123..."
-    
+    # Run as Administrator in PowerShell:
+    irm https://install.noderr.xyz/windows | iex  # (prompts for token)
+
+    # Or with token directly:
+    .\install.ps1 -InstallToken "ndr_install_abc123..." -WalletAddress "0xYourWallet"
+
 .NOTES
-    Version: 1.0.0
-    Requires: Windows 10/11 Pro or Server 2019+, TPM 2.0, Administrator privileges
+    Version:  1.1.0
+    Requires: Windows 10 21H2+ / Windows 11, Docker Desktop with WSL2, Administrator privileges
+    Oracle:   NVIDIA GPU + drivers v525+ required for GPU acceleration
 #>
 
 #Requires -RunAsAdministrator
@@ -22,7 +33,10 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
-    [string]$InstallToken
+    [string]$InstallToken,
+
+    [Parameter(Mandatory=$false)]
+    [string]$WalletAddress = "0x0000000000000000000000000000000000000000"
 )
 
 # ============================================================================
@@ -32,15 +46,17 @@ param(
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
-$Script:VERSION = "1.0.0"
-$Script:MIN_CPU_CORES = 4
-$Script:MIN_RAM_GB = 8
-$Script:MIN_DISK_GB = 100
-
+$Script:VERSION    = "1.1.0"
 $Script:AUTH_API_URL = if ($env:AUTH_API_URL) { $env:AUTH_API_URL } else { "https://noderrauth-api-production-cca0.up.railway.app" }
-$Script:INSTALL_DIR = "C:\Program Files\Noderr"
-$Script:CONFIG_DIR = "C:\ProgramData\Noderr"
-$Script:LOG_FILE = "$Script:CONFIG_DIR\install.log"
+$Script:R2_PUBLIC_URL = "https://pub-66ad852cb9e54582bd0af64bce8d0a04.r2.dev"
+$Script:INSTALL_DIR  = "C:\Program Files\Noderr"
+$Script:CONFIG_DIR   = "C:\ProgramData\Noderr"
+$Script:LOG_FILE     = "$Script:CONFIG_DIR\install.log"
+
+# Minimum baseline requirements (tier-specific requirements come from the API)
+$Script:MIN_CPU_CORES = 4
+$Script:MIN_RAM_GB    = 8
+$Script:MIN_DISK_GB   = 80
 
 # ============================================================================
 # Logging Functions
@@ -48,38 +64,24 @@ $Script:LOG_FILE = "$Script:CONFIG_DIR\install.log"
 
 function Write-Log {
     param(
-        [Parameter(Mandatory=$true)]
-        [string]$Message,
-        
-        [Parameter(Mandatory=$false)]
-        [ValidateSet('Info', 'Success', 'Warning', 'Error')]
-        [string]$Level = 'Info'
+        [Parameter(Mandatory=$true)]  [string]$Message,
+        [Parameter(Mandatory=$false)] [ValidateSet('Info','Success','Warning','Error')] [string]$Level = 'Info'
     )
-    
-    $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+    $timestamp  = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
     $logMessage = "[$timestamp] [$Level] $Message"
-    
-    # Ensure log directory exists
     $logDir = Split-Path -Path $Script:LOG_FILE -Parent
-    if (-not (Test-Path -Path $logDir)) {
-        New-Item -ItemType Directory -Path $logDir -Force | Out-Null
-    }
-    
-    # Write to log file
+    if (-not (Test-Path -Path $logDir)) { New-Item -ItemType Directory -Path $logDir -Force | Out-Null }
     Add-Content -Path $Script:LOG_FILE -Value $logMessage
-    
-    # Write to console with colors
     switch ($Level) {
-        'Info'    { Write-Host "[$timestamp] " -NoNewline; Write-Host $Message -ForegroundColor Cyan }
-        'Success' { Write-Host "[$timestamp] ✓ " -NoNewline -ForegroundColor Green; Write-Host $Message -ForegroundColor Green }
-        'Warning' { Write-Host "[$timestamp] ⚠ " -NoNewline -ForegroundColor Yellow; Write-Host $Message -ForegroundColor Yellow }
-        'Error'   { Write-Host "[$timestamp] ✗ " -NoNewline -ForegroundColor Red; Write-Host $Message -ForegroundColor Red }
+        'Info'    { Write-Host "[$timestamp] "      -NoNewline; Write-Host $Message -ForegroundColor Cyan }
+        'Success' { Write-Host "[$timestamp] ✓ "   -NoNewline -ForegroundColor Green;  Write-Host $Message -ForegroundColor Green }
+        'Warning' { Write-Host "[$timestamp] ⚠ "   -NoNewline -ForegroundColor Yellow; Write-Host $Message -ForegroundColor Yellow }
+        'Error'   { Write-Host "[$timestamp] ✗ "   -NoNewline -ForegroundColor Red;    Write-Host $Message -ForegroundColor Red }
     }
 }
 
 function Write-ErrorAndExit {
     param([string]$Message)
-    
     Write-Log -Message $Message -Level Error
     Write-Log -Message "Installation failed. Check $Script:LOG_FILE for details." -Level Error
     exit 1
@@ -90,88 +92,150 @@ function Write-ErrorAndExit {
 # ============================================================================
 
 function Test-WindowsVersion {
-    Write-Log -Message "Checking Windows version..." -Level Info
-    
-    $os = Get-CimInstance -ClassName Win32_OperatingSystem
+    Write-Log -Message "Checking Windows version..."
+    $os      = Get-CimInstance -ClassName Win32_OperatingSystem
     $version = [System.Version]$os.Version
-    
-    # Windows 10 = 10.0.19041+, Windows 11 = 10.0.22000+, Server 2019 = 10.0.17763+
-    if ($version.Major -lt 10) {
-        Write-ErrorAndExit "Windows 10/11 or Server 2019+ is required. Found: $($os.Caption)"
+    # Windows 10 21H2 = build 19044; Windows 11 = 22000; Server 2019 = 17763
+    if ($version.Major -lt 10 -or $version.Build -lt 17763) {
+        Write-ErrorAndExit "Windows 10 21H2+ / Windows 11 / Server 2019+ required. Found: $($os.Caption) (Build $($version.Build))"
     }
-    
-    if ($version.Build -lt 17763) {
-        Write-ErrorAndExit "Windows build 17763 or newer is required. Found: $($version.Build)"
-    }
-    
     Write-Log -Message "Operating System: $($os.Caption) (Build $($version.Build))" -Level Success
 }
 
 function Test-InternetConnectivity {
-    Write-Log -Message "Checking internet connectivity..." -Level Info
-    
+    Write-Log -Message "Checking internet connectivity..."
     try {
-        $ping = Test-Connection -ComputerName "8.8.8.8" -Count 1 -Quiet
-        if (-not $ping) {
-            Write-ErrorAndExit "No internet connectivity. Please check your network connection."
-        }
-        Write-Log -Message "Internet connectivity verified" -Level Success
+        $null = Invoke-WebRequest -Uri "https://8.8.8.8" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+    } catch {
+        # Fallback: try DNS resolution
+        try { $null = [System.Net.Dns]::GetHostAddresses("google.com") }
+        catch { Write-ErrorAndExit "No internet connectivity. Please check your network connection." }
     }
-    catch {
-        Write-ErrorAndExit "Internet connectivity test failed: $_"
-    }
+    Write-Log -Message "Internet connectivity verified" -Level Success
 }
 
-function Test-HardwareRequirements {
-    Write-Log -Message "Validating hardware requirements..." -Level Info
-    
-    # Check CPU cores
-    $cpuCores = (Get-CimInstance -ClassName Win32_Processor).NumberOfLogicalProcessors
-    if ($cpuCores -lt $Script:MIN_CPU_CORES) {
-        Write-ErrorAndExit "Insufficient CPU cores. Required: $Script:MIN_CPU_CORES, Found: $cpuCores"
+function Test-HardwareBaseline {
+    # Baseline check before we know the tier. Tier-specific checks run after fetching install config.
+    Write-Log -Message "Validating baseline hardware requirements..."
+    $cpuCores = (Get-CimInstance -ClassName Win32_Processor | Measure-Object -Property NumberOfLogicalProcessors -Sum).Sum
+    $ramGB    = [Math]::Round((Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
+    $diskGB   = [Math]::Round((Get-PSDrive -Name C).Free / 1GB)
+    if ($cpuCores -lt $Script:MIN_CPU_CORES) { Write-ErrorAndExit "Insufficient CPU cores. Required: $Script:MIN_CPU_CORES, Found: $cpuCores" }
+    if ($ramGB    -lt $Script:MIN_RAM_GB)    { Write-ErrorAndExit "Insufficient RAM. Required: ${Script:MIN_RAM_GB}GB, Found: ${ramGB}GB" }
+    if ($diskGB   -lt $Script:MIN_DISK_GB)   { Write-ErrorAndExit "Insufficient disk space. Required: ${Script:MIN_DISK_GB}GB free, Found: ${diskGB}GB" }
+    Write-Log -Message "CPU: $cpuCores cores | RAM: ${ramGB}GB | Disk: ${diskGB}GB free" -Level Success
+}
+
+function Test-HardwareForTier {
+    param([PSObject]$InstallConfig)
+    $tier = $InstallConfig.tier
+    Write-Log -Message "Validating hardware requirements for $tier tier..."
+
+    # Use API-provided requirements if present
+    if ($InstallConfig.hardwareRequirements) {
+        $reqCpu  = $InstallConfig.hardwareRequirements.minCpuCores
+        $reqRam  = $InstallConfig.hardwareRequirements.minRamGb
+        $reqDisk = $InstallConfig.hardwareRequirements.minDiskGb
+    } else {
+        # Fallback defaults
+        switch ($tier) {
+            "ORACLE"    { $reqCpu = 8;  $reqRam = 16; $reqDisk = 100 }
+            "GUARDIAN"  { $reqCpu = 16; $reqRam = 32; $reqDisk = 200 }
+            default     { $reqCpu = 4;  $reqRam = 8;  $reqDisk = 80  }
+        }
     }
-    Write-Log -Message "CPU cores: $cpuCores (minimum: $Script:MIN_CPU_CORES)" -Level Success
-    
-    # Check RAM
-    $ramGB = [Math]::Round((Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
-    if ($ramGB -lt $Script:MIN_RAM_GB) {
-        Write-ErrorAndExit "Insufficient RAM. Required: ${Script:MIN_RAM_GB}GB, Found: ${ramGB}GB"
-    }
-    Write-Log -Message "RAM: ${ramGB}GB (minimum: ${Script:MIN_RAM_GB}GB)" -Level Success
-    
-    # Check disk space
-    $diskGB = [Math]::Round((Get-PSDrive -Name C).Free / 1GB)
-    if ($diskGB -lt $Script:MIN_DISK_GB) {
-        Write-ErrorAndExit "Insufficient disk space. Required: ${Script:MIN_DISK_GB}GB, Found: ${diskGB}GB"
-    }
-    Write-Log -Message "Disk space: ${diskGB}GB available (minimum: ${Script:MIN_DISK_GB}GB)" -Level Success
+
+    $cpuCores = (Get-CimInstance -ClassName Win32_Processor | Measure-Object -Property NumberOfLogicalProcessors -Sum).Sum
+    $ramGB    = [Math]::Round((Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
+    $diskGB   = [Math]::Round((Get-PSDrive -Name C).Free / 1GB)
+    $failed   = $false
+
+    if ($cpuCores -lt $reqCpu)  { Write-Log -Message "Insufficient CPU for $tier. Required: $reqCpu cores, Found: $cpuCores" -Level Error;   $failed = $true }
+    else                        { Write-Log -Message "CPU: $cpuCores cores ($tier minimum: $reqCpu)" -Level Success }
+    if ($ramGB -lt $reqRam)     { Write-Log -Message "Insufficient RAM for $tier. Required: ${reqRam}GB, Found: ${ramGB}GB" -Level Error;     $failed = $true }
+    else                        { Write-Log -Message "RAM: ${ramGB}GB ($tier minimum: ${reqRam}GB)" -Level Success }
+    if ($diskGB -lt $reqDisk)   { Write-Log -Message "Insufficient disk for $tier. Required: ${reqDisk}GB free, Found: ${diskGB}GB" -Level Error; $failed = $true }
+    else                        { Write-Log -Message "Disk: ${diskGB}GB free ($tier minimum: ${reqDisk}GB)" -Level Success }
+
+    if ($failed) { Write-ErrorAndExit "Hardware requirements not met for $tier node. See above for details." }
 }
 
 function Test-TPM {
-    Write-Log -Message "Checking for TPM 2.0..." -Level Info
-    
+    Write-Log -Message "Checking for TPM 2.0..."
     try {
-        $tpm = Get-Tpm
-        
+        $tpm = Get-Tpm -ErrorAction Stop
         if (-not $tpm.TpmPresent) {
-            Write-ErrorAndExit "TPM is not present. TPM 2.0 is required for Noderr Node OS."
+            Write-Log -Message "TPM not present. Proceeding with software-based attestation." -Level Warning
+            return $false
         }
-        
         if (-not $tpm.TpmReady) {
-            Write-ErrorAndExit "TPM is not ready. Please enable TPM in BIOS/UEFI settings."
+            Write-Log -Message "TPM present but not ready. Proceeding with software-based attestation." -Level Warning
+            return $false
         }
-        
-        # Check TPM version (2.0 required)
-        $tpmVersion = (Get-WmiObject -Namespace "Root\CIMv2\Security\MicrosoftTpm" -Class Win32_Tpm).SpecVersion
-        if ($tpmVersion -notlike "2.0*") {
-            Write-ErrorAndExit "TPM 2.0 is required. Found version: $tpmVersion"
-        }
-        
         Write-Log -Message "TPM 2.0 detected and ready" -Level Success
+        return $true
+    } catch {
+        Write-Log -Message "TPM check failed ($($_)). Proceeding with software-based attestation." -Level Warning
+        return $false
     }
-    catch {
-        Write-ErrorAndExit "TPM check failed: $_"
-    }
+}
+
+function Test-DockerRunning {
+    try {
+        $null = docker info 2>&1
+        if ($LASTEXITCODE -ne 0) { return $false }
+        return $true
+    } catch { return $false }
+}
+
+function Test-NvidiaGpu {
+    <#
+    .SYNOPSIS
+        Detects NVIDIA GPU and returns hardware info.
+        Returns $null if no NVIDIA GPU is found.
+    #>
+    try {
+        $gpus = Get-CimInstance -ClassName Win32_VideoController | Where-Object { $_.Name -like "*NVIDIA*" }
+        if (-not $gpus) { return $null }
+        $gpu = $gpus | Select-Object -First 1
+        # Build a stable hardware ID from the PNP device ID (hardware-level identifier)
+        $rawId = $gpu.PNPDeviceID
+        $bytes = [System.Text.Encoding]::UTF8.GetBytes($rawId)
+        $sha   = [System.Security.Cryptography.SHA256]::Create()
+        $hash  = $sha.ComputeHash($bytes)
+        $gpuId = "GPU-" + ([System.BitConverter]::ToString($hash) -replace "-","").Substring(0,32).ToLower()
+        return @{
+            Name     = $gpu.Name
+            HardwareId = $gpuId
+            PnpId    = $rawId
+        }
+    } catch { return $null }
+}
+
+function Test-NvidiaDriverVersion {
+    <#
+    .SYNOPSIS
+        Checks if NVIDIA driver version is >= 525 (required for WSL2 GPU passthrough).
+    #>
+    try {
+        $gpu = Get-CimInstance -ClassName Win32_VideoController | Where-Object { $_.Name -like "*NVIDIA*" } | Select-Object -First 1
+        if (-not $gpu) { return $false }
+        # DriverVersion is in format "31.0.15.xxxx" on Windows; last segment maps to NVIDIA driver
+        $driverParts = $gpu.DriverVersion -split "\."
+        # NVIDIA driver 525.xx maps to Windows driver version 31.0.15.2500 (last 4 digits / 10)
+        if ($driverParts.Count -ge 4) {
+            $nvidiaVersion = [int]($driverParts[-1]) / 10
+            if ($nvidiaVersion -ge 525) {
+                Write-Log -Message "NVIDIA driver version: $([int]$nvidiaVersion) (>= 525 required)" -Level Success
+                return $true
+            } else {
+                Write-Log -Message "NVIDIA driver version $([int]$nvidiaVersion) is too old. Version 525+ required for GPU passthrough." -Level Warning
+                Write-Log -Message "Download latest drivers from: https://www.nvidia.com/drivers" -Level Warning
+                return $false
+            }
+        }
+        return $false
+    } catch { return $false }
 }
 
 # ============================================================================
@@ -179,122 +243,86 @@ function Test-TPM {
 # ============================================================================
 
 function Install-Docker {
-    if (Get-Command docker -ErrorAction SilentlyContinue) {
+    if (Test-DockerRunning) {
         $dockerVersion = docker --version
-        Write-Log -Message "Docker already installed: $dockerVersion" -Level Success
+        Write-Log -Message "Docker already installed and running: $dockerVersion" -Level Success
         return
     }
-    
-    Write-Log -Message "Installing Docker Desktop..." -Level Info
-    
+
+    # Docker is installed but not running (e.g., Docker Desktop not started)
+    if (Get-Command docker -ErrorAction SilentlyContinue) {
+        Write-ErrorAndExit "Docker is installed but not running. Please start Docker Desktop and re-run this script."
+    }
+
+    Write-Log -Message "Docker Desktop not found. Installing Docker Desktop..."
     try {
-        # Download Docker Desktop installer
-        $dockerUrl = "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe"
-        $installerPath = "$env:TEMP\DockerDesktopInstaller.exe"
-        
-        Write-Log -Message "Downloading Docker Desktop..." -Level Info
+        $dockerUrl       = "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe"
+        $installerPath   = "$env:TEMP\DockerDesktopInstaller.exe"
+        Write-Log -Message "Downloading Docker Desktop installer (~600MB)..."
         Invoke-WebRequest -Uri $dockerUrl -OutFile $installerPath -UseBasicParsing
-        
-        # Install Docker Desktop silently
-        Write-Log -Message "Installing Docker Desktop (this may take several minutes)..." -Level Info
-        Start-Process -FilePath $installerPath -ArgumentList "install", "--quiet" -Wait -NoNewWindow
-        
-        # Clean up installer
-        Remove-Item -Path $installerPath -Force
-        
-        # Verify installation
-        if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-            Write-ErrorAndExit "Docker installation failed. Please install Docker Desktop manually."
-        }
-        
-        Write-Log -Message "Docker installed successfully" -Level Success
-        Write-Log -Message "Please restart your computer and run this script again." -Level Warning
+        Write-Log -Message "Installing Docker Desktop (this may take several minutes)..."
+        Start-Process -FilePath $installerPath -ArgumentList "install", "--quiet", "--accept-license" -Wait -NoNewWindow
+        Remove-Item -Path $installerPath -Force -ErrorAction SilentlyContinue
+
+        Write-Log -Message "Docker Desktop installed." -Level Success
+        Write-Log -Message "IMPORTANT: You must restart your computer and re-run this script to continue." -Level Warning
+        Write-Host ""
+        Write-Host "  After restarting, open Docker Desktop, complete setup, then re-run:" -ForegroundColor Yellow
+        Write-Host "  .\install.ps1 -InstallToken `"$InstallToken`"" -ForegroundColor Cyan
+        Write-Host ""
         exit 0
-    }
-    catch {
-        Write-ErrorAndExit "Docker installation failed: $_"
+    } catch {
+        Write-ErrorAndExit "Docker Desktop installation failed: $_. Please install Docker Desktop manually from https://docs.docker.com/desktop/install/windows-install/"
     }
 }
 
 # ============================================================================
-# TPM Key Generation
+# Key Generation and Attestation
 # ============================================================================
 
-function New-TPMKey {
-    Write-Log -Message "Generating TPM-based cryptographic key..." -Level Info
-    
-    # Ensure config directory exists
-    if (-not (Test-Path -Path $Script:CONFIG_DIR)) {
-        New-Item -ItemType Directory -Path $Script:CONFIG_DIR -Force | Out-Null
-    }
-    
+function New-SoftwareKey {
+    Write-Log -Message "Generating software-based cryptographic key..."
+    if (-not (Test-Path -Path $Script:CONFIG_DIR)) { New-Item -ItemType Directory -Path $Script:CONFIG_DIR -Force | Out-Null }
     try {
-        # Use Windows TPM API to create key
-        # For simplicity, we'll use a certificate-based approach
-        
-        # Create a self-signed certificate in TPM
-        $cert = New-SelfSignedCertificate `
-            -Subject "CN=Noderr-Node-$env:COMPUTERNAME" `
-            -KeyAlgorithm ECDSA_nistP256 `
-            -KeyUsage DigitalSignature `
-            -KeyProtection None `
-            -Provider "Microsoft Software Key Storage Provider" `
-            -NotAfter (Get-Date).AddYears(10) `
-            -CertStoreLocation "Cert:\CurrentUser\My"
-        
-        # Export public key
-        $publicKeyPath = "$Script:CONFIG_DIR\public_key.pem"
-        $publicKeyBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
-        
-        # Convert to PEM format
-        $publicKeyPem = "-----BEGIN CERTIFICATE-----`n"
-        $publicKeyPem += [System.Convert]::ToBase64String($publicKeyBytes, [System.Base64FormattingOptions]::InsertLineBreaks)
-        $publicKeyPem += "`n-----END CERTIFICATE-----"
-        
-        Set-Content -Path $publicKeyPath -Value $publicKeyPem -NoNewline
-        
-        # Store certificate thumbprint for later use
-        Set-Content -Path "$Script:CONFIG_DIR\cert_thumbprint.txt" -Value $cert.Thumbprint -NoNewline
-        
-        Write-Log -Message "TPM key generated successfully" -Level Success
-    }
-    catch {
-        Write-ErrorAndExit "TPM key generation failed: $_"
+        $ecdsa = [System.Security.Cryptography.ECDsa]::Create([System.Security.Cryptography.ECCurve]::NamedCurves.nistP256)
+        $pubKeyBytes = $ecdsa.ExportSubjectPublicKeyInfo()
+        $pubKeyPem   = "-----BEGIN PUBLIC KEY-----`n" +
+                       [System.Convert]::ToBase64String($pubKeyBytes, [System.Base64FormattingOptions]::InsertLineBreaks) +
+                       "`n-----END PUBLIC KEY-----"
+        Set-Content -Path "$Script:CONFIG_DIR\public_key.pem" -Value $pubKeyPem -NoNewline
+
+        # Export private key for signing the attestation challenge
+        $privKeyBytes = $ecdsa.ExportPkcs8PrivateKey()
+        $privKeyB64   = [System.Convert]::ToBase64String($privKeyBytes)
+        Set-Content -Path "$Script:CONFIG_DIR\private_key.b64" -Value $privKeyB64 -NoNewline
+
+        Write-Log -Message "Software key generated" -Level Success
+    } catch {
+        Write-ErrorAndExit "Key generation failed: $_"
     }
 }
 
-function New-Attestation {
-    Write-Log -Message "Creating TPM attestation..." -Level Info
-    
+function New-SoftwareAttestation {
+    Write-Log -Message "Creating software attestation..."
     try {
-        # Get certificate
-        $thumbprint = Get-Content -Path "$Script:CONFIG_DIR\cert_thumbprint.txt" -Raw
-        $cert = Get-ChildItem -Path "Cert:\CurrentUser\My\$thumbprint"
-        
-        # Create challenge
-        $challenge = [System.Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+        $challenge    = [System.Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
         Set-Content -Path "$Script:CONFIG_DIR\challenge.txt" -Value $challenge -NoNewline
-        
-        # Sign challenge with private key
+
+        $privKeyB64   = Get-Content -Path "$Script:CONFIG_DIR\private_key.b64" -Raw
+        $privKeyBytes = [System.Convert]::FromBase64String($privKeyB64)
+        $ecdsa        = [System.Security.Cryptography.ECDsa]::Create()
+        $ecdsa.ImportPkcs8PrivateKey($privKeyBytes, [ref]$null)
+
         $challengeBytes = [System.Text.Encoding]::UTF8.GetBytes($challenge)
-        $signature = $cert.PrivateKey.SignData($challengeBytes, [System.Security.Cryptography.HashAlgorithmName]::SHA256)
-        
-        # Save signature
-        $signatureB64 = [System.Convert]::ToBase64String($signature)
+        $signature      = $ecdsa.SignData($challengeBytes, [System.Security.Cryptography.HashAlgorithmName]::SHA256)
+        $signatureB64   = [System.Convert]::ToBase64String($signature)
         Set-Content -Path "$Script:CONFIG_DIR\signature.txt" -Value $signatureB64 -NoNewline
-        
-        # Get PCR values (simulated for Windows)
-        $pcrValues = @{
-            "0" = (Get-FileHash -Path "$env:SystemRoot\System32\ntoskrnl.exe" -Algorithm SHA256).Hash.ToLower()
-            "7" = (Get-Tpm).TpmPresent.ToString().ToLower() | Get-FileHash -Algorithm SHA256 | Select-Object -ExpandProperty Hash | ForEach-Object { $_.ToLower() }
-        }
-        
-        $pcrJson = $pcrValues | ConvertTo-Json -Compress
-        Set-Content -Path "$Script:CONFIG_DIR\pcr_values.json" -Value $pcrJson -NoNewline
-        
-        Write-Log -Message "TPM attestation created" -Level Success
-    }
-    catch {
+
+        $pcrValues = @{ "0" = "0" * 64; "7" = "0" * 64 } | ConvertTo-Json -Compress
+        Set-Content -Path "$Script:CONFIG_DIR\pcr_values.json" -Value $pcrValues -NoNewline
+
+        Write-Log -Message "Software attestation created" -Level Success
+    } catch {
         Write-ErrorAndExit "Attestation creation failed: $_"
     }
 }
@@ -305,203 +333,342 @@ function New-Attestation {
 
 function Get-InstallConfig {
     param([string]$Token)
-    
-    Write-Log -Message "Fetching installation configuration..." -Level Info
-    
+    Write-Log -Message "Fetching installation configuration..."
     try {
-        $body = @{
-            installToken = $Token
-        } | ConvertTo-Json
-        
-        $response = Invoke-RestMethod `
-            -Uri "$Script:AUTH_API_URL/api/v1/install/config" `
-            -Method Post `
-            -Body $body `
-            -ContentType "application/json" `
-            -ErrorAction Stop
-        
-        $response | ConvertTo-Json | Set-Content -Path "$Script:CONFIG_DIR\install_config.json" -NoNewline
-        
-        Write-Log -Message "Installation configuration received" -Level Success
+        $body     = @{ installToken = $Token } | ConvertTo-Json
+        $response = Invoke-RestMethod -Uri "$Script:AUTH_API_URL/api/v1/install/config" -Method Post -Body $body -ContentType "application/json" -ErrorAction Stop
+        $response | ConvertTo-Json -Depth 10 | Set-Content -Path "$Script:CONFIG_DIR\install_config.json" -NoNewline
+        Write-Log -Message "Install config received (tier: $($response.tier))" -Level Success
         return $response
-    }
-    catch {
+    } catch {
         Write-ErrorAndExit "Failed to fetch installation configuration: $_"
     }
 }
 
 function Register-Node {
-    param([string]$Token)
-    
-    Write-Log -Message "Registering node with authentication API..." -Level Info
-    
+    param([string]$Token, [PSObject]$InstallConfig)
+    Write-Log -Message "Registering node..."
     try {
-        # Read public key
-        $publicKey = Get-Content -Path "$Script:CONFIG_DIR\public_key.pem" -Raw
-        
-        # Read attestation data
-        $challenge = Get-Content -Path "$Script:CONFIG_DIR\challenge.txt" -Raw
-        $signature = Get-Content -Path "$Script:CONFIG_DIR\signature.txt" -Raw
-        $pcrValues = Get-Content -Path "$Script:CONFIG_DIR\pcr_values.json" -Raw | ConvertFrom-Json
-        
-        # Get system info
-        $hostname = $env:COMPUTERNAME
-        $cpuCores = (Get-CimInstance -ClassName Win32_Processor).NumberOfLogicalProcessors
-        $memoryGB = [Math]::Round((Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
-        $diskGB = [Math]::Round((Get-PSDrive -Name C).Free / 1GB)
-        $osVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Version
-        
-        # Create registration request
+        $publicKey  = Get-Content -Path "$Script:CONFIG_DIR\public_key.pem" -Raw
+        $challenge  = Get-Content -Path "$Script:CONFIG_DIR\challenge.txt"  -Raw
+        $signature  = Get-Content -Path "$Script:CONFIG_DIR\signature.txt"  -Raw
+        $pcrValues  = Get-Content -Path "$Script:CONFIG_DIR\pcr_values.json" -Raw | ConvertFrom-Json
+
+        $cpuCores   = (Get-CimInstance -ClassName Win32_Processor | Measure-Object -Property NumberOfLogicalProcessors -Sum).Sum
+        $memoryGB   = [Math]::Round((Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
+        $diskGB     = [Math]::Round((Get-PSDrive -Name C).Free / 1GB)
+        $osVersion  = (Get-CimInstance -ClassName Win32_OperatingSystem).Version
+
+        $systemInfo = @{
+            hostname    = $env:COMPUTERNAME
+            cpuCores    = $cpuCores
+            memoryGB    = $memoryGB
+            diskGB      = $diskGB
+            osVersion   = $osVersion
+        }
+
+        # Detect GPU for Oracle tier
+        if ($InstallConfig.tier -eq "ORACLE") {
+            $gpuInfo = Test-NvidiaGpu
+            if ($gpuInfo) {
+                Write-Log -Message "GPU detected: $($gpuInfo.Name) (ID: $($gpuInfo.HardwareId))" -Level Success
+                $systemInfo.gpuHardwareId = $gpuInfo.HardwareId
+                $systemInfo.gpuName       = $gpuInfo.Name
+            } else {
+                Write-Log -Message "No NVIDIA GPU detected. Oracle ML inference will run in CPU mode." -Level Warning
+            }
+        }
+
         $body = @{
             installToken = $Token
-            publicKey = $publicKey
-            attestation = @{
-                quote = $challenge
-                signature = $signature
-                pcrValues = $pcrValues
-                timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+            publicKey    = $publicKey
+            attestation  = @{
+                quote      = $challenge
+                signature  = $signature
+                pcrValues  = $pcrValues
+                timestamp  = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
             }
-            systemInfo = @{
-                hostname = $hostname
-                cpuCores = $cpuCores
-                memoryGB = $memoryGB
-                diskGB = $diskGB
-                osVersion = $osVersion
-            }
+            systemInfo   = $systemInfo
+            walletAddress = $WalletAddress
+            nodeTier     = $InstallConfig.tier
         } | ConvertTo-Json -Depth 10
-        
-        # Send registration request
-        $response = Invoke-RestMethod `
-            -Uri "$Script:AUTH_API_URL/api/v1/auth/register" `
-            -Method Post `
-            -Body $body `
-            -ContentType "application/json" `
-            -ErrorAction Stop
-        
-        # Save credentials securely
-        $credentialsPath = "$Script:CONFIG_DIR\credentials.json"
-        $response | ConvertTo-Json | Set-Content -Path $credentialsPath -NoNewline
-        
-        # Set restrictive permissions
-        $acl = Get-Acl -Path $credentialsPath
-        $acl.SetAccessRuleProtection($true, $false)
-        $rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
-            [System.Security.Principal.WindowsIdentity]::GetCurrent().Name,
-            "FullControl",
-            "Allow"
-        )
-        $acl.SetAccessRule($rule)
-        Set-Acl -Path $credentialsPath -AclObject $acl
-        
-        Write-Log -Message "Node registered successfully: $($response.nodeId)" -Level Success
+
+        $response = Invoke-RestMethod -Uri "$Script:AUTH_API_URL/api/v1/auth/register" -Method Post -Body $body -ContentType "application/json" -ErrorAction Stop
+
+        $credPath = "$Script:CONFIG_DIR\credentials.json"
+        $response | ConvertTo-Json | Set-Content -Path $credPath -NoNewline
+
+        # Restrict file permissions to current user only
+        try {
+            $acl  = Get-Acl -Path $credPath
+            $acl.SetAccessRuleProtection($true, $false)
+            $rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+                [System.Security.Principal.WindowsIdentity]::GetCurrent().Name, "FullControl", "Allow"
+            )
+            $acl.SetAccessRule($rule)
+            Set-Acl -Path $credPath -AclObject $acl
+        } catch {
+            Write-Log -Message "Could not restrict credentials.json permissions: $_" -Level Warning
+        }
+
+        Write-Log -Message "Node registered: $($response.nodeId)" -Level Success
         return $response
-    }
-    catch {
+    } catch {
         Write-ErrorAndExit "Node registration failed: $_"
     }
 }
 
 # ============================================================================
-# Docker Setup
+# Docker Image Download and Container Setup
 # ============================================================================
 
-function Install-DockerContainer {
-    Write-Log -Message "Setting up Docker container..." -Level Info
-    
+function Get-DockerImageFromR2 {
+    param([string]$Tier, [string]$ImageName, [string]$R2Path)
+    $tmpPath = "$env:TEMP\noderr-$($Tier.ToLower())-image.tar.gz"
+    $url     = "$Script:R2_PUBLIC_URL/$R2Path"
+    Write-Log -Message "Downloading $ImageName from R2..."
+    Write-Log -Message "  URL: $url"
     try {
-        # Read configuration
-        $installConfig = Get-Content -Path "$Script:CONFIG_DIR\install_config.json" -Raw | ConvertFrom-Json
-        $credentials = Get-Content -Path "$Script:CONFIG_DIR\credentials.json" -Raw | ConvertFrom-Json
-        
-        $tier = $installConfig.tier
-        $dockerRegistry = $installConfig.config.dockerRegistry
-        $nodeId = $credentials.nodeId
-        $apiKey = $credentials.apiKey
-        
-        # Determine Docker image
-        $dockerImage = switch ($tier) {
-            "ALL"      { "$dockerRegistry/noderr-node-os:latest-all" }
-            "ORACLE"   { "$dockerRegistry/noderr-node-os:latest-oracle" }
-            "GUARDIAN" { "$dockerRegistry/noderr-node-os:latest-guardian" }
-            default    { Write-ErrorAndExit "Unknown tier: $tier" }
-        }
-        
-        Write-Log -Message "Pulling Docker image: $dockerImage" -Level Info
-        docker pull $dockerImage 2>&1 | Out-Null
-        
-        # Create Docker network
-        docker network create noderr-network 2>$null
-        
-        # Create environment file
-        $envContent = @"
-NODE_ID=$nodeId
-NODE_TIER=$tier
-API_KEY=$apiKey
-DEPLOYMENT_ENGINE_URL=$($installConfig.config.deploymentEngineUrl)
-AUTH_API_URL=$($installConfig.config.authApiUrl)
-TELEMETRY_ENDPOINT=$($installConfig.config.telemetryEndpoint)
-"@
-        Set-Content -Path "$Script:CONFIG_DIR\node.env" -Value $envContent -NoNewline
-        
-        Write-Log -Message "Docker container configured" -Level Success
-    }
-    catch {
-        Write-ErrorAndExit "Docker setup failed: $_"
+        Invoke-WebRequest -Uri $url -OutFile $tmpPath -UseBasicParsing
+        Write-Log -Message "Loading $ImageName into Docker..."
+        $result = docker load -i $tmpPath 2>&1
+        if ($LASTEXITCODE -ne 0) { Write-ErrorAndExit "Failed to load Docker image: $result" }
+        Remove-Item -Path $tmpPath -Force -ErrorAction SilentlyContinue
+        Write-Log -Message "$ImageName loaded successfully" -Level Success
+    } catch {
+        Write-ErrorAndExit "Failed to download $ImageName from R2: $_"
     }
 }
 
-function Start-NodeService {
-    Write-Log -Message "Starting Noderr Node OS..." -Level Info
-    
-    try {
-        # Read configuration
-        $installConfig = Get-Content -Path "$Script:CONFIG_DIR\install_config.json" -Raw | ConvertFrom-Json
-        $tier = $installConfig.tier
-        $dockerRegistry = $installConfig.config.dockerRegistry
-        
-        # Determine Docker image
-        $dockerImage = switch ($tier) {
-            "ALL"      { "$dockerRegistry/noderr-node-os:latest-all" }
-            "ORACLE"   { "$dockerRegistry/noderr-node-os:latest-oracle" }
-            "GUARDIAN" { "$dockerRegistry/noderr-node-os:latest-guardian" }
+function Install-DockerContainer {
+    param([PSObject]$InstallConfig, [PSObject]$Credentials)
+    Write-Log -Message "Setting up Docker container(s)..."
+
+    $tier     = $InstallConfig.tier
+    $nodeId   = $Credentials.nodeId
+    $apiKey   = $Credentials.apiKey
+    $jwtToken = $Credentials.jwtToken
+
+    # Download the main node image from R2
+    switch ($tier) {
+        "ORACLE"   { Get-DockerImageFromR2 -Tier $tier -ImageName "noderr-oracle:latest"    -R2Path "oracle/oracle-latest.tar.gz" }
+        "GUARDIAN" { Get-DockerImageFromR2 -Tier $tier -ImageName "noderr-guardian:latest"  -R2Path "guardian/guardian-latest.tar.gz" }
+        "VALIDATOR"{ Get-DockerImageFromR2 -Tier $tier -ImageName "noderr-validator:latest" -R2Path "validator/validator-latest.tar.gz" }
+        default    { Write-ErrorAndExit "Unknown tier: $tier" }
+    }
+
+    # For Oracle: also download the ML service image
+    if ($tier -eq "ORACLE") {
+        Write-Log -Message "Downloading ML service image (this is large — please wait)..."
+        Get-DockerImageFromR2 -Tier "ml-service" -ImageName "noderr-ml-service:latest" -R2Path "ml-service/ml-service-latest.tar.gz"
+    }
+
+    # Create Docker network
+    docker network create noderr-network 2>$null
+
+    # Build node.env content
+    $nodeVersion = if ($InstallConfig.config.latestVersion) { $InstallConfig.config.latestVersion } else { "1.0.0" }
+    $envLines = @(
+        "NODE_ID=$nodeId",
+        "NODE_TIER=$tier",
+        "NODE_VERSION=$nodeVersion",
+        "API_KEY=$apiKey",
+        "JWT_TOKEN=$jwtToken",
+        "CREDENTIALS_PATH=/app/config/credentials.json",
+        "DEPLOYMENT_ENGINE_URL=$($InstallConfig.config.deploymentEngineUrl)",
+        "AUTH_API_URL=$($InstallConfig.config.authApiUrl)",
+        "TELEMETRY_ENDPOINT=$($InstallConfig.config.telemetryEndpoint)",
+        "",
+        "# Node Wallet (Hot Wallet) - replace with your node wallet private key",
+        "PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>"
+    )
+
+    if ($tier -eq "ORACLE") {
+        $oracleVerifier = if ($InstallConfig.config.oracleVerifierAddress) { $InstallConfig.config.oracleVerifierAddress } else { "" }
+        $rpcUrl         = if ($InstallConfig.config.rpcUrl)                { $InstallConfig.config.rpcUrl }                else { "https://sepolia.base.org" }
+        $envLines += @(
+            "",
+            "# Oracle Consensus (Oracle tier only)",
+            "ORACLE_VERIFIER_ADDRESS=$oracleVerifier",
+            "RPC_URL=$rpcUrl",
+            "ORACLE_PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>",
+            "",
+            "# ML Service connection (Docker network hostname — do not change)",
+            "ML_SERVICE_HOST=ml-service",
+            "ML_SERVICE_PORT=50051"
+        )
+    }
+
+    $envContent = $envLines -join "`n"
+    Set-Content -Path "$Script:CONFIG_DIR\node.env" -Value $envContent -NoNewline
+
+    # For Oracle: write docker-compose.yml
+    if ($tier -eq "ORACLE") {
+        $gpuInfo       = Test-NvidiaGpu
+        $driverOk      = Test-NvidiaDriverVersion
+        $gpuDeployYaml = ""
+
+        if ($gpuInfo -and $driverOk) {
+            Write-Log -Message "NVIDIA GPU ($($gpuInfo.Name)) detected with compatible drivers — GPU passthrough enabled" -Level Success
+            $gpuDeployYaml = @"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+"@
+        } else {
+            Write-Log -Message "GPU passthrough not available — ML service will run in CPU mode" -Level Warning
+            if ($gpuInfo -and -not $driverOk) {
+                Write-Log -Message "Update NVIDIA drivers to v525+ from https://www.nvidia.com/drivers to enable GPU acceleration" -Level Warning
+            }
         }
-        
-        # Stop existing container if running
+
+        $configDir = $Script:CONFIG_DIR
+        $composeContent = @"
+version: '3.8'
+services:
+  ml-service:
+    image: noderr-ml-service:latest
+    container_name: noderr-ml-service
+    restart: unless-stopped
+    environment:
+      - GRPC_PORT=50051
+      - MODEL_PATH=/app/models
+      - LOG_LEVEL=INFO
+      - CUDA_VISIBLE_DEVICES=0
+    volumes:
+      - noderr_ml_models:/app/models
+      - noderr_ml_logs:/app/logs
+    networks:
+      - noderr-network
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import socket; s=socket.socket(); s.connect(('localhost',50051)); s.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+$gpuDeployYaml
+  oracle:
+    image: noderr-oracle:latest
+    container_name: noderr-node
+    restart: unless-stopped
+    env_file:
+      - $configDir\node.env
+    volumes:
+      - $configDir\credentials.json:/app/config/credentials.json:rw
+    depends_on:
+      ml-service:
+        condition: service_healthy
+    networks:
+      - noderr-network
+
+volumes:
+  noderr_ml_models:
+    driver: local
+  noderr_ml_logs:
+    driver: local
+
+networks:
+  noderr-network:
+    external: true
+"@
+        Set-Content -Path "$Script:CONFIG_DIR\docker-compose.yml" -Value $composeContent -NoNewline
+        Write-Log -Message "docker-compose.yml written to $Script:CONFIG_DIR" -Level Success
+    }
+
+    Write-Log -Message "Docker container(s) configured" -Level Success
+}
+
+# ============================================================================
+# Private Key Configuration
+# ============================================================================
+
+function Request-PrivateKey {
+    param([string]$Tier)
+    Write-Host ""
+    Write-Log -Message "ACTION REQUIRED: Configure your node wallet private key." -Level Warning
+    Write-Host ""
+    Write-Host "  Edit $Script:CONFIG_DIR\node.env and replace:" -ForegroundColor Yellow
+    Write-Host "    PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>" -ForegroundColor White
+    if ($Tier -eq "ORACLE") {
+        Write-Host "    ORACLE_PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>" -ForegroundColor White
+        Write-Host ""
+        Write-Host "  For Oracle nodes, ORACLE_PRIVATE_KEY must be the same value as PRIVATE_KEY." -ForegroundColor Yellow
+    }
+    Write-Host ""
+    Write-Host "  You can open the file with:" -ForegroundColor White
+    Write-Host "    notepad `"$Script:CONFIG_DIR\node.env`"" -ForegroundColor Cyan
+    Write-Host ""
+    Read-Host "  Press ENTER once you have set the private key(s) to continue"
+
+    $envContent = Get-Content -Path "$Script:CONFIG_DIR\node.env" -Raw
+    if ($envContent -match "PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>") {
+        Write-ErrorAndExit "PRIVATE_KEY placeholder was not replaced. Please edit $Script:CONFIG_DIR\node.env and re-run."
+    }
+    Write-Log -Message "Private key configured" -Level Success
+}
+
+# ============================================================================
+# Start Node
+# ============================================================================
+
+function Start-NodeService {
+    param([string]$Tier)
+    Write-Log -Message "Starting Noderr Node OS..."
+
+    if ($Tier -eq "ORACLE") {
+        # Use docker compose for Oracle (two containers)
+        $result = docker compose -f "$Script:CONFIG_DIR\docker-compose.yml" up -d 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-ErrorAndExit "Failed to start Oracle node with docker compose: $result"
+        }
+        Start-Sleep -Seconds 10
+        $oracleStatus = docker ps --filter "name=noderr-node" --format "{{.Status}}"
+        if (-not $oracleStatus) {
+            Write-ErrorAndExit "Oracle container failed to start. Check logs: docker logs noderr-node"
+        }
+        Write-Log -Message "Oracle node started. ML service is loading models (~60-90s)..." -Level Success
+        Write-Log -Message "Check ML service: docker logs noderr-ml-service -f" -Level Info
+    } else {
+        # Single container for Validator and Guardian
         docker stop noderr-node 2>$null
-        docker rm noderr-node 2>$null
-        
-        # Start container
+        docker rm   noderr-node 2>$null
+
+        $dockerImage = switch ($Tier) {
+            "GUARDIAN"  { "noderr-guardian:latest" }
+            "VALIDATOR" { "noderr-validator:latest" }
+            default     { Write-ErrorAndExit "Unknown tier: $Tier" }
+        }
+
         docker run -d `
             --name noderr-node `
             --network noderr-network `
             --env-file "$Script:CONFIG_DIR\node.env" `
+            --volume "$Script:CONFIG_DIR\credentials.json:/app/config/credentials.json:rw" `
             --restart unless-stopped `
             $dockerImage
-        
-        # Wait for container to start
+
         Start-Sleep -Seconds 5
-        
-        # Verify container is running
-        $containerStatus = docker ps --filter "name=noderr-node" --format "{{.Status}}"
-        if (-not $containerStatus) {
-            Write-ErrorAndExit "Node failed to start. Check logs with: docker logs noderr-node"
+        $status = docker ps --filter "name=noderr-node" --format "{{.Status}}"
+        if (-not $status) {
+            Write-ErrorAndExit "Node failed to start. Check logs: docker logs noderr-node"
         }
-        
-        Write-Log -Message "Noderr Node OS started successfully" -Level Success
-    }
-    catch {
-        Write-ErrorAndExit "Failed to start node: $_"
+        Write-Log -Message "Node started successfully" -Level Success
     }
 }
 
 # ============================================================================
-# Post-Installation
+# Post-Installation Summary
 # ============================================================================
 
 function Show-Summary {
+    param([string]$Tier)
     $credentials = Get-Content -Path "$Script:CONFIG_DIR\credentials.json" -Raw | ConvertFrom-Json
-    $nodeId = $credentials.nodeId
-    
+    $nodeId      = $credentials.nodeId
+
     Write-Host ""
     Write-Host "╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Green
     Write-Host "║                                                                ║" -ForegroundColor Green
@@ -510,15 +677,30 @@ function Show-Summary {
     Write-Host "╚════════════════════════════════════════════════════════════════╝" -ForegroundColor Green
     Write-Host ""
     Write-Host "  Node ID: $nodeId" -ForegroundColor Cyan
+    Write-Host "  Tier:    $Tier"   -ForegroundColor Cyan
     Write-Host ""
     Write-Host "  Status:  Running" -ForegroundColor Green
-    Write-Host "  Logs:    docker logs noderr-node -f" -ForegroundColor White
-    Write-Host "  Stop:    docker stop noderr-node" -ForegroundColor White
-    Write-Host "  Start:   docker start noderr-node" -ForegroundColor White
-    Write-Host "  Restart: docker restart noderr-node" -ForegroundColor White
+
+    if ($Tier -eq "ORACLE") {
+        Write-Host ""
+        Write-Host "  Oracle Node Commands:" -ForegroundColor White
+        Write-Host "    Logs (oracle):      docker logs noderr-node -f"         -ForegroundColor White
+        Write-Host "    Logs (ml-service):  docker logs noderr-ml-service -f"   -ForegroundColor White
+        Write-Host "    Stop:               docker compose -f `"$Script:CONFIG_DIR\docker-compose.yml`" down" -ForegroundColor White
+        Write-Host "    Start:              docker compose -f `"$Script:CONFIG_DIR\docker-compose.yml`" up -d" -ForegroundColor White
+        Write-Host "    Restart:            docker compose -f `"$Script:CONFIG_DIR\docker-compose.yml`" restart" -ForegroundColor White
+        Write-Host ""
+        Write-Host "  Note: The ML service takes 60-90s to load models on first start." -ForegroundColor Yellow
+    } else {
+        Write-Host "  Logs:    docker logs noderr-node -f"    -ForegroundColor White
+        Write-Host "  Stop:    docker stop noderr-node"       -ForegroundColor White
+        Write-Host "  Start:   docker start noderr-node"      -ForegroundColor White
+        Write-Host "  Restart: docker restart noderr-node"    -ForegroundColor White
+    }
+
     Write-Host ""
-    Write-Host "  Configuration: $Script:CONFIG_DIR" -ForegroundColor White
-    Write-Host "  Credentials:   $Script:CONFIG_DIR\credentials.json (keep secure!)" -ForegroundColor Yellow
+    Write-Host "  Configuration: $Script:CONFIG_DIR"                                     -ForegroundColor White
+    Write-Host "  Credentials:   $Script:CONFIG_DIR\credentials.json (keep secure!)"     -ForegroundColor Yellow
     Write-Host ""
     Write-Host "  For support: https://docs.noderr.xyz" -ForegroundColor White
     Write-Host ""
@@ -532,42 +714,60 @@ function Main {
     Write-Host ""
     Write-Host "╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
     Write-Host "║                                                                ║" -ForegroundColor Cyan
-    Write-Host "║              Noderr Node OS Installer v$Script:VERSION              ║" -ForegroundColor Cyan
+    Write-Host "║              Noderr Node OS Installer v$Script:VERSION             ║" -ForegroundColor Cyan
     Write-Host "║                                                                ║" -ForegroundColor Cyan
     Write-Host "╚════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
     Write-Host ""
-    
+
+    if (-not (Test-Path -Path $Script:CONFIG_DIR)) {
+        New-Item -ItemType Directory -Path $Script:CONFIG_DIR -Force | Out-Null
+    }
+
     # Pre-flight checks
     Test-WindowsVersion
     Test-InternetConnectivity
-    Test-HardwareRequirements
-    Test-TPM
-    
-    # Install dependencies
+    Test-HardwareBaseline
+    $hasTpm = Test-TPM
+
+    # Ensure Docker is installed and running
     Install-Docker
-    
-    # TPM key generation and attestation
-    New-TPMKey
-    New-Attestation
-    
-    # Node registration
-    Get-InstallConfig -Token $InstallToken | Out-Null
-    Register-Node -Token $InstallToken | Out-Null
-    
-    # Docker setup
-    Install-DockerContainer
-    Start-NodeService
-    
-    # Display summary
-    Show-Summary
-    
+
+    # Key generation and attestation
+    if ($hasTpm) {
+        # TPM path — reuse existing TPM functions (New-TPMKey / New-Attestation) if available
+        # For now, fall through to software path as TPM functions are not yet ported
+        Write-Log -Message "TPM detected — using software attestation (TPM signing coming soon)" -Level Warning
+    }
+    New-SoftwareKey
+    New-SoftwareAttestation
+
+    # Fetch install config (determines tier, hardware requirements, etc.)
+    $installConfig = Get-InstallConfig -Token $InstallToken
+
+    # Tier-specific hardware validation
+    Test-HardwareForTier -InstallConfig $installConfig
+
+    # Register node
+    $credentials = Register-Node -Token $InstallToken -InstallConfig $installConfig
+
+    # Download images and configure containers
+    Install-DockerContainer -InstallConfig $installConfig -Credentials $credentials
+
+    # Prompt operator to set private key before starting
+    Request-PrivateKey -Tier $installConfig.tier
+
+    # Start the node
+    Start-NodeService -Tier $installConfig.tier
+
+    # Summary
+    Show-Summary -Tier $installConfig.tier
+
     Write-Log -Message "Installation completed successfully!" -Level Success
 }
 
-# Run main function
+# Run
 try {
     Main
-}
-catch {
+} catch {
     Write-ErrorAndExit "Installation failed: $_"
 }

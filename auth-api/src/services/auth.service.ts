@@ -81,7 +81,7 @@ export class AuthService {
     const HARDWARE_REQUIREMENTS: Record<string, { minCpuCores: number; minRamGb: number; minDiskGb: number }> = {
       VALIDATOR: { minCpuCores: 4, minRamGb: 8, minDiskGb: 80 },
       GUARDIAN: { minCpuCores: 16, minRamGb: 32, minDiskGb: 200 },
-      ORACLE: { minCpuCores: 32, minRamGb: 64, minDiskGb: 500 },
+      ORACLE: { minCpuCores: 8, minRamGb: 16, minDiskGb: 100 },
     };
     const hardwareReqs = HARDWARE_REQUIREMENTS[token.tier] ?? HARDWARE_REQUIREMENTS['VALIDATOR'];
 

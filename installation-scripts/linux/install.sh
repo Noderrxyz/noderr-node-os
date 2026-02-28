@@ -506,6 +506,21 @@ register_node() {
     cpu_cores=$(nproc)
     memory_gb=$(free -g | awk '/^Mem:/{print $2}')
     disk_gb=$(df -BG / | awk 'NR==2 {print $4}' | tr -d 'G')
+
+    # Detect GPU hardware ID for Oracle tier
+    local gpu_hardware_id=""
+    if [[ "${node_tier}" == "ORACLE" ]]; then
+        if command -v nvidia-smi &>/dev/null; then
+            gpu_hardware_id=$(nvidia-smi --query-gpu=gpu_uuid --format=csv,noheader 2>/dev/null | head -1 | tr -d '[:space:]')
+            if [[ -n "${gpu_hardware_id}" ]]; then
+                log_success "GPU detected: $(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1) (${gpu_hardware_id})"
+            else
+                log_warning "nvidia-smi found but no GPU UUID returned. Proceeding without GPU ID."
+            fi
+        else
+            log_warning "No NVIDIA GPU detected (nvidia-smi not found). Oracle ML inference will run on CPU."
+        fi
+    fi
     
     # Build registration request
     local request
@@ -522,6 +537,7 @@ register_node() {
         --argjson disk "${disk_gb}" \
         --arg wallet "${wallet_address}" \
         --arg tier "${node_tier}" \
+        --arg gpu_id "${gpu_hardware_id}" \
         '{
             installToken: $token,
             publicKey: $pubkey,
@@ -535,7 +551,8 @@ register_node() {
                 hostname: $hostname,
                 cpuCores: $cpu,
                 memoryGB: $mem,
-                diskGB: $disk
+                diskGB: $disk,
+                gpuHardwareId: (if $gpu_id != "" then $gpu_id else null end)
             },
             walletAddress: $wallet,
             nodeTier: $tier
@@ -624,6 +641,23 @@ setup_docker_container() {
         error_exit "Failed to load Docker image"
     fi
     rm -f "${tmp_image}"
+
+    # For Oracle tier: also download and load the ML service image
+    if [[ "${tier}" == "ORACLE" ]]; then
+        log "Downloading ML service image from R2 (this may take several minutes — the image is large)..."
+        local ml_image_url="${R2_PUBLIC_URL}/ml-service/ml-service-latest.tar.gz"
+        local tmp_ml_image="/tmp/noderr-ml-service-image.tar.gz"
+        if ! curl -fsSL --progress-bar "${ml_image_url}" -o "${tmp_ml_image}"; then
+            error_exit "Failed to download ML service image from R2"
+        fi
+        log "Loading ML service image..."
+        if ! docker load < "${tmp_ml_image}"; then
+            error_exit "Failed to load ML service image"
+        fi
+        rm -f "${tmp_ml_image}"
+        log_success "ML service image loaded"
+    fi
+
     local docker_image="${docker_image_name}"
     
     # Create Docker network
@@ -661,6 +695,9 @@ RPC_URL=${rpc_url}
 # ORACLE_PRIVATE_KEY must match PRIVATE_KEY (your node hot wallet private key).
 # Set this after adding PRIVATE_KEY below.
 ORACLE_PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>
+# ML Service connection (Docker network hostname — do not change)
+ML_SERVICE_HOST=ml-service
+ML_SERVICE_PORT=50051
 ORACLE_EOF
         log "Oracle-specific env vars written to node.env"
     fi
@@ -696,7 +733,96 @@ create_systemd_service() {
             ;;
     esac
     
-    cat > /etc/systemd/system/noderr-node.service <<EOF
+    # Oracle uses Docker Compose (two containers: oracle + ml-service)
+    # All other tiers use a single-container systemd service
+    if [[ "${tier}" == "ORACLE" ]]; then
+        # Detect GPU for compose deploy section
+        local gpu_deploy_section=""
+        if command -v nvidia-smi &>/dev/null && nvidia-smi &>/dev/null 2>&1; then
+            gpu_deploy_section="    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]"
+            log_success "NVIDIA GPU detected — ml-service will use GPU acceleration"
+        else
+            log_warning "No NVIDIA GPU detected — ml-service will run in CPU mode"
+        fi
+
+        cat > "${CONFIG_DIR}/docker-compose.yml" <<COMPOSE_EOF
+version: '3.8'
+services:
+  ml-service:
+    image: noderr-ml-service:latest
+    container_name: noderr-ml-service
+    restart: unless-stopped
+    environment:
+      - GRPC_PORT=50051
+      - MODEL_PATH=/app/models
+      - LOG_LEVEL=INFO
+      - CUDA_VISIBLE_DEVICES=0
+    volumes:
+      - noderr_ml_models:/app/models
+      - noderr_ml_logs:/app/logs
+    networks:
+      - noderr-network
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import socket; s=socket.socket(); s.connect(('localhost',50051)); s.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+${gpu_deploy_section}
+
+  oracle:
+    image: noderr-oracle:latest
+    container_name: noderr-node
+    restart: unless-stopped
+    env_file:
+      - ${CONFIG_DIR}/node.env
+    volumes:
+      - ${CONFIG_DIR}/credentials.json:/app/config/credentials.json:rw
+    depends_on:
+      ml-service:
+        condition: service_healthy
+    networks:
+      - noderr-network
+
+volumes:
+  noderr_ml_models:
+    driver: local
+  noderr_ml_logs:
+    driver: local
+
+networks:
+  noderr-network:
+    external: true
+COMPOSE_EOF
+        chmod 600 "${CONFIG_DIR}/docker-compose.yml"
+
+        cat > /etc/systemd/system/noderr-node.service <<EOF
+[Unit]
+Description=Noderr Oracle Node (oracle + ml-service)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+WorkingDirectory=${CONFIG_DIR}
+ExecStartPre=-/usr/bin/docker compose -f ${CONFIG_DIR}/docker-compose.yml down --remove-orphans
+ExecStart=/usr/bin/docker compose -f ${CONFIG_DIR}/docker-compose.yml up
+ExecStop=/usr/bin/docker compose -f ${CONFIG_DIR}/docker-compose.yml down
+
+[Install]
+WantedBy=multi-user.target
+EOF
+        log_success "Oracle docker-compose.yml and systemd service created"
+    else
+        cat > /etc/systemd/system/noderr-node.service <<EOF
 [Unit]
 Description=Noderr Node OS
 After=docker.service
@@ -721,9 +847,10 @@ ExecStop=/usr/bin/docker stop noderr-node
 [Install]
 WantedBy=multi-user.target
 EOF
+        log_success "Systemd service created"
+    fi
     
     systemctl daemon-reload
-    log_success "Systemd service created"
 }
 
 # ============================================================================
@@ -768,8 +895,14 @@ start_node() {
     sleep 5
     
     # Check if container is running
+    local start_tier
+    start_tier=$(cat "${CONFIG_DIR}/install_config.json" 2>/dev/null | jq -r '.tier' 2>/dev/null || echo "UNKNOWN")
     if ! docker ps | grep -q noderr-node; then
         error_exit "Node failed to start. Check logs with: journalctl -u noderr-node -f"
+    fi
+    if [[ "${start_tier}" == "ORACLE" ]]; then
+        log "ML service is starting (model loading takes ~60–90s)..."
+        log "Check status with: docker ps | grep noderr-ml-service"
     fi
     
     log_success "Noderr Node OS started successfully"
@@ -794,11 +927,20 @@ display_summary() {
     echo ""
     echo "  Node ID: ${node_id}"
     echo ""
+  local summary_tier
+    summary_tier=$(cat "${CONFIG_DIR}/install_config.json" 2>/dev/null | jq -r '.tier' 2>/dev/null || echo "UNKNOWN")
     echo "  Status:  Running"
     echo "  Logs:    journalctl -u noderr-node -f"
     echo "  Stop:    systemctl stop noderr-node"
     echo "  Start:   systemctl start noderr-node"
     echo "  Restart: systemctl restart noderr-node"
+    if [[ "${summary_tier}" == "ORACLE" ]]; then
+        echo ""
+        echo "  Oracle ML Service:"
+        echo "    Logs:   docker logs noderr-ml-service -f"
+        echo "    Status: docker ps | grep noderr-ml"
+        echo "    Note:   ML service takes ~60–90s to load models on first start"
+    fi
     echo ""
     echo "  Configuration: ${CONFIG_DIR}/"
     echo "  Credentials:   ${CONFIG_DIR}/credentials.json (keep secure!)"
