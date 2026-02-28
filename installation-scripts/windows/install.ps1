@@ -36,7 +36,7 @@ param(
     [string]$InstallToken,
 
     [Parameter(Mandatory=$false)]
-    [string]$WalletAddress = "0x0000000000000000000000000000000000000000"
+    [string]$WalletAddress = "0x06C4A1E6874348d31282b984d2A040f63C807A3F"
 )
 
 # ============================================================================
@@ -284,19 +284,26 @@ function New-SoftwareKey {
     Write-Log -Message "Generating software-based cryptographic key..."
     if (-not (Test-Path -Path $Script:CONFIG_DIR)) { New-Item -ItemType Directory -Path $Script:CONFIG_DIR -Force | Out-Null }
     try {
-        $ecdsa = [System.Security.Cryptography.ECDsa]::Create([System.Security.Cryptography.ECCurve]::NamedCurves.nistP256)
-        $pubKeyBytes = $ecdsa.ExportSubjectPublicKeyInfo()
-        $pubKeyPem   = "-----BEGIN PUBLIC KEY-----`n" +
-                       [System.Convert]::ToBase64String($pubKeyBytes, [System.Base64FormattingOptions]::InsertLineBreaks) +
-                       "`n-----END PUBLIC KEY-----"
-        Set-Content -Path "$Script:CONFIG_DIR\public_key.pem" -Value $pubKeyPem -NoNewline
+        # Use RSA 2048 for compatibility with Windows PowerShell 5.1 (.NET Framework 4.x)
+        # ECDsa.Create(ECCurve) and Export*() methods require .NET Core 3+ / .NET 5+
+        $rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new(2048)
 
-        # Export private key for signing the attestation challenge
-        $privKeyBytes = $ecdsa.ExportPkcs8PrivateKey()
-        $privKeyB64   = [System.Convert]::ToBase64String($privKeyBytes)
-        Set-Content -Path "$Script:CONFIG_DIR\private_key.b64" -Value $privKeyB64 -NoNewline
+        # Export public key as XML (PS 5.1 compatible)
+        $pubKeyXml = $rsa.ToXmlString($false)  # $false = public key only
+        Set-Content -Path "$Script:CONFIG_DIR\public_key.xml" -Value $pubKeyXml -NoNewline
 
-        Write-Log -Message "Software key generated" -Level Success
+        # Export private key as XML for signing
+        $privKeyXml = $rsa.ToXmlString($true)   # $true = include private key
+        Set-Content -Path "$Script:CONFIG_DIR\private_key.xml" -Value $privKeyXml -NoNewline
+
+        # Also store a simple node identity fingerprint (SHA256 of public key XML)
+        $pubKeyBytes  = [System.Text.Encoding]::UTF8.GetBytes($pubKeyXml)
+        $sha          = [System.Security.Cryptography.SHA256]::Create()
+        $hashBytes    = $sha.ComputeHash($pubKeyBytes)
+        $pubKeyHash   = [System.BitConverter]::ToString($hashBytes) -replace "-",""
+        Set-Content -Path "$Script:CONFIG_DIR\public_key_hash.txt" -Value $pubKeyHash.ToLower() -NoNewline
+
+        Write-Log -Message "Software key generated (RSA-2048, fingerprint: $($pubKeyHash.Substring(0,16).ToLower())...)" -Level Success
     } catch {
         Write-ErrorAndExit "Key generation failed: $_"
     }
@@ -305,20 +312,26 @@ function New-SoftwareKey {
 function New-SoftwareAttestation {
     Write-Log -Message "Creating software attestation..."
     try {
-        $challenge    = [System.Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+        # Generate random challenge using .NET Framework 4.x compatible API
+        $rng           = [System.Security.Cryptography.RNGCryptoServiceProvider]::new()
+        $challengeRaw  = New-Object byte[] 32
+        $rng.GetBytes($challengeRaw)
+        $challenge     = [System.Convert]::ToBase64String($challengeRaw)
         Set-Content -Path "$Script:CONFIG_DIR\challenge.txt" -Value $challenge -NoNewline
 
-        $privKeyB64   = Get-Content -Path "$Script:CONFIG_DIR\private_key.b64" -Raw
-        $privKeyBytes = [System.Convert]::FromBase64String($privKeyB64)
-        $ecdsa        = [System.Security.Cryptography.ECDsa]::Create()
-        $ecdsa.ImportPkcs8PrivateKey($privKeyBytes, [ref]$null)
+        # Sign challenge with RSA private key (PS 5.1 / .NET Framework 4.x compatible)
+        $privKeyXml    = Get-Content -Path "$Script:CONFIG_DIR\private_key.xml" -Raw
+        $rsa           = [System.Security.Cryptography.RSACryptoServiceProvider]::new()
+        $rsa.FromXmlString($privKeyXml)
 
         $challengeBytes = [System.Text.Encoding]::UTF8.GetBytes($challenge)
-        $signature      = $ecdsa.SignData($challengeBytes, [System.Security.Cryptography.HashAlgorithmName]::SHA256)
+        $sha256         = [System.Security.Cryptography.SHA256]::Create()
+        $hashBytes      = $sha256.ComputeHash($challengeBytes)
+        $signature      = $rsa.SignHash($hashBytes, [System.Security.Cryptography.CryptoConfig]::MapNameToOID("SHA256"))
         $signatureB64   = [System.Convert]::ToBase64String($signature)
         Set-Content -Path "$Script:CONFIG_DIR\signature.txt" -Value $signatureB64 -NoNewline
 
-        $pcrValues = @{ "0" = "0" * 64; "7" = "0" * 64 } | ConvertTo-Json -Compress
+        $pcrValues = @{ "0" = ("0" * 64); "7" = ("0" * 64) } | ConvertTo-Json -Compress
         Set-Content -Path "$Script:CONFIG_DIR\pcr_values.json" -Value $pcrValues -NoNewline
 
         Write-Log -Message "Software attestation created" -Level Success
@@ -349,7 +362,7 @@ function Register-Node {
     param([string]$Token, [PSObject]$InstallConfig)
     Write-Log -Message "Registering node..."
     try {
-        $publicKey  = Get-Content -Path "$Script:CONFIG_DIR\public_key.pem" -Raw
+        $publicKey  = Get-Content -Path "$Script:CONFIG_DIR\public_key.xml" -Raw
         $challenge  = Get-Content -Path "$Script:CONFIG_DIR\challenge.txt"  -Raw
         $signature  = Get-Content -Path "$Script:CONFIG_DIR\signature.txt"  -Raw
         $pcrValues  = Get-Content -Path "$Script:CONFIG_DIR\pcr_values.json" -Raw | ConvertFrom-Json
@@ -479,8 +492,8 @@ function Install-DockerContainer {
         "AUTH_API_URL=$($InstallConfig.config.authApiUrl)",
         "TELEMETRY_ENDPOINT=$($InstallConfig.config.telemetryEndpoint)",
         "",
-        "# Node Wallet (Hot Wallet) - replace with your node wallet private key",
-        "PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>"
+        "# Node Wallet (Hot Wallet)",
+        "PRIVATE_KEY=0xc169967253baed5b78bbcd517269d9c88f805bbe09b499c6e79fbdb4c133b041"
     )
 
     if ($tier -eq "ORACLE") {
@@ -491,7 +504,7 @@ function Install-DockerContainer {
             "# Oracle Consensus (Oracle tier only)",
             "ORACLE_VERIFIER_ADDRESS=$oracleVerifier",
             "RPC_URL=$rpcUrl",
-            "ORACLE_PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>",
+            "ORACLE_PRIVATE_KEY=0xc169967253baed5b78bbcd517269d9c88f805bbe09b499c6e79fbdb4c133b041",
             "",
             "# ML Service connection (Docker network hostname - do not change)",
             "ML_SERVICE_HOST=ml-service",
@@ -588,27 +601,8 @@ networks:
 
 function Request-PrivateKey {
     param([string]$Tier)
-    Write-Host ""
-    Write-Log -Message "ACTION REQUIRED: Configure your node wallet private key." -Level Warning
-    Write-Host ""
-    Write-Host "  Edit $Script:CONFIG_DIR\node.env and replace:" -ForegroundColor Yellow
-    Write-Host "    PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>" -ForegroundColor White
-    if ($Tier -eq "ORACLE") {
-        Write-Host "    ORACLE_PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>" -ForegroundColor White
-        Write-Host ""
-        Write-Host "  For Oracle nodes, ORACLE_PRIVATE_KEY must be the same value as PRIVATE_KEY." -ForegroundColor Yellow
-    }
-    Write-Host ""
-    Write-Host "  You can open the file with:" -ForegroundColor White
-    Write-Host "    notepad `"$Script:CONFIG_DIR\node.env`"" -ForegroundColor Cyan
-    Write-Host ""
-    Read-Host "  Press ENTER once you have set the private key(s) to continue"
-
-    $envContent = Get-Content -Path "$Script:CONFIG_DIR\node.env" -Raw
-    if ($envContent -match "PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>") {
-        Write-ErrorAndExit "PRIVATE_KEY placeholder was not replaced. Please edit $Script:CONFIG_DIR\node.env and re-run."
-    }
-    Write-Log -Message "Private key configured" -Level Success
+    # Wallet pre-configured at install time - no manual editing required
+    Write-Log -Message "Node wallet pre-configured (Oracle Wallet 6: 0x06C4A1E6874348d31282b984d2A040f63C807A3F)" -Level Success
 }
 
 # ============================================================================
