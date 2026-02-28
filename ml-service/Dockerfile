@@ -1,5 +1,5 @@
 # Multi-stage build for PyTorch ML Service with CUDA support
-FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04 as builder
+FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04 as builder
 
 # Install Python 3.11
 RUN apt-get update && apt-get install -y \
@@ -26,7 +26,7 @@ COPY requirements.txt /tmp/
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 # Production stage with CUDA
-FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
+FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
 
 # Install Python 3.11
 RUN apt-get update && apt-get install -y \
