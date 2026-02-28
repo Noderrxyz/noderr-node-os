@@ -630,7 +630,6 @@ function Install-DockerContainer {
 
         $configDir = $Script:CONFIG_DIR
         $composeContent = @"
-version: '3.8'
 services:
   ml-service:
     image: noderr-ml-service:latest
@@ -705,8 +704,11 @@ function Start-NodeService {
     if ($Tier -eq "ORACLE") {
         # Use docker compose for Oracle (two containers)
         $result = docker compose -f "$Script:CONFIG_DIR\docker-compose.yml" up -d 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            Write-ErrorAndExit "Failed to start Oracle node with docker compose: $result"
+        $exitCode = $LASTEXITCODE
+        # Filter out non-fatal warnings (e.g. obsolete 'version' attribute)
+        $errors = $result | Where-Object { $_ -match 'level=error|Error response|cannot|failed' }
+        if ($exitCode -ne 0 -and $errors) {
+            Write-ErrorAndExit "Failed to start Oracle node with docker compose: $($errors -join ' ')"
         }
         Start-Sleep -Seconds 10
         $oracleStatus = docker ps --filter "name=noderr-node" --format "{{.Status}}"
