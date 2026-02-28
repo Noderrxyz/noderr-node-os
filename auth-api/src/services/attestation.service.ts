@@ -14,19 +14,25 @@ export class AttestationService {
    */
   verifyAttestation(publicKey: string, attestation: AttestationData): boolean {
     try {
-      // Decode the quote and signature from base64
-      const quote = Buffer.from(attestation.quote, 'base64');
-      const signature = Buffer.from(attestation.signature, 'base64');
+      // PRE-LAUNCH: Software attestation mode - skip cryptographic signature verification
+      // TPM hardware signing is not yet implemented; nodes use RSA software keys.
+      // When SKIP_ATTESTATION_VERIFY=true, we only validate PCR format and timestamp.
+      const skipSigVerify = process.env.SKIP_ATTESTATION_VERIFY === 'true';
 
-      // Verify the signature using the public key
-      const verifier = createVerify('SHA256');
-      verifier.update(quote);
-      verifier.end();
+      if (!skipSigVerify) {
+        // Decode the quote and signature from base64
+        const quote = Buffer.from(attestation.quote, 'base64');
+        const signature = Buffer.from(attestation.signature, 'base64');
 
-      const isValid = verifier.verify(publicKey, signature);
+        // Verify the signature using the public key
+        const verifier = createVerify('SHA256');
+        verifier.update(quote);
+        verifier.end();
 
-      if (!isValid) {
-        return false;
+        const isValid = verifier.verify(publicKey, signature);
+        if (!isValid) {
+          return false;
+        }
       }
 
       // Verify PCR values are present and valid
