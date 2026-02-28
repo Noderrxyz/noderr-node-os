@@ -284,6 +284,14 @@ function New-SoftwareKey {
     Write-Log -Message "Generating software-based cryptographic key..."
     if (-not (Test-Path -Path $Script:CONFIG_DIR)) { New-Item -ItemType Directory -Path $Script:CONFIG_DIR -Force | Out-Null }
     try {
+        # Reuse existing key if present (avoids re-registration on retry after partial failure)
+        if ((Test-Path "$Script:CONFIG_DIR\private_key.xml") -and (Test-Path "$Script:CONFIG_DIR\public_key.pem")) {
+            $existingHash = Get-Content "$Script:CONFIG_DIR\public_key_hash.txt" -Raw -ErrorAction SilentlyContinue
+            if ($existingHash) {
+                Write-Log -Message "Reusing existing key (fingerprint: $($existingHash.Substring(0,16))...)" -Level Success
+                return
+            }
+        }
         # Use RSA 2048 for compatibility with Windows PowerShell 5.1 (.NET Framework 4.x)
         # ECDsa.Create(ECCurve) and Export*() methods require .NET Core 3+ / .NET 5+
         $rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new(2048)
