@@ -346,27 +346,27 @@ function New-SoftwareAttestation {
 
 function Invoke-ApiPost {
     param([string]$Url, [string]$JsonBody)
-    # Use .NET WebClient directly to avoid PS 5.1 Invoke-RestMethod hang issues
-    $wc = New-Object System.Net.WebClient
-    $wc.Headers.Add("Content-Type", "application/json")
-    $wc.Headers.Add("User-Agent", "Noderr-Installer/1.1.0")
+    # Use curl.exe (bypasses WinHTTP/proxy issues that cause Invoke-RestMethod and WebClient to hang)
+    $tmpBody = [System.IO.Path]::GetTempFileName()
+    [System.IO.File]::WriteAllText($tmpBody, $JsonBody, [System.Text.Encoding]::UTF8)
     try {
-        $responseBytes = $wc.UploadData($Url, "POST", [System.Text.Encoding]::UTF8.GetBytes($JsonBody))
-        return [System.Text.Encoding]::UTF8.GetString($responseBytes)
-    } catch [System.Net.WebException] {
-        # Capture the HTTP error response body so we can show the actual API error message
-        $errorResponse = $_.Exception.Response
-        if ($errorResponse -ne $null) {
-            $stream = $errorResponse.GetResponseStream()
-            $reader = New-Object System.IO.StreamReader($stream)
-            $body   = $reader.ReadToEnd()
-            $reader.Dispose()
-            $stream.Dispose()
-            throw "HTTP $([int]$errorResponse.StatusCode) from $Url`: $body"
+        $result = & "$env:SystemRoot\System32\curl.exe" `
+            --silent --show-error --max-time 30 `
+            -X POST $Url `
+            -H "Content-Type: application/json" `
+            -H "User-Agent: Noderr-Installer/1.1.0" `
+            --data-binary "@$tmpBody" `
+            --write-out "`n__HTTP_STATUS__%{http_code}" 2>&1
+        $lines      = $result -split "`n"
+        $statusLine = $lines | Where-Object { $_ -match '^__HTTP_STATUS__' } | Select-Object -Last 1
+        $body       = ($lines | Where-Object { $_ -notmatch '^__HTTP_STATUS__' }) -join "`n"
+        $statusCode = [int]($statusLine -replace '__HTTP_STATUS__', '')
+        if ($statusCode -ge 400) {
+            throw "HTTP $statusCode from $Url`: $body"
         }
-        throw
+        return $body
     } finally {
-        $wc.Dispose()
+        Remove-Item -Path $tmpBody -Force -ErrorAction SilentlyContinue
     }
 }
 
@@ -474,11 +474,11 @@ function Get-DockerImageFromR2 {
     Write-Log -Message "  URL: $url"
     Write-Log -Message "  Saving to: $tmpPath"
     try {
-        # Use .NET WebClient for reliable large-file downloads (avoids PS 5.1 progress bar overhead)
-        $wc = New-Object System.Net.WebClient
-        $wc.Headers.Add("User-Agent", "Noderr-Installer/1.1.0")
-        $wc.DownloadFile($url, $tmpPath)
-        $wc.Dispose()
+        # Use curl.exe for reliable large-file downloads (bypasses WinHTTP/proxy issues)
+        & "$env:SystemRoot\System32\curl.exe" --location --progress-bar --max-time 3600 `
+            -H "User-Agent: Noderr-Installer/1.1.0" `
+            -o $tmpPath $url
+        if ($LASTEXITCODE -ne 0) { Write-ErrorAndExit "curl.exe failed to download $ImageName (exit code $LASTEXITCODE)" }
         $sizeMB = [Math]::Round((Get-Item $tmpPath).Length / 1MB)
         Write-Log -Message "Download complete ($($sizeMB)MB). Loading $ImageName into Docker..." -Level Success
         $result = docker load -i $tmpPath 2>&1
