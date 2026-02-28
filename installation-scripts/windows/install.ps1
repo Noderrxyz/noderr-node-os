@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Noderr Node OS - Windows Installation Script
 
@@ -74,9 +74,9 @@ function Write-Log {
     Add-Content -Path $Script:LOG_FILE -Value $logMessage
     switch ($Level) {
         'Info'    { Write-Host "[$timestamp] "      -NoNewline; Write-Host $Message -ForegroundColor Cyan }
-        'Success' { Write-Host "[$timestamp] ✓ "   -NoNewline -ForegroundColor Green;  Write-Host $Message -ForegroundColor Green }
-        'Warning' { Write-Host "[$timestamp] ⚠ "   -NoNewline -ForegroundColor Yellow; Write-Host $Message -ForegroundColor Yellow }
-        'Error'   { Write-Host "[$timestamp] ✗ "   -NoNewline -ForegroundColor Red;    Write-Host $Message -ForegroundColor Red }
+        'Success' { Write-Host "[$timestamp] [OK] " -NoNewline -ForegroundColor Green;  Write-Host $Message -ForegroundColor Green }
+        'Warning' { Write-Host "[$timestamp] [!!] " -NoNewline -ForegroundColor Yellow; Write-Host $Message -ForegroundColor Yellow }
+        'Error'   { Write-Host "[$timestamp] [XX] " -NoNewline -ForegroundColor Red;    Write-Host $Message -ForegroundColor Red }
     }
 }
 
@@ -150,12 +150,12 @@ function Test-HardwareForTier {
     $diskGB   = [Math]::Round((Get-PSDrive -Name C).Free / 1GB)
     $failed   = $false
 
-    if ($cpuCores -lt $reqCpu)  { Write-Log -Message "Insufficient CPU for $tier. Required: $reqCpu cores, Found: $cpuCores" -Level Error;   $failed = $true }
-    else                        { Write-Log -Message "CPU: $cpuCores cores ($tier minimum: $reqCpu)" -Level Success }
-    if ($ramGB -lt $reqRam)     { Write-Log -Message "Insufficient RAM for $tier. Required: ${reqRam}GB, Found: ${ramGB}GB" -Level Error;     $failed = $true }
-    else                        { Write-Log -Message "RAM: ${ramGB}GB ($tier minimum: ${reqRam}GB)" -Level Success }
-    if ($diskGB -lt $reqDisk)   { Write-Log -Message "Insufficient disk for $tier. Required: ${reqDisk}GB free, Found: ${diskGB}GB" -Level Error; $failed = $true }
-    else                        { Write-Log -Message "Disk: ${diskGB}GB free ($tier minimum: ${reqDisk}GB)" -Level Success }
+    if ($cpuCores -lt $reqCpu)  { Write-Log -Message "Insufficient CPU for $($tier). Required: $($reqCpu) cores, Found: $($cpuCores)" -Level Error;   $failed = $true }
+    else                        { Write-Log -Message "CPU: $($cpuCores) cores ($($tier) minimum: $($reqCpu))" -Level Success }
+    if ($ramGB -lt $reqRam)     { Write-Log -Message "Insufficient RAM for $($tier). Required: $($reqRam)GB, Found: $($ramGB)GB" -Level Error;     $failed = $true }
+    else                        { Write-Log -Message "RAM: $($ramGB)GB ($($tier) minimum: $($reqRam)GB)" -Level Success }
+    if ($diskGB -lt $reqDisk)   { Write-Log -Message "Insufficient disk for $($tier). Required: $($reqDisk)GB free, Found: $($diskGB)GB" -Level Error; $failed = $true }
+    else                        { Write-Log -Message "Disk: $($diskGB)GB free ($($tier) minimum: $($reqDisk)GB)" -Level Success }
 
     if ($failed) { Write-ErrorAndExit "Hardware requirements not met for $tier node. See above for details." }
 }
@@ -459,7 +459,7 @@ function Install-DockerContainer {
 
     # For Oracle: also download the ML service image
     if ($tier -eq "ORACLE") {
-        Write-Log -Message "Downloading ML service image (this is large — please wait)..."
+        Write-Log -Message "Downloading ML service image (this is large - please wait)..."
         Get-DockerImageFromR2 -Tier "ml-service" -ImageName "noderr-ml-service:latest" -R2Path "ml-service/ml-service-latest.tar.gz"
     }
 
@@ -493,7 +493,7 @@ function Install-DockerContainer {
             "RPC_URL=$rpcUrl",
             "ORACLE_PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>",
             "",
-            "# ML Service connection (Docker network hostname — do not change)",
+            "# ML Service connection (Docker network hostname - do not change)",
             "ML_SERVICE_HOST=ml-service",
             "ML_SERVICE_PORT=50051"
         )
@@ -509,7 +509,7 @@ function Install-DockerContainer {
         $gpuDeployYaml = ""
 
         if ($gpuInfo -and $driverOk) {
-            Write-Log -Message "NVIDIA GPU ($($gpuInfo.Name)) detected with compatible drivers — GPU passthrough enabled" -Level Success
+            Write-Log -Message "NVIDIA GPU ($($gpuInfo.Name)) detected with compatible drivers - GPU passthrough enabled" -Level Success
             $gpuDeployYaml = @"
     deploy:
       resources:
@@ -520,7 +520,7 @@ function Install-DockerContainer {
               capabilities: [gpu]
 "@
         } else {
-            Write-Log -Message "GPU passthrough not available — ML service will run in CPU mode" -Level Warning
+            Write-Log -Message "GPU passthrough not available - ML service will run in CPU mode" -Level Warning
             if ($gpuInfo -and -not $driverOk) {
                 Write-Log -Message "Update NVIDIA drivers to v525+ from https://www.nvidia.com/drivers to enable GPU acceleration" -Level Warning
             }
@@ -672,7 +672,7 @@ function Show-Summary {
     Write-Host ""
     Write-Host "╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Green
     Write-Host "║                                                                ║" -ForegroundColor Green
-    Write-Host "║          Noderr Node OS Installation Complete! ✓              ║" -ForegroundColor Green
+    Write-Host "║          Noderr Node OS Installation Complete!              ║" -ForegroundColor Green
     Write-Host "║                                                                ║" -ForegroundColor Green
     Write-Host "╚════════════════════════════════════════════════════════════════╝" -ForegroundColor Green
     Write-Host ""
@@ -714,7 +714,7 @@ function Main {
     Write-Host ""
     Write-Host "╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
     Write-Host "║                                                                ║" -ForegroundColor Cyan
-    Write-Host "║              Noderr Node OS Installer v$Script:VERSION             ║" -ForegroundColor Cyan
+    Write-Host "║              Noderr Node OS Installer v$($Script:VERSION)             ║" -ForegroundColor Cyan
     Write-Host "║                                                                ║" -ForegroundColor Cyan
     Write-Host "╚════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
     Write-Host ""
@@ -734,9 +734,9 @@ function Main {
 
     # Key generation and attestation
     if ($hasTpm) {
-        # TPM path — reuse existing TPM functions (New-TPMKey / New-Attestation) if available
+        # TPM path - reuse existing TPM functions (New-TPMKey / New-Attestation) if available
         # For now, fall through to software path as TPM functions are not yet ported
-        Write-Log -Message "TPM detected — using software attestation (TPM signing coming soon)" -Level Warning
+        Write-Log -Message "TPM detected - using software attestation (TPM signing coming soon)" -Level Warning
     }
     New-SoftwareKey
     New-SoftwareAttestation
