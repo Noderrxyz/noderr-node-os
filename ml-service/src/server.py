@@ -227,17 +227,25 @@ class MLServiceServicer(ml_service_pb2_grpc.MLServiceServicer):
         try:
             logger.debug(f"Feature generation for symbol: {request.symbol}")
             
-            # Convert OHLCV data to dict
-            ohlcv = {
-                'open': np.array(request.open),
-                'high': np.array(request.high),
-                'low': np.array(request.low),
-                'close': np.array(request.close),
-                'volume': np.array(request.volume)
-            }
+            # Convert OHLCV data to numpy arrays
+            open_prices = np.array(request.open)
+            high_prices = np.array(request.high)
+            low_prices = np.array(request.low)
+            close_prices = np.array(request.close)
+            volumes = np.array(request.volume)
             
-            # Generate features
-            features = self.feature_engineer.generate_features(ohlcv)
+            # Generate features using the feature engineer
+            # engineer_features expects: prices, volumes, high, low, close
+            features_dict = self.feature_engineer.engineer_features(
+                prices=close_prices,
+                volumes=volumes,
+                high=high_prices,
+                low=low_prices,
+                close=close_prices
+            )
+            
+            # Convert dict to flat array
+            features = np.array(list(features_dict.values()), dtype=np.float32)
             
             # Update metrics
             latency = time.time() - start_time
@@ -331,7 +339,7 @@ class MLServiceServicer(ml_service_pb2_grpc.MLServiceServicer):
             
             response = ml_service_pb2.HealthCheckResponse(
                 status="healthy",
-                uptime_seconds=uptime,
+                uptime_seconds=int(uptime),
                 request_count=self.request_count,
                 avg_latency_ms=avg_latency * 1000
             )
@@ -343,35 +351,6 @@ class MLServiceServicer(ml_service_pb2_grpc.MLServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             context.set_details(f"Health check failed: {str(e)}")
             return ml_service_pb2.HealthCheckResponse(status="unhealthy")
-    
-    def GetMetrics(self, request, context):
-        """
-        Get detailed performance metrics.
-        
-        Returns:
-            MetricsResponse with performance data
-        """
-        try:
-            uptime = time.time() - self.start_time
-            avg_latency = self.total_latency / max(self.request_count, 1)
-            requests_per_second = self.request_count / max(uptime, 1)
-            
-            response = ml_service_pb2.MetricsResponse(
-                uptime_seconds=uptime,
-                total_requests=self.request_count,
-                avg_latency_ms=avg_latency * 1000,
-                requests_per_second=requests_per_second,
-                model_count=len(self.transformer_ensemble),
-                feature_count=94
-            )
-            
-            return response
-            
-        except Exception as e:
-            logger.error(f"Get metrics error: {str(e)}", exc_info=True)
-            context.set_code(grpc.StatusCode.INTERNAL)
-            context.set_details(f"Get metrics failed: {str(e)}")
-            return ml_service_pb2.MetricsResponse()
 
 
 def serve(port: int = 50051, max_workers: int = 10):

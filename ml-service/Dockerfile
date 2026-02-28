@@ -57,6 +57,9 @@ WORKDIR /app
 # Copy application code
 COPY --chown=mlservice:mlservice . .
 
+# Set PYTHONPATH so imports resolve correctly from src/
+ENV PYTHONPATH="/app/src:${PYTHONPATH}"
+
 # Switch to non-root user
 USER mlservice
 
@@ -67,5 +70,5 @@ EXPOSE 50051
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import grpc; channel = grpc.insecure_channel('localhost:50051'); channel.close()" || exit 1
 
-# Run the gRPC server
-CMD ["python", "src/server.py"]
+# Run the gRPC server from the src directory
+CMD ["python", "-m", "server"]
