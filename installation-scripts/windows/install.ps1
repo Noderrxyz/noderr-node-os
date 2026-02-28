@@ -367,9 +367,10 @@ function New-SoftwareAttestation {
         $rsa           = [System.Security.Cryptography.RSACryptoServiceProvider]::new()
         $rsa.FromXmlString($privKeyXml)
 
-        $challengeBytes = [System.Text.Encoding]::UTF8.GetBytes($challenge)
+        # API verifies: createVerify('SHA256').update(rawQuoteBytes).verify(pubKey, sig)
+        # So we must sign the raw challenge bytes (not the base64 string's UTF-8 bytes)
         $sha256         = [System.Security.Cryptography.SHA256]::Create()
-        $hashBytes      = $sha256.ComputeHash($challengeBytes)
+        $hashBytes      = $sha256.ComputeHash($challengeRaw)
         $signature      = $rsa.SignHash($hashBytes, [System.Security.Cryptography.CryptoConfig]::MapNameToOID("SHA256"))
         $signatureB64   = [System.Convert]::ToBase64String($signature)
         Set-Content -Path "$Script:CONFIG_DIR\signature.txt" -Value $signatureB64 -NoNewline
