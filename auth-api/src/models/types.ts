@@ -96,6 +96,8 @@ export interface InstallConfigResponse {
     oracleVerifierAddress?: string;
     /** Oracle tier only: Base Sepolia RPC endpoint for on-chain submissions */
     rpcUrl?: string;
+    /** Comma-separated list of bootstrap node multiaddrs for P2P peer discovery */
+    bootstrapNodes?: string;
   };
 }
 
