@@ -178,6 +178,8 @@ check_hardware() {
 
 check_hardware_for_tier() {
     # Tier-specific hardware validation using API-provided requirements
+    local install_config
+    install_config=$(cat "${CONFIG_DIR}/install_config.json")
     local tier
     tier=$(echo "${install_config}" | jq -r '.tier')
     
