@@ -561,7 +561,7 @@ register_node() {
                 cpuCores: $cpu,
                 memoryGB: $mem,
                 diskGB: $disk,
-                gpuHardwareId: (if $gpu_id != "" then $gpu_id else empty end)
+                gpuHardwareId: (if $gpu_id != "" then $gpu_id else null end)
             },
             walletAddress: $wallet,
             nodeTier: $tier
