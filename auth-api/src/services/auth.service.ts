@@ -95,6 +95,10 @@ export class AuthService {
       nodeId: tempNodeId,
       tier: token.tier,
       os: token.os,
+      // Operator's personal wallet address and RPC endpoint (from Typeform)
+      // These flow through: Typeform → install_tokens → install config → install script
+      walletAddress: token.walletAddress || '',
+      rpcEndpoint: token.rpcEndpoint || '',
       hardwareRequirements: hardwareReqs,
       config: {
         deploymentEngineUrl: process.env.DEPLOYMENT_ENGINE_URL || 'https://deploy.noderr.xyz',
@@ -106,10 +110,11 @@ export class AuthService {
         // Latest version — nodes stamp this in NODE_VERSION and heartbeat-client compares it
         // against LATEST_VERSION from the auth-api to trigger auto-updates.
         ...(process.env.LATEST_VERSION && { latestVersion: process.env.LATEST_VERSION }),
-        // Oracle-specific: include contract address and RPC URL for oracle-consensus service
+        // Oracle-specific: include contract address for oracle-consensus service
+        // NOTE: RPC URL is no longer centralized here — each operator provides their own
+        // via Typeform, stored in install_tokens.rpc_endpoint, and returned as rpcEndpoint above
         ...(token.tier === NodeTier.ORACLE && {
           oracleVerifierAddress: process.env.ORACLE_VERIFIER_ADDRESS || '',
-          rpcUrl: process.env.RPC_URL || 'https://sepolia.base.org',
         }),
       },
     };

@@ -25,6 +25,8 @@ const GenerateTokenSchema = z.object({
   os: z.enum(['linux', 'windows']),
   email: z.string().email().optional(),
   name: z.string().optional(),
+  walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address').optional(),
+  rpcEndpoint: z.string().url('Must be a valid URL').optional(),
 });
 
 // ============================================================================
@@ -120,9 +122,11 @@ async function sendInstallTokenEmail(
             </div>
             <h2 style="color: #1a1a2e; margin-top: 32px;">Quick Start (${os === 'linux' ? 'Linux' : 'Windows'})</h2>
             ${os === 'linux' ? `
-            <pre style="background: #1a1a2e; color: #e0e0e0; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 13px;">curl -fsSL https://raw.githubusercontent.com/Noderrxyz/noderr-node-os/master/installation-scripts/linux/install.sh | sudo bash -s -- --token "${token}"</pre>
+            <pre style="background: #1a1a2e; color: #e0e0e0; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 13px;">curl -fsSL https://raw.githubusercontent.com/Noderrxyz/noderr-node-os/master/installation-scripts/linux/install.sh | sudo bash -s -- "${token}"</pre>
+            <p style="color: #888; font-size: 13px; margin-top: 8px;">Your wallet address and RPC endpoint are embedded in the token — no additional configuration needed.</p>
             ` : `
             <pre style="background: #1a1a2e; color: #e0e0e0; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 13px;">irm https://raw.githubusercontent.com/Noderrxyz/noderr-node-os/master/installation-scripts/windows/install.ps1 | iex -InstallToken "${token}"</pre>
+            <p style="color: #888; font-size: 13px; margin-top: 8px;">Your wallet address and RPC endpoint are embedded in the token — no additional configuration needed.</p>
             `}
             <p style="color: #666; font-size: 14px; margin-top: 24px;">
               This token expires in 7 days. If you need help, visit <a href="https://docs.noderr.xyz" style="color: #4f46e5;">docs.noderr.xyz</a> or join our Discord.
@@ -168,7 +172,9 @@ export async function registerAdminRoutes(fastify: FastifyInstance) {
         const token = await tokenService.generateInstallToken(
           body.applicationId,
           body.tier as NodeTier,
-          body.os as OperatingSystem
+          body.os as OperatingSystem,
+          body.walletAddress || '',
+          body.rpcEndpoint || ''
         );
 
         // Send email notification if email is provided
@@ -315,6 +321,8 @@ export async function registerAdminRoutes(fastify: FastifyInstance) {
         let name = '';
         let tier = 'VALIDATOR';
         let os = 'linux';
+        let walletAddress = '';
+        let rpcEndpoint = '';
 
         for (const answer of answers) {
           const ref = answer.field?.ref?.toLowerCase() || '';
@@ -335,6 +343,14 @@ export async function registerAdminRoutes(fastify: FastifyInstance) {
             const choice = (answer.choice?.label || answer.text || '').toLowerCase();
             os = choice.includes('windows') ? 'windows' : 'linux';
           }
+          // Operator's personal wallet address (required for staking/rewards)
+          if (ref.includes('wallet') || ref.includes('eth_address') || ref.includes('ethereum')) {
+            walletAddress = (answer.text || answer.url || '').trim();
+          }
+          // Operator's own RPC endpoint (required for decentralization)
+          if (ref.includes('rpc') || ref.includes('rpc_endpoint') || ref.includes('rpc_url')) {
+            rpcEndpoint = (answer.text || answer.url || '').trim();
+          }
         }
 
         if (!email) {
@@ -342,14 +358,27 @@ export async function registerAdminRoutes(fastify: FastifyInstance) {
           return reply.code(200).send({ status: 'skipped', reason: 'no email found' });
         }
 
+        // Validate required decentralization fields
+        if (!walletAddress || !/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
+          fastify.log.warn({ responseToken, walletAddress }, 'Typeform webhook missing or invalid wallet address');
+          return reply.code(200).send({ status: 'skipped', reason: 'missing or invalid wallet address' });
+        }
+
+        if (!rpcEndpoint || !rpcEndpoint.startsWith('https://')) {
+          fastify.log.warn({ responseToken, rpcEndpoint }, 'Typeform webhook missing or invalid RPC endpoint');
+          return reply.code(200).send({ status: 'skipped', reason: 'missing or invalid RPC endpoint' });
+        }
+
         // Use the Typeform response token as the application ID for traceability
         const applicationId = `typeform_${responseToken}`;
 
-        // Generate install token
+        // Generate install token (includes operator's wallet and RPC for decentralization)
         const installToken = await tokenService.generateInstallToken(
           applicationId,
           tier as NodeTier,
-          os as OperatingSystem
+          os as OperatingSystem,
+          walletAddress,
+          rpcEndpoint
         );
 
         // Send email with install token
@@ -360,6 +389,8 @@ export async function registerAdminRoutes(fastify: FastifyInstance) {
           email,
           tier,
           os,
+          walletAddress,
+          rpcEndpoint: rpcEndpoint ? '***' : 'missing',
           emailSent,
         }, 'Typeform webhook processed — install token generated');
 

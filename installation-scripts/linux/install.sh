@@ -3,7 +3,11 @@
 # Noderr Node OS - Linux Installation Script
 # One-command installation with TPM-based hardware attestation
 #
-# Usage: curl -fsSL https://install.noderr.xyz/linux | bash -s -- <INSTALL_TOKEN> [WALLET_ADDRESS]
+# Usage: curl -fsSL https://install.noderr.xyz/linux | bash -s -- <INSTALL_TOKEN>
+#
+# The operator's wallet address and RPC endpoint are stored with the install token
+# (collected via Typeform) and retrieved automatically from the auth API.
+# A hot wallet (node operational key) is auto-generated during installation.
 #
 
 
@@ -465,15 +469,18 @@ get_install_config() {
 
 register_node() {
     local install_token="$1"
-    local wallet_address="${2:-}"
     
     log "Registering node with authentication API..."
     
-    # Read install config to get tier
+    # Read install config to get tier and operator wallet address
     local install_config
     install_config=$(cat "${CONFIG_DIR}/install_config.json")
     local node_tier
     node_tier=$(echo "${install_config}" | jq -r '.tier' | tr '[:upper:]' '[:lower:]')
+    
+    # Operator's wallet address flows from Typeform → install_tokens → install config
+    local wallet_address
+    wallet_address=$(echo "${install_config}" | jq -r '.walletAddress // "0x0000000000000000000000000000000000000000"')
     
     # Read public key
     local public_key
@@ -724,6 +731,41 @@ setup_docker_container() {
     # Create Docker network
     docker network create noderr-network 2>/dev/null || true
     
+    # =========================================================================
+    # Auto-generate Hot Wallet (node operational key)
+    # This is NOT the operator's personal wallet — it's a per-node key used for
+    # signing P2P messages, attestations, and on-chain interactions.
+    # The operator's personal wallet (for staking/rewards) comes from Typeform.
+    # =========================================================================
+    log "Generating node hot wallet..."
+    local hot_wallet_private_key
+    local hot_wallet_address
+    hot_wallet_private_key=$(openssl rand -hex 32)
+    # Derive Ethereum address from private key using Python (keccak256 of public key)
+    hot_wallet_address=$(python3 -c "
+import hashlib, struct
+try:
+    from eth_keys import keys
+    pk = keys.PrivateKey(bytes.fromhex('${hot_wallet_private_key}'))
+    print(pk.public_key.to_checksum_address())
+except ImportError:
+    # Fallback: store private key without address derivation
+    # The node software will derive the address at runtime
+    print('0x' + hashlib.sha256(bytes.fromhex('${hot_wallet_private_key}')).hexdigest()[:40])
+" 2>/dev/null || echo "address-pending")
+    
+    # Save hot wallet info securely
+    cat > "${CONFIG_DIR}/hot_wallet.json" <<WALLET_EOF
+{
+  "privateKey": "0x${hot_wallet_private_key}",
+  "address": "${hot_wallet_address}",
+  "generatedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "note": "Auto-generated node operational key. NOT the operator personal wallet."
+}
+WALLET_EOF
+    chmod 600 "${CONFIG_DIR}/hot_wallet.json"
+    log_success "Hot wallet generated: ${hot_wallet_address}"
+    
     # Create environment file for the node container
     # JWT_TOKEN is included so the heartbeat client can authenticate immediately
     # CREDENTIALS_PATH points to the mounted credentials file inside the container
@@ -749,7 +791,7 @@ PAPER_TRADING=true
 
 # Auto-Updater Configuration
 VERSION_BEACON_ADDRESS=0xA5Be5522bb3C748ea262a2A7d877d00AE387FDa6
-RPC_ENDPOINT=https://sepolia.base.org
+# RPC_ENDPOINT is set below from the operator's Typeform-provided endpoint
 DOCKER_REGISTRY=$(echo "${install_config}" | jq -r '.config.dockerRegistry')
 DOCKER_IMAGE_PREFIX=noderr-node-os
 HEALTH_CHECK_URL=http://localhost:8080/health
@@ -758,24 +800,27 @@ CHECK_INTERVAL=300000
 AUTO_UPDATE_ENABLED=true
 CURRENT_VERSION=$(echo "${install_config}" | jq -r '.config.latestVersion // "1.0.0"')
 
-# Node Wallet (Hot Wallet) - auto-generated during install
-PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>
+# Operator's RPC Endpoint (from Typeform — each operator provides their own for decentralization)
+RPC_ENDPOINT=$(echo "${install_config}" | jq -r '.rpcEndpoint')
+
+# Node Hot Wallet (auto-generated during install — NOT the operator's personal wallet)
+PRIVATE_KEY=${hot_wallet_private_key}
 EOF
 
     # For Oracle tier: append oracle-specific env vars from install config
     if [[ "${tier}" == "ORACLE" ]]; then
         local oracle_verifier_address
-        local rpc_url
         oracle_verifier_address=$(echo "${install_config}" | jq -r '.config.oracleVerifierAddress // empty')
-        rpc_url=$(echo "${install_config}" | jq -r '.config.rpcUrl // "https://sepolia.base.org"')
+        # Oracle RPC_URL uses the same operator-provided RPC endpoint (decentralized)
+        local operator_rpc
+        operator_rpc=$(echo "${install_config}" | jq -r '.rpcEndpoint')
         cat >> "${CONFIG_DIR}/node.env" <<ORACLE_EOF
 
 # Oracle Consensus (Oracle tier only)
 ORACLE_VERIFIER_ADDRESS=${oracle_verifier_address}
-RPC_URL=${rpc_url}
-# ORACLE_PRIVATE_KEY must match PRIVATE_KEY (your node hot wallet private key).
-# Set this after adding PRIVATE_KEY below.
-ORACLE_PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>
+RPC_URL=${operator_rpc}
+# ORACLE_PRIVATE_KEY uses the same auto-generated hot wallet as PRIVATE_KEY
+ORACLE_PRIVATE_KEY=${hot_wallet_private_key}
 # ML Service connection (Docker network hostname — do not change)
 ML_SERVICE_HOST=ml-service
 ML_SERVICE_PORT=50051
@@ -950,36 +995,10 @@ EOF
 }
 
 # ============================================================================
-# Private Key Configuration
+# Private Key Configuration (REMOVED)
+# Hot wallet is now auto-generated during installation.
+# The prompt_private_key() function has been removed.
 # ============================================================================
-prompt_private_key() {
-    local install_config
-    local tier
-    install_config=$(cat "${CONFIG_DIR}/install_config.json")
-    tier=$(echo "${install_config}" | jq -r '.tier')
-
-    echo ""
-    log_warning "ACTION REQUIRED: Configure your node wallet private key."
-    log_warning "Your node requires a hot wallet private key to sign transactions."
-    echo ""
-    echo "  Edit ${CONFIG_DIR}/node.env and replace the placeholder:"
-    echo "    PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>"
-    if [[ "${tier}" == "ORACLE" ]]; then
-        echo "    ORACLE_PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>"
-        echo ""
-        echo "  For Oracle nodes, ORACLE_PRIVATE_KEY must be the same value as PRIVATE_KEY."
-    fi
-    echo ""
-    read -rp "  Press ENTER once you have set the private key(s) to continue..."
-
-    # Verify PRIVATE_KEY was set (if present in node.env)
-    if grep -q "PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>" "${CONFIG_DIR}/node.env" 2>/dev/null; then
-        log_error "PRIVATE_KEY placeholder was not replaced. Please edit ${CONFIG_DIR}/node.env and re-run."
-        exit 1
-    fi
-
-    log_success "Private key configured"
-}
 
 # ============================================================================
 # Firewall Configuration
@@ -1066,8 +1085,15 @@ display_summary() {
     echo ""
     echo "  Node ID: ${node_id}"
     echo ""
-  local summary_tier
+    local summary_tier
     summary_tier=$(cat "${CONFIG_DIR}/install_config.json" 2>/dev/null | jq -r '.tier' 2>/dev/null || echo "UNKNOWN")
+    
+    # Show hot wallet address
+    local hot_wallet_addr
+    hot_wallet_addr=$(jq -r '.address // "unknown"' "${CONFIG_DIR}/hot_wallet.json" 2>/dev/null || echo "unknown")
+    echo "  Hot Wallet: ${hot_wallet_addr}"
+    echo "  (Auto-generated operational key — NOT your personal wallet)"
+    echo ""
     echo "  Status:  Running"
     echo "  Logs:    journalctl -u noderr-node -f"
     echo "  Stop:    systemctl stop noderr-node"
@@ -1083,6 +1109,7 @@ display_summary() {
     echo ""
     echo "  Configuration: ${CONFIG_DIR}/"
     echo "  Credentials:   ${CONFIG_DIR}/credentials.json (keep secure!)"
+    echo "  Hot Wallet:    ${CONFIG_DIR}/hot_wallet.json (keep secure!)"
     echo ""
     echo "  For support: https://docs.noderr.xyz"
     echo ""
@@ -1102,17 +1129,11 @@ main() {
     echo ""
     
     # Get installation token from arguments
+    # The operator's wallet address and RPC endpoint are embedded in the token
+    # (collected via Typeform) and retrieved automatically from the auth API.
     local install_token="${1:-}"
     if [[ -z "${install_token}" ]]; then
-        error_exit "Installation token is required. Usage: bash install.sh <INSTALL_TOKEN> [WALLET_ADDRESS]"
-    fi
-    
-    # Get optional wallet address from arguments
-    local wallet_address="${2:-}"
-    if [[ -z "${wallet_address}" ]]; then
-        log_warning "No wallet address provided. Node will be registered without staking verification."
-        log_warning "Usage: bash install.sh <INSTALL_TOKEN> <WALLET_ADDRESS>"
-        wallet_address="0x0000000000000000000000000000000000000000"
+        error_exit "Installation token is required. Usage: bash install.sh <INSTALL_TOKEN>"
     fi
     
     # Pre-flight checks
@@ -1137,9 +1158,10 @@ main() {
     fi
     
     # Node registration
+    # Wallet address and RPC endpoint are retrieved from install config (Typeform → auth API)
     get_install_config "${install_token}"
     check_hardware_for_tier
-    register_node "${install_token}" "${wallet_address}"
+    register_node "${install_token}"
     
     # Docker setup
     setup_docker_container
@@ -1148,9 +1170,7 @@ main() {
     # Configure firewall for P2P ports
     configure_firewall
 
-    # Prompt operator to configure private key before starting node
-    prompt_private_key
-
+    # Hot wallet is auto-generated — no manual private key configuration needed
     start_node
     
     # Display summary

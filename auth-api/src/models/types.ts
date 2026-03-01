@@ -27,9 +27,12 @@ export interface InstallToken {
   applicationId: string;
   tier: NodeTier;
   os: OperatingSystem;
+  walletAddress: string;
+  rpcEndpoint: string;
   isUsed: boolean;
   createdAt: Date;
   expiresAt: Date;
+  usedAt: Date | null;
 }
 
 export interface NodeIdentity {
@@ -80,6 +83,10 @@ export interface InstallConfigResponse {
   nodeId: string;
   tier: NodeTier;
   os: OperatingSystem;
+  /** Operator's personal wallet address (from Typeform) */
+  walletAddress: string;
+  /** Operator's own RPC endpoint (from Typeform, required for decentralization) */
+  rpcEndpoint: string;
   hardwareRequirements?: {
     minCpuCores: number;
     minRamGb: number;
@@ -94,8 +101,6 @@ export interface InstallConfigResponse {
     latestVersion?: string;
     /** Oracle tier only: OracleVerifier contract address on Base Sepolia */
     oracleVerifierAddress?: string;
-    /** Oracle tier only: Base Sepolia RPC endpoint for on-chain submissions */
-    rpcUrl?: string;
     /** Comma-separated list of bootstrap node multiaddrs for P2P peer discovery */
     bootstrapNodes?: string;
   };

@@ -37,9 +37,12 @@ export class DatabaseService {
       applicationId: data.application_id,
       tier: data.tier,
       os: data.os,
+      walletAddress: data.wallet_address || '',
+      rpcEndpoint: data.rpc_endpoint || '',
       isUsed: data.is_used,
       createdAt: new Date(data.created_at),
       expiresAt: new Date(data.expires_at),
+      usedAt: data.used_at ? new Date(data.used_at) : null,
     };
   }
 

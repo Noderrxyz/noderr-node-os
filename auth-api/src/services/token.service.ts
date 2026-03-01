@@ -17,12 +17,16 @@ export class TokenService {
    * @param applicationId Application ID from node_applications table
    * @param tier Node tier (ALL/ORACLE/GUARDIAN)
    * @param os Operating system (linux/windows)
+   * @param walletAddress Operator's personal wallet address (from Typeform)
+   * @param rpcEndpoint Operator's own RPC endpoint (from Typeform, required for decentralization)
    * @returns Installation token string
    */
   async generateInstallToken(
     applicationId: string,
     tier: NodeTier,
-    os: OperatingSystem
+    os: OperatingSystem,
+    walletAddress: string,
+    rpcEndpoint: string
   ): Promise<string> {
     const db = getDatabaseService();
 
@@ -34,7 +38,7 @@ export class TokenService {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + TOKEN_EXPIRY_DAYS);
 
-    // Insert token into database
+    // Insert token into database (includes operator wallet + RPC for decentralization)
     const { data, error } = await db['supabase']
       .from('install_tokens')
       .insert({
@@ -42,6 +46,8 @@ export class TokenService {
         application_id: applicationId,
         tier,
         os,
+        wallet_address: walletAddress || null,
+        rpc_endpoint: rpcEndpoint || null,
         is_used: false,
         expires_at: expiresAt.toISOString(),
       })
@@ -95,9 +101,12 @@ export class TokenService {
       applicationId: data.application_id,
       tier: data.tier as NodeTier,
       os: data.os as OperatingSystem,
+      walletAddress: data.wallet_address || '',
+      rpcEndpoint: data.rpc_endpoint || '',
       isUsed: data.is_used,
       createdAt: new Date(data.created_at),
       expiresAt: new Date(data.expires_at),
+      usedAt: data.used_at ? new Date(data.used_at) : null,
     };
   }
 
@@ -124,9 +133,12 @@ export class TokenService {
       applicationId: row.application_id,
       tier: row.tier as NodeTier,
       os: row.os as OperatingSystem,
+      walletAddress: row.wallet_address || '',
+      rpcEndpoint: row.rpc_endpoint || '',
       isUsed: row.is_used,
       createdAt: new Date(row.created_at),
       expiresAt: new Date(row.expires_at),
+      usedAt: row.used_at ? new Date(row.used_at) : null,
     }));
   }
 
