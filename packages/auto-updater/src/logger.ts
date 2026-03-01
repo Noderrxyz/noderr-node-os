@@ -1,8 +1,10 @@
 /**
  * Logger utility for auto-updater
- * 
- * Uses Winston for structured logging
- * 
+ *
+ * Uses Winston for structured logging via console transport only.
+ * PM2 captures stdout/stderr and pm2-logrotate handles file rotation,
+ * so there is no need for a separate file transport.
+ *
  * @module logger
  */
 
@@ -16,27 +18,15 @@ export const logger = winston.createLogger({
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
-    winston.format.json()
+    winston.format.json(),
   ),
   defaultMeta: { service: 'auto-updater' },
   transports: [
-    // Console output
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(),
-        winston.format.simple()
+        winston.format.simple(),
       ),
-    }),
-    
-    // File output (errors)
-    new winston.transports.File({
-      filename: '/var/log/noderr/auto-updater-error.log',
-      level: 'error',
-    }),
-    
-    // File output (all logs)
-    new winston.transports.File({
-      filename: '/var/log/noderr/auto-updater.log',
     }),
   ],
 });

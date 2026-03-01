@@ -117,51 +117,47 @@ export const defaultConfig: Partial<AutoUpdaterConfig> = {
 };
 
 /**
- * Load configuration from environment variables
- * 
- * @returns AutoUpdaterConfig
- * @throws Error if required environment variables are missing
+ * Load configuration from environment variables.
+ *
+ * Returns `null` when the minimum required variables (VERSION_BEACON_ADDRESS,
+ * RPC_ENDPOINT) are absent, allowing the auto-updater process to stay alive
+ * in PM2 without crash-looping. This is important for nodes deployed before
+ * the auto-updater env vars were added to node.env — the process idles
+ * gracefully until the operator updates their config or reinstalls.
+ *
+ * @returns AutoUpdaterConfig or null if not configured
  */
-export function loadConfig(): AutoUpdaterConfig {
-  const required = [
-    'VERSION_BEACON_ADDRESS',
-    'RPC_ENDPOINT',
-    'NODE_TIER',
-    'NODE_ID',
-    'DOCKER_REGISTRY',
-    'DOCKER_IMAGE_PREFIX',
-    'HEALTH_CHECK_URL',
-    'BACKUP_DIRECTORY',
-    'TELEMETRY_ENDPOINT',
-  ];
-  
-  const missing = required.filter(key => !process.env[key]);
-  
-  if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+export function loadConfig(): AutoUpdaterConfig | null {
+  const versionBeaconAddress = process.env.VERSION_BEACON_ADDRESS;
+  const rpcEndpoint = process.env.RPC_ENDPOINT;
+
+  if (!versionBeaconAddress || !rpcEndpoint) {
+    return null;
   }
-  
-  const tier = process.env.NODE_TIER as 'VALIDATOR' | 'GUARDIAN' | 'ORACLE';
-  if (!['VALIDATOR', 'GUARDIAN', 'ORACLE'].includes(tier)) {
-    throw new Error(`Invalid NODE_TIER: ${tier}. Must be VALIDATOR, GUARDIAN, or ORACLE`);
-  }
-  
+
+  // Determine tier with fallback
+  const rawTier = (process.env.NODE_TIER || process.env.TIER || '').toUpperCase();
+  const validTiers = ['VALIDATOR', 'GUARDIAN', 'ORACLE'];
+  const tier = (validTiers.includes(rawTier)
+    ? rawTier
+    : 'VALIDATOR') as AutoUpdaterConfig['nodeTier'];
+
   return {
-    versionBeaconAddress: process.env.VERSION_BEACON_ADDRESS!,
-    rpcEndpoint: process.env.RPC_ENDPOINT!,
+    versionBeaconAddress,
+    rpcEndpoint,
     checkInterval: parseInt(process.env.CHECK_INTERVAL || String(defaultConfig.checkInterval!)),
     nodeTier: tier,
-    nodeId: process.env.NODE_ID!,
-    dockerRegistry: process.env.DOCKER_REGISTRY!,
-    dockerImagePrefix: process.env.DOCKER_IMAGE_PREFIX!,
-    healthCheckUrl: process.env.HEALTH_CHECK_URL!,
+    nodeId: process.env.NODE_ID || 'unknown-node',
+    dockerRegistry: process.env.DOCKER_REGISTRY || 'https://pub-66ad852cb9e54582bd0af64bce8d0a04.r2.dev',
+    dockerImagePrefix: process.env.DOCKER_IMAGE_PREFIX || 'noderr',
+    healthCheckUrl: process.env.HEALTH_CHECK_URL || 'http://localhost:8080/health',
     healthCheckTimeout: parseInt(process.env.HEALTH_CHECK_TIMEOUT || String(defaultConfig.healthCheckTimeout!)),
     rollbackTimeout: parseInt(process.env.ROLLBACK_TIMEOUT || String(defaultConfig.rollbackTimeout!)),
     autoUpdateEnabled: process.env.AUTO_UPDATE_ENABLED !== 'false',
-    backupDirectory: process.env.BACKUP_DIRECTORY!,
+    backupDirectory: process.env.BACKUP_DIRECTORY || '/app/backups',
     maxBackups: parseInt(process.env.MAX_BACKUPS || String(defaultConfig.maxBackups!)),
-    telemetryEndpoint: process.env.TELEMETRY_ENDPOINT!,
-    logLevel: (process.env.LOG_LEVEL as any) || defaultConfig.logLevel!,
+    telemetryEndpoint: process.env.TELEMETRY_ENDPOINT || '',
+    logLevel: (process.env.LOG_LEVEL as AutoUpdaterConfig['logLevel']) || defaultConfig.logLevel!,
   };
 }
 
