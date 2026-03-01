@@ -73,16 +73,25 @@ export class BFTConsensusEngine extends EventEmitter {
   private lotterySelector: OracleLotterySelector | null = null;
   private committeeSelections: Map<number, CommitteeSelection> = new Map();
   
-  // OracleVerifier ABI (minimal interface)
+  // OracleVerifier ABI — must match contracts/contracts/OracleVerifier.sol exactly.
+  // The contract uses verifyConsensus() (not submitData) and getOracleInfo returns
+  // (weight, stake, isActive) — not the expanded tuple the old ABI assumed.
   private static readonly ABI = [
-    'function submitData(uint256 roundId, bytes32 dataHash, bytes signature) external',
-    'function getConsensusResult(uint256 roundId) external view returns (bytes32 consensusHash, uint256 consensusWeight, bool finalized, uint256 submissionCount)',
-    'function getOracleInfo(address oracle) external view returns (uint256 stake, uint256 reputation, uint256 successfulSubmissions, uint256 failedSubmissions, bool isActive, bool isSlashed)',
+    'function verifyConsensus(tuple(string symbol, int256 prediction, uint256 confidence, uint256 timestamp, bytes32 modelHash) signal, address[] signers, bytes[] signatures) external returns (bytes32 signalHash)',
+    'function registerOracle(address oracle, uint256 weight) external payable',
+    'function removeOracle(address oracle) external',
+    'function slashOracle(address oracle, uint256 amount, string reason) external',
+    'function getOracleInfo(address oracle) external view returns (uint256 weight, uint256 stake, bool isActive)',
+    'function isSignalVerified(bytes32 signalHash) external view returns (bool)',
     'function activeOracleCount() external view returns (uint256)',
-    'function oracleList(uint256 index) external view returns (address)',
-    'event SubmissionReceived(uint256 indexed roundId, address indexed oracle, bytes32 dataHash)',
-    'event ConsensusReached(uint256 indexed roundId, bytes32 consensusHash, uint256 weight)',
-    'event ConsensusFailed(uint256 indexed roundId, string reason)',
+    'function oracleWeights(address oracle) external view returns (uint256)',
+    'function oracleStake(address oracle) external view returns (uint256)',
+    'function totalOracleWeight() external view returns (uint256)',
+    'event OracleRegistered(address indexed oracle, uint256 weight, uint256 stake)',
+    'event OracleRemoved(address indexed oracle)',
+    'event SignalVerified(bytes32 indexed signalHash, string symbol, int256 prediction, uint256 confidence)',
+    'event ConsensusReached(bytes32 indexed signalHash, uint256 signerCount, uint256 totalWeight)',
+    'event SlashingExecuted(address indexed oracle, uint256 amount, string reason)',
   ];
   
   constructor(config: ConsensusConfig) {
@@ -156,18 +165,19 @@ export class BFTConsensusEngine extends EventEmitter {
       
       for (let i = 0; i < oracleCount; i++) {
         const oracleAddress = await this.contract.oracleList(i);
-        const info = await this.contract.getOracleInfo(oracleAddress);
+        // getOracleInfo returns (uint256 weight, uint256 stake, bool isActive)
+        const [weight, stake, isActive] = await this.contract.getOracleInfo(oracleAddress);
         
         const oracleInfo: OracleInfo = {
           address: oracleAddress,
-          stake: info.stake,
-          reputation: Number(info.reputation),
-          weight: this.calculateWeight(info.stake, info.reputation),
-          isActive: info.isActive,
-          isSlashed: info.isSlashed,
+          stake: stake as bigint,
+          reputation: 100, // Reputation is tracked off-chain; default to 100
+          weight: Number(weight),
+          isActive: isActive as boolean,
+          isSlashed: false, // Slashing is tracked via stake reduction, not a flag
         };
         
-        if (oracleInfo.isActive && !oracleInfo.isSlashed) {
+        if (oracleInfo.isActive) {
           this.oracleRegistry.set(oracleAddress.toLowerCase(), oracleInfo);
         }
       }
@@ -203,19 +213,26 @@ export class BFTConsensusEngine extends EventEmitter {
    * Setup event listeners for smart contract
    */
   private setupEventListeners(): void {
-    // Listen for submission events
-    this.contract.on('SubmissionReceived', (roundId: any, oracle: any, dataHash: any, event: any) => {
-      this.handleSubmissionReceived(Number(roundId), oracle, dataHash);
+    // Listen for consensus events from the OracleVerifier contract.
+    // The contract emits ConsensusReached(signalHash, signerCount, totalWeight)
+    // and SignalVerified(signalHash, symbol, prediction, confidence).
+    
+    // ConsensusReached(bytes32 indexed signalHash, uint256 signerCount, uint256 totalWeight)
+    this.contract.on('ConsensusReached', (signalHash: any, signerCount: any, totalWeight: any) => {
+      logger.info(`On-chain consensus reached: signalHash=${signalHash}, signers=${signerCount}, weight=${totalWeight}`);
+      this.emit('onChainConsensusReached', { signalHash, signerCount: Number(signerCount), totalWeight: Number(totalWeight) });
     });
     
-    // Listen for consensus events
-    this.contract.on('ConsensusReached', (roundId: any, consensusHash: any, weight: any, event: any) => {
-      this.handleConsensusReached(Number(roundId), consensusHash, Number(weight));
+    // SignalVerified(bytes32 indexed signalHash, string symbol, int256 prediction, uint256 confidence)
+    this.contract.on('SignalVerified', (signalHash: any, symbol: any, prediction: any, confidence: any) => {
+      logger.info(`Signal verified on-chain: ${symbol} prediction=${prediction} confidence=${confidence}`);
+      this.emit('signalVerified', { signalHash, symbol, prediction: Number(prediction), confidence: Number(confidence) });
     });
     
-    // Listen for consensus failure events
-    this.contract.on('ConsensusFailed', (roundId: any, reason: any, event: any) => {
-      this.handleConsensusFailed(Number(roundId), reason);
+    // SlashingExecuted(address indexed oracle, uint256 amount, string reason)
+    this.contract.on('SlashingExecuted', (oracle: any, amount: any, reason: any) => {
+      logger.warn(`Oracle slashed: ${oracle} amount=${amount} reason=${reason}`);
+      this.emit('oracleSlashed', { oracle, amount: Number(amount), reason });
     });
   }
   
@@ -286,7 +303,11 @@ export class BFTConsensusEngine extends EventEmitter {
   }
   
   /**
-   * Submit data for consensus
+   * Submit data for consensus.
+   *
+   * This method collects the local oracle's submission for a round.
+   * The actual on-chain call is verifyConsensus(), which is invoked
+   * once the round is finalized and enough signatures are gathered.
    */
   async submitData(roundId: number, data: any): Promise<void> {
     const round = this.activeRounds.get(roundId);
@@ -305,20 +326,28 @@ export class BFTConsensusEngine extends EventEmitter {
     // Sign the data hash
     const signature = await this.config.signer.signMessage(ethers.getBytes(dataHash));
     
-    // Submit to smart contract
-    logger.info(`Submitting data for round ${roundId}...`);
+    // Record submission locally — on-chain verification happens in finalizeRound
+    // when enough submissions are gathered to meet the consensus threshold.
+    logger.info(`Recording submission for round ${roundId}...`);
     
-    try {
-      const tx = await this.contract.submitData(roundId, dataHash, signature);
-      await tx.wait();
-      
-      logger.info(`Data submitted for round ${roundId}`);
-      
-      this.emit('dataSubmitted', { roundId, dataHash });
-    } catch (error) {
-      logger.error(`Failed to submit data for round ${roundId}:`, error);
-      throw error;
-    }
+    const signerAddress = await this.config.signer.getAddress();
+    const oracleInfo = this.oracleRegistry.get(signerAddress.toLowerCase());
+    
+    const submission: OracleSubmission = {
+      oracle: signerAddress,
+      dataHash,
+      signature,
+      timestamp: Date.now(),
+      weight: oracleInfo?.weight ?? 1,
+    };
+    
+    round.submissions.push(submission);
+    
+    logger.info(`Data submitted for round ${roundId}`);
+    this.emit('dataSubmitted', { roundId, dataHash });
+    
+    // Try to reach consensus with the new submission
+    this.tryReachConsensus(roundId);
   }
   
   /**
@@ -481,23 +510,11 @@ export class BFTConsensusEngine extends EventEmitter {
       return localResult;
     }
     
-    // Query smart contract
-    try {
-      const result = await this.contract.getConsensusResult(roundId);
-      
-      return {
-        roundId,
-        consensusHash: result.consensusHash !== ethers.ZeroHash ? result.consensusHash : null,
-        consensusWeight: Number(result.consensusWeight),
-        totalWeight: this.getTotalWeight(),
-        submissions: [],
-        finalized: result.finalized,
-        timestamp: Date.now(),
-      };
-    } catch (error) {
-      logger.error(`Failed to get consensus result for round ${roundId}:`, error);
-      return null;
-    }
+    // The OracleVerifier contract does not store per-round results.
+    // Consensus verification is a single-call pattern via verifyConsensus().
+    // If the round is not in local cache, it has expired.
+    logger.debug(`Round ${roundId} not found in local cache`);
+    return null;
   }
   
   /**

@@ -18,8 +18,7 @@ fi
 
 if [ -z "$DEPLOYMENT_ENGINE_URL" ]; then
     echo "WARNING: DEPLOYMENT_ENGINE_URL not set. Auto-updates will be disabled until deployment engine is configured."
-    # Temporarily fall back to auth-api URL; replace with actual deployment engine URL when deployed.
-    export DEPLOYMENT_ENGINE_URL="https://noderrauth-api-production-cca0.up.railway.app"
+    export DEPLOYMENT_ENGINE_URL="${AUTH_API_URL:-https://auth.noderr.xyz}"
 fi
 
 # Create necessary directories
@@ -27,6 +26,16 @@ mkdir -p /app/logs /app/data
 
 # Set proper permissions (ignore errors if already correct)
 chown -R noderr:noderr /app/logs /app/data 2>/dev/null || true
+
+# Install pm2-logrotate for automatic log rotation (P1-1)
+echo "Installing pm2-logrotate..."
+pm2 install pm2-logrotate 2>/dev/null || true
+pm2 set pm2-logrotate:max_size 50M 2>/dev/null || true
+pm2 set pm2-logrotate:retain 5 2>/dev/null || true
+pm2 set pm2-logrotate:compress true 2>/dev/null || true
+pm2 set pm2-logrotate:dateFormat YYYY-MM-DD_HH-mm-ss 2>/dev/null || true
+pm2 set pm2-logrotate:workerInterval 30 2>/dev/null || true
+pm2 set pm2-logrotate:rotateInterval '0 0 * * *' 2>/dev/null || true
 
 # Check version from Deployment Engine
 echo "Checking for updates..."
@@ -37,7 +46,7 @@ echo "========================================="
 echo "Starting Oracle services with PM2..."
 echo "========================================="
 
-# Start all services using PM2 (same pattern as validator)
+# Start all services using PM2
 pm2-runtime start /app/ecosystem.config.js --env production
 
 # This line is never reached unless PM2 exits

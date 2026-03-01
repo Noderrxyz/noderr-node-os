@@ -136,6 +136,7 @@ COPY --chown=noderr:noderr package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY --from=builder --chown=noderr:noderr /build/node_modules ./node_modules
 COPY --from=builder --chown=noderr:noderr /build/packages/types ./packages/types
 COPY --from=builder --chown=noderr:noderr /build/packages/utils ./packages/utils
+COPY --from=builder --chown=noderr:noderr /build/packages/core ./packages/core
 COPY --from=builder --chown=noderr:noderr /build/packages/telemetry ./packages/telemetry
 COPY --from=builder --chown=noderr:noderr /build/packages/market-data ./packages/market-data
 COPY --from=builder --chown=noderr:noderr /build/packages/exchanges ./packages/exchanges
@@ -170,15 +171,16 @@ ENV NODE_ENV=production \
     PNPM_HOME="/pnpm" \
     PATH="$PNPM_HOME:$PATH"
 
-# Expose ports
-EXPOSE 3000 9090
+# Expose ports (3000=HTTP API, 9090=gRPC, 4001=P2P TCP, 4002=P2P WebSocket)
+EXPOSE 3000 9090 4001 4002
 
 # Switch to non-root user
 USER noderr
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD node -e "require('./packages/telemetry/dist/health-check.js')" || exit 1
+# Health check — verify PM2 is running and at least one process is online
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
+    CMD pm2 jlist 2>/dev/null | node -e \
+    "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const p=JSON.parse(d);const online=p.filter(x=>x.pm2_env.status==='online').length;process.exit(online>0?0:1)}catch(e){process.exit(1)}})" || exit 1
 
 # Use tini as init system
 ENTRYPOINT ["/sbin/tini", "--"]

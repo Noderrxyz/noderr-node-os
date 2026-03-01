@@ -54,6 +54,28 @@ export class DatabaseService {
   }
 
   /**
+   * Atomically claim an install token.
+   * Uses a conditional update (WHERE is_used = false) so that only the first
+   * concurrent request succeeds. Returns true if the token was claimed,
+   * false if it was already used by another request.
+   */
+  async claimToken(tokenId: string): Promise<boolean> {
+    const { data, error } = await this.supabase
+      .from('install_tokens')
+      .update({ is_used: true, used_at: new Date().toISOString() })
+      .eq('id', tokenId)
+      .eq('is_used', false)
+      .select('id');
+
+    if (error) {
+      throw new Error(`Failed to claim token: ${error.message}`);
+    }
+
+    // If no rows were updated, the token was already claimed
+    return !!(data && data.length > 0);
+  }
+
+  /**
    * Create node identity
    */
   async createNodeIdentity(identity: Omit<NodeIdentity, 'id' | 'createdAt' | 'updatedAt'>): Promise<NodeIdentity> {

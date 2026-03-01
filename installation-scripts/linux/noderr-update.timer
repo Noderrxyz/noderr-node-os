@@ -1,0 +1,12 @@
+[Unit]
+Description=Noderr Node Auto-Update Timer
+Documentation=https://docs.noderr.xyz
+
+[Timer]
+# Run daily at a random time within a 4-hour window to avoid thundering herd
+OnCalendar=daily
+RandomizedDelaySec=14400
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -266,10 +266,20 @@ export async function registerApiRoutes(fastify: FastifyInstance) {
         const nodeVersion = validatedRequest.metrics?.version;
         const shouldUpdate = !!(latestVersion && nodeVersion && latestVersion !== nodeVersion);
 
+        // Issue a refreshed JWT on every successful heartbeat.
+        // The heartbeat-client expects `newJwtToken` in the response and will
+        // persist it to credentials.json so the node survives restarts without
+        // needing to re-authenticate via API key.
+        const newJwtToken = (fastify as any).jwt.sign(
+          { nodeId: validatedRequest.nodeId },
+          { expiresIn: '24h' }
+        );
+
         return reply.code(200).send({
           acknowledged: true,
           shouldUpdate,
           targetVersion: latestVersion || nodeVersion,
+          newJwtToken,
         });
       } catch (error) {
         fastify.log.error(error);

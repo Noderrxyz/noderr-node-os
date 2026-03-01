@@ -11,6 +11,7 @@ import jwt from '@fastify/jwt';
 import '@fastify/jwt';
 import { registerApiRoutes } from './routes/api.routes';
 import { registerStrategyRoutes } from './routes/strategy.routes';
+import { registerAdminRoutes } from './routes/admin.routes';
 import { initializeDatabaseService } from './services/database.service';
 import { initializeAuthService } from './services/auth.service';
 
@@ -61,8 +62,14 @@ async function main() {
     skipOnError: true,          // fail open
   });
 
+  // JWT_SECRET MUST be set in production. The insecure fallback has been removed.
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    console.error('ERROR: JWT_SECRET environment variable is required. Generate one with: openssl rand -hex 64');
+    process.exit(1);
+  }
   await fastify.register(jwt as any, {
-    secret: process.env.JWT_SECRET || 'a-very-secret-jwt-secret',
+    secret: jwtSecret,
   });
 
   // Initialize services
@@ -76,6 +83,9 @@ async function main() {
   
   // Register Strategy routes
   await registerStrategyRoutes(fastify);
+
+  // Register Admin routes (token generation, Typeform webhook)
+  await registerAdminRoutes(fastify);
 
   // Start server
   try {

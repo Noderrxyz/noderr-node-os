@@ -151,12 +151,33 @@ export class NodeCommunicationLayer extends EventEmitter {
         import('@libp2p/ping'),
       ]);
 
+      // Parse bootstrap node multiaddrs from environment.
+      // BOOTSTRAP_NODES is a comma-separated list of multiaddr strings, e.g.:
+      //   /ip4/1.2.3.4/tcp/4001/p2p/QmPeer1,/ip4/5.6.7.8/tcp/4001/p2p/QmPeer2
+      // In production, these should point to 3-5 stable bootstrap nodes.
+      const { multiaddr } = await import('@multiformats/multiaddr');
+      const bootstrapAddrs = (process.env.BOOTSTRAP_NODES || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+      
+      let bootstrapConfig: any = undefined;
+      if (bootstrapAddrs.length > 0) {
+        const { bootstrap } = await import('@libp2p/bootstrap');
+        bootstrapConfig = bootstrap({
+          list: bootstrapAddrs,
+        });
+        this.logger.info(`Configured ${bootstrapAddrs.length} bootstrap nodes for peer discovery`);
+      } else {
+        this.logger.warn('No BOOTSTRAP_NODES configured — peer discovery will rely on mDNS/DHT only');
+      }
+
       // Create libp2p node
       this.node = await createLibp2p({
         addresses: {
           listen: listenAddresses.length > 0 ? listenAddresses : [
-            '/ip4/0.0.0.0/tcp/0',
-            '/ip4/0.0.0.0/tcp/0/ws'
+            '/ip4/0.0.0.0/tcp/4001',
+            '/ip4/0.0.0.0/tcp/4002/ws'
           ]
         },
         transports: [
@@ -165,6 +186,7 @@ export class NodeCommunicationLayer extends EventEmitter {
         ],
         connectionEncrypters: [noise() as any],
         streamMuxers: [mplex()],
+        peerDiscovery: bootstrapConfig ? [bootstrapConfig] : [],
         services: {
           dht: kadDHT({
             clientMode: false

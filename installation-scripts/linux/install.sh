@@ -631,11 +631,52 @@ setup_docker_container() {
             ;;
     esac
     
+    # Download with retry logic (P2-2) and checksum verification (P1-3)
+    download_with_retry() {
+        local url="$1"
+        local output="$2"
+        local max_attempts=3
+        local attempt=1
+        local backoff=5
+
+        while [ $attempt -le $max_attempts ]; do
+            log "Download attempt ${attempt}/${max_attempts}: ${url}"
+            if curl -fsSL --progress-bar --retry 3 --retry-delay 5 "${url}" -o "${output}"; then
+                return 0
+            fi
+            log_warning "Download attempt ${attempt} failed. Retrying in ${backoff}s..."
+            sleep $backoff
+            backoff=$((backoff * 2))
+            attempt=$((attempt + 1))
+        done
+        return 1
+    }
+
     log "Downloading Docker image from R2: ${r2_image_url}"
     local tmp_image="/tmp/noderr-${tier,,}-image.tar.gz"
-    if ! curl -fsSL --progress-bar "${r2_image_url}" -o "${tmp_image}"; then
-        error_exit "Failed to download Docker image from R2"
+    if ! download_with_retry "${r2_image_url}" "${tmp_image}"; then
+        error_exit "Failed to download Docker image from R2 after multiple attempts"
     fi
+
+    # Verify SHA256 checksum if available (P1-3)
+    local checksum_url="${r2_image_url}.sha256"
+    local tmp_checksum="/tmp/noderr-${tier,,}-image.tar.gz.sha256"
+    if curl -fsSL "${checksum_url}" -o "${tmp_checksum}" 2>/dev/null; then
+        log "Verifying image checksum..."
+        local expected_hash
+        expected_hash=$(awk '{print $1}' "${tmp_checksum}")
+        local actual_hash
+        actual_hash=$(sha256sum "${tmp_image}" | awk '{print $1}')
+        if [ "${expected_hash}" != "${actual_hash}" ]; then
+            rm -f "${tmp_image}" "${tmp_checksum}"
+            error_exit "Image checksum verification failed! Expected: ${expected_hash}, Got: ${actual_hash}. The download may be corrupted."
+        fi
+        log_success "Image checksum verified"
+        rm -f "${tmp_checksum}"
+    else
+        log_warning "No checksum file found at ${checksum_url} — skipping verification"
+    fi
+
     log "Loading Docker image..."
     if ! docker load < "${tmp_image}"; then
         error_exit "Failed to load Docker image"
@@ -647,9 +688,29 @@ setup_docker_container() {
         log "Downloading ML service image from R2 (this may take several minutes — the image is large)..."
         local ml_image_url="${R2_PUBLIC_URL}/ml-service/ml-service-latest.tar.gz"
         local tmp_ml_image="/tmp/noderr-ml-service-image.tar.gz"
-        if ! curl -fsSL --progress-bar "${ml_image_url}" -o "${tmp_ml_image}"; then
-            error_exit "Failed to download ML service image from R2"
+        if ! download_with_retry "${ml_image_url}" "${tmp_ml_image}"; then
+            error_exit "Failed to download ML service image from R2 after multiple attempts"
         fi
+
+        # Verify ML service image checksum
+        local ml_checksum_url="${ml_image_url}.sha256"
+        local tmp_ml_checksum="/tmp/noderr-ml-service-image.tar.gz.sha256"
+        if curl -fsSL "${ml_checksum_url}" -o "${tmp_ml_checksum}" 2>/dev/null; then
+            log "Verifying ML service image checksum..."
+            local ml_expected
+            ml_expected=$(awk '{print $1}' "${tmp_ml_checksum}")
+            local ml_actual
+            ml_actual=$(sha256sum "${tmp_ml_image}" | awk '{print $1}')
+            if [ "${ml_expected}" != "${ml_actual}" ]; then
+                rm -f "${tmp_ml_image}" "${tmp_ml_checksum}"
+                error_exit "ML service image checksum failed! Expected: ${ml_expected}, Got: ${ml_actual}"
+            fi
+            log_success "ML service image checksum verified"
+            rm -f "${tmp_ml_checksum}"
+        else
+            log_warning "No ML service checksum file found — skipping verification"
+        fi
+
         log "Loading ML service image..."
         if ! docker load < "${tmp_ml_image}"; then
             error_exit "Failed to load ML service image"
@@ -676,6 +737,15 @@ CREDENTIALS_PATH=/app/config/credentials.json
 DEPLOYMENT_ENGINE_URL=$(echo "${install_config}" | jq -r '.config.deploymentEngineUrl')
 AUTH_API_URL=$(echo "${install_config}" | jq -r '.config.authApiUrl')
 TELEMETRY_ENDPOINT=$(echo "${install_config}" | jq -r '.config.telemetryEndpoint')
+
+# P2P Network Configuration
+BOOTSTRAP_NODES=$(echo "${install_config}" | jq -r '.config.bootstrapNodes // empty')
+P2P_LISTEN_PORT=4001
+P2P_WS_PORT=4002
+
+# Trading Safety Defaults (testnet)
+SIMULATION_MODE=true
+PAPER_TRADING=true
 
 # Node Wallet (Hot Wallet) - replace with your node wallet private key
 PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>
@@ -782,8 +852,16 @@ ${gpu_deploy_section}
     restart: unless-stopped
     env_file:
       - ${CONFIG_DIR}/node.env
+    ports:
+      - "4001:4001/tcp"
+      - "4002:4002/tcp"
     volumes:
       - ${CONFIG_DIR}/credentials.json:/app/config/credentials.json:rw
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
     depends_on:
       ml-service:
         condition: service_healthy
@@ -839,7 +917,12 @@ ExecStart=/usr/bin/docker run \\
     --name noderr-node \\
     --network noderr-network \\
     --env-file ${CONFIG_DIR}/node.env \\
+    --publish 4001:4001/tcp \\
+    --publish 4002:4002/tcp \\
     --volume ${CONFIG_DIR}/credentials.json:/app/config/credentials.json:rw \\
+    --log-driver json-file \\
+    --log-opt max-size=50m \\
+    --log-opt max-file=5 \\
     --restart unless-stopped \\
     ${docker_image}
 ExecStop=/usr/bin/docker stop noderr-node
@@ -885,11 +968,54 @@ prompt_private_key() {
     log_success "Private key configured"
 }
 
+# ============================================================================
+# Firewall Configuration
+# ============================================================================
+
+configure_firewall() {
+    log "Configuring firewall for P2P networking..."
+
+    if command -v ufw &>/dev/null; then
+        # UFW is installed — open P2P ports
+        ufw allow 4001/tcp comment 'Noderr P2P TCP' >/dev/null 2>&1
+        ufw allow 4002/tcp comment 'Noderr P2P WebSocket' >/dev/null 2>&1
+
+        # Check if UFW is active; if not, don't force-enable it
+        if ufw status | grep -q "Status: active"; then
+            log_success "Firewall rules added (ufw): ports 4001/tcp, 4002/tcp"
+        else
+            log_warning "UFW is installed but not active. Rules added but will only take effect when UFW is enabled."
+            log_warning "To enable: sudo ufw enable"
+        fi
+    elif command -v firewall-cmd &>/dev/null; then
+        # firewalld (CentOS/RHEL/Fedora)
+        firewall-cmd --permanent --add-port=4001/tcp >/dev/null 2>&1
+        firewall-cmd --permanent --add-port=4002/tcp >/dev/null 2>&1
+        firewall-cmd --reload >/dev/null 2>&1
+        log_success "Firewall rules added (firewalld): ports 4001/tcp, 4002/tcp"
+    else
+        log_warning "No firewall manager detected (ufw/firewalld). Ensure ports 4001/tcp and 4002/tcp are open for P2P networking."
+    fi
+}
+
 start_node() {
     log "Starting Noderr Node OS..."
     
     systemctl enable noderr-node >/dev/null 2>&1
     systemctl start noderr-node
+
+    # P1-9: Install auto-update timer (heartbeat-driven updates are primary,
+    # but this timer provides a safety net for nodes that miss heartbeat signals)
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if [ -f "${script_dir}/noderr-update.service" ] && [ -f "${script_dir}/noderr-update.timer" ]; then
+        cp "${script_dir}/noderr-update.service" /etc/systemd/system/noderr-update.service
+        cp "${script_dir}/noderr-update.timer" /etc/systemd/system/noderr-update.timer
+        systemctl daemon-reload
+        systemctl enable noderr-update.timer >/dev/null 2>&1
+        systemctl start noderr-update.timer >/dev/null 2>&1
+        log_success "Auto-update timer installed"
+    fi
     
     # Wait for node to start
     sleep 5
@@ -1005,6 +1131,9 @@ main() {
     # Docker setup
     setup_docker_container
     create_systemd_service
+
+    # Configure firewall for P2P ports
+    configure_firewall
 
     # Prompt operator to configure private key before starting node
     prompt_private_key

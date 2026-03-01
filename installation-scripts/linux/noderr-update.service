@@ -1,0 +1,24 @@
+[Unit]
+Description=Noderr Node Auto-Update
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/opt/noderr/config/node.env
+ExecStart=/bin/bash -c '\
+  TIER=$(echo ${NODE_TIER:-validator} | tr "[:upper:]" "[:lower:]"); \
+  SCRIPT_URL="https://raw.githubusercontent.com/Noderrxyz/noderr-node-os/master/installation-scripts/update_${TIER}.sh"; \
+  SCRIPT_PATH="/tmp/noderr-update-${TIER}.sh"; \
+  curl -fsSL "${SCRIPT_URL}" -o "${SCRIPT_PATH}" && \
+  chmod +x "${SCRIPT_PATH}" && \
+  bash "${SCRIPT_PATH}" && \
+  rm -f "${SCRIPT_PATH}"'
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=noderr-update
+TimeoutStartSec=600
+
+[Install]
+WantedBy=multi-user.target

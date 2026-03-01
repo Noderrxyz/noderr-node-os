@@ -36,7 +36,7 @@ param(
     [string]$InstallToken,
 
     [Parameter(Mandatory=$false)]
-    [string]$WalletAddress = "0x06C4A1E6874348d31282b984d2A040f63C807A3F"
+    [string]$WalletAddress = ""
 )
 
 # ============================================================================
@@ -265,6 +265,26 @@ function Install-Docker {
         Remove-Item -Path $installerPath -Force -ErrorAction SilentlyContinue
 
         Write-Log -Message "Docker Desktop installed." -Level Success
+
+        # P1-2: Configure Docker Desktop to start on Windows login
+        Write-Log -Message "Configuring Docker Desktop to start automatically on login..."
+        try {
+            $dockerDesktopPath = "$env:ProgramFiles\Docker\Docker\Docker Desktop.exe"
+            if (-not (Test-Path $dockerDesktopPath)) {
+                $dockerDesktopPath = "${env:ProgramFiles(x86)}\Docker\Docker\Docker Desktop.exe"
+            }
+            if (Test-Path $dockerDesktopPath) {
+                # Create a startup registry entry for Docker Desktop
+                $regPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+                Set-ItemProperty -Path $regPath -Name "Docker Desktop" -Value "`"$dockerDesktopPath`"" -ErrorAction Stop
+                Write-Log -Message "Docker Desktop configured to start on login." -Level Success
+            } else {
+                Write-Log -Message "Could not locate Docker Desktop executable for auto-start. Please enable 'Start Docker Desktop when you sign in' manually in Docker Desktop Settings." -Level Warning
+            }
+        } catch {
+            Write-Log -Message "Could not configure Docker Desktop auto-start: $_. Please enable it manually in Docker Desktop Settings > General." -Level Warning
+        }
+
         Write-Log -Message "IMPORTANT: You must restart your computer and re-run this script to continue." -Level Warning
         Write-Host ""
         Write-Host "  After restarting, open Docker Desktop, complete setup, then re-run:" -ForegroundColor Yellow
@@ -561,12 +581,57 @@ function Get-DockerImageFromR2 {
     Write-Log -Message "Downloading $ImageName from R2 (this may take several minutes for large images)..."
     Write-Log -Message "  URL: $url"
     Write-Log -Message "  Saving to: $tmpPath"
+    # Retry loop with exponential backoff (P2-2)
+    $maxAttempts = 3
+    $downloaded  = $false
+    for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+        try {
+            Write-Log -Message "Download attempt ${attempt}/${maxAttempts}..."
+            & "$env:SystemRoot\System32\curl.exe" --location --progress-bar --max-time 3600 `
+                --retry 3 --retry-delay 5 `
+                -H "User-Agent: Noderr-Installer/1.1.0" `
+                -o $tmpPath $url
+            if ($LASTEXITCODE -eq 0) {
+                $downloaded = $true
+                break
+            }
+        } catch {
+            Write-Log -Message "Download attempt ${attempt} failed: $_" -Level Warning
+        }
+        if ($attempt -lt $maxAttempts) {
+            $backoff = [Math]::Pow(2, $attempt) * 5
+            Write-Log -Message "Retrying in ${backoff}s..." -Level Warning
+            Start-Sleep -Seconds $backoff
+        }
+    }
+    if (-not $downloaded) {
+        Write-ErrorAndExit "Failed to download $ImageName from R2 after $maxAttempts attempts"
+    }
+
+    # Verify SHA256 checksum if available (P1-3)
+    $checksumUrl  = "${url}.sha256"
+    $checksumPath = "${tmpPath}.sha256"
     try {
-        # Use curl.exe for reliable large-file downloads (bypasses WinHTTP/proxy issues)
-        & "$env:SystemRoot\System32\curl.exe" --location --progress-bar --max-time 3600 `
-            -H "User-Agent: Noderr-Installer/1.1.0" `
-            -o $tmpPath $url
-        if ($LASTEXITCODE -ne 0) { Write-ErrorAndExit "curl.exe failed to download $ImageName (exit code $LASTEXITCODE)" }
+        & "$env:SystemRoot\System32\curl.exe" --location --silent --fail `
+            -o $checksumPath $checksumUrl 2>$null
+        if ($LASTEXITCODE -eq 0 -and (Test-Path $checksumPath)) {
+            Write-Log -Message "Verifying image checksum..."
+            $expectedHash = (Get-Content $checksumPath -Raw).Trim().Split(' ')[0]
+            $actualHash   = (Get-FileHash -Path $tmpPath -Algorithm SHA256).Hash.ToLower()
+            if ($expectedHash -ne $actualHash) {
+                Remove-Item -Path $tmpPath, $checksumPath -Force -ErrorAction SilentlyContinue
+                Write-ErrorAndExit "Image checksum verification failed! Expected: $expectedHash, Got: $actualHash"
+            }
+            Write-Log -Message "Image checksum verified" -Level Success
+            Remove-Item -Path $checksumPath -Force -ErrorAction SilentlyContinue
+        } else {
+            Write-Log -Message "No checksum file available at $checksumUrl - skipping verification" -Level Warning
+        }
+    } catch {
+        Write-Log -Message "Checksum verification skipped: $_" -Level Warning
+    }
+
+    try {
         $sizeMB = [Math]::Round((Get-Item $tmpPath).Length / 1MB)
         Write-Log -Message "Download complete ($($sizeMB)MB). Loading $ImageName into Docker..." -Level Success
         $result = docker load -i $tmpPath 2>&1
@@ -574,12 +639,12 @@ function Get-DockerImageFromR2 {
         Remove-Item -Path $tmpPath -Force -ErrorAction SilentlyContinue
         Write-Log -Message "$ImageName loaded successfully" -Level Success
     } catch {
-        Write-ErrorAndExit "Failed to download $ImageName from R2: $_"
+        Write-ErrorAndExit "Failed to load $ImageName into Docker: $_"
     }
 }
 
 function Install-DockerContainer {
-    param([PSObject]$InstallConfig, [PSObject]$Credentials)
+    param([PSObject]$InstallConfig, [PSObject]$Credentials, [hashtable]$Wallet)
     Write-Log -Message "Setting up Docker container(s)..."
 
     $tier     = $InstallConfig.tier
@@ -623,8 +688,17 @@ function Install-DockerContainer {
         "AUTH_API_URL=$($InstallConfig.config.authApiUrl)",
         "TELEMETRY_ENDPOINT=$($InstallConfig.config.telemetryEndpoint)",
         "",
-        "# Node Wallet (Hot Wallet)",
-        "PRIVATE_KEY=0xc169967253baed5b78bbcd517269d9c88f805bbe09b499c6e79fbdb4c133b041"
+        "# P2P Network Configuration",
+        "BOOTSTRAP_NODES=$($InstallConfig.config.bootstrapNodes)",
+        "P2P_LISTEN_PORT=4001",
+        "P2P_WS_PORT=4002",
+        "",
+        "# Trading Safety Defaults (testnet)",
+        "SIMULATION_MODE=true",
+        "PAPER_TRADING=true",
+        "",
+        "# Node Wallet (Hot Wallet) - auto-generated unique key for this node",
+        "PRIVATE_KEY=$($Wallet.PrivateKey)"
     )
 
     if ($tier -eq "ORACLE") {
@@ -635,7 +709,7 @@ function Install-DockerContainer {
             "# Oracle Consensus (Oracle tier only)",
             "ORACLE_VERIFIER_ADDRESS=$oracleVerifier",
             "RPC_URL=$rpcUrl",
-            "ORACLE_PRIVATE_KEY=0xc169967253baed5b78bbcd517269d9c88f805bbe09b499c6e79fbdb4c133b041",
+            "ORACLE_PRIVATE_KEY=$($Wallet.PrivateKey)",
             "",
             "# ML Service connection (Docker network hostname - do not change)",
             "ML_SERVICE_HOST=ml-service",
@@ -700,8 +774,16 @@ $gpuDeployYaml
     restart: unless-stopped
     env_file:
       - $configDir\node.env
+    ports:
+      - "4001:4001/tcp"
+      - "4002:4002/tcp"
     volumes:
       - $configDir\credentials.json:/app/config/credentials.json:rw
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
     depends_on:
       ml-service:
         condition: service_healthy
@@ -729,10 +811,30 @@ networks:
 # Private Key Configuration
 # ============================================================================
 
-function Request-PrivateKey {
-    param([string]$Tier)
-    # Wallet pre-configured at install time - no manual editing required
-    Write-Log -Message "Node wallet pre-configured (Oracle Wallet 6: 0x06C4A1E6874348d31282b984d2A040f63C807A3F)" -Level Success
+function New-NodeWallet {
+    <#
+    .SYNOPSIS
+        Generates a unique Ethereum private key for this node using
+        cryptographically secure random bytes. The corresponding wallet
+        address is derived on first boot inside the container where
+        ethers.js is available.
+    #>
+    Write-Log -Message "Generating unique node wallet (hot wallet)..."
+
+    # 32 cryptographically secure random bytes -> private key
+    $rng   = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    $bytes = New-Object byte[] 32
+    $rng.GetBytes($bytes)
+    $privateKeyHex = "0x" + [System.BitConverter]::ToString($bytes).Replace("-", "").ToLower()
+
+    Write-Log -Message "Node wallet generated successfully" -Level Success
+    Write-Log -Message "  Private Key: $($privateKeyHex.Substring(0,10))...(stored in node.env - keep secure!)" -Level Info
+    Write-Log -Message "  The wallet address will be derived and displayed on first boot." -Level Info
+    Write-Log -Message "  You will need to fund it with testnet ETH for gas fees." -Level Warning
+
+    return @{
+        PrivateKey = $privateKeyHex
+    }
 }
 
 # ============================================================================
@@ -782,7 +884,12 @@ function Start-NodeService {
             --name noderr-node `
             --network noderr-network `
             --env-file "$Script:CONFIG_DIR\node.env" `
+            --publish 4001:4001/tcp `
+            --publish 4002:4002/tcp `
             --volume "$Script:CONFIG_DIR\credentials.json:/app/config/credentials.json:rw" `
+            --log-driver json-file `
+            --log-opt max-size=50m `
+            --log-opt max-file=5 `
             --restart unless-stopped `
             $dockerImage
 
@@ -885,11 +992,11 @@ function Main {
     # Register node
     $credentials = Register-Node -Token $InstallToken -InstallConfig $installConfig -WalletAddress $WalletAddress
 
-    # Download images and configure containers
-    Install-DockerContainer -InstallConfig $installConfig -Credentials $credentials
+    # Generate unique node wallet (hot wallet) for this node
+    $wallet = New-NodeWallet
 
-    # Prompt operator to set private key before starting
-    Request-PrivateKey -Tier $installConfig.tier
+    # Download images and configure containers
+    Install-DockerContainer -InstallConfig $installConfig -Credentials $credentials -Wallet $wallet
 
     # Start the node
     Start-NodeService -Tier $installConfig.tier

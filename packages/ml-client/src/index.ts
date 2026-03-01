@@ -120,8 +120,29 @@ export class MLClient extends EventEmitter {
 
   private async initialize(): Promise<void> {
     try {
-      // Load proto file
-      const PROTO_PATH = path.join(__dirname, '../../../ml-service/proto/ml_service.proto');
+      // Load proto file - check multiple locations:
+      // 1. Bundled with ml-client package (production / Docker)
+      // 2. Relative to monorepo root (development)
+      const bundledProto = path.join(__dirname, '../proto/ml_service.proto');
+      const monorepoProto = path.join(__dirname, '../../../ml-service/proto/ml_service.proto');
+      const envProto = process.env.ML_PROTO_PATH || '';
+      
+      let PROTO_PATH: string;
+      const fs = require('fs');
+      if (envProto && fs.existsSync(envProto)) {
+        PROTO_PATH = envProto;
+      } else if (fs.existsSync(bundledProto)) {
+        PROTO_PATH = bundledProto;
+      } else if (fs.existsSync(monorepoProto)) {
+        PROTO_PATH = monorepoProto;
+      } else {
+        throw new Error(
+          `ml_service.proto not found. Searched:\n` +
+          `  - ${bundledProto}\n` +
+          `  - ${monorepoProto}\n` +
+          `Set ML_PROTO_PATH env var to override.`
+        );
+      }
       
       const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
         keepCase: true,

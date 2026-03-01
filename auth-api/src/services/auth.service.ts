@@ -101,6 +101,8 @@ export class AuthService {
         authApiUrl: this.getAuthApiUrl(),
         dockerRegistry: process.env.DOCKER_REGISTRY || 'ghcr.io/noderrxyz',
         telemetryEndpoint: process.env.TELEMETRY_ENDPOINT || 'https://telemetry.noderr.xyz',
+        // Bootstrap nodes for P2P peer discovery (comma-separated multiaddrs)
+        bootstrapNodes: process.env.BOOTSTRAP_NODES || '',
         // Latest version — nodes stamp this in NODE_VERSION and heartbeat-client compares it
         // against LATEST_VERSION from the auth-api to trigger auto-updates.
         ...(process.env.LATEST_VERSION && { latestVersion: process.env.LATEST_VERSION }),
@@ -130,9 +132,15 @@ export class AuthService {
       throw new Error('Installation token has expired');
     }
 
-    if (token.isUsed) {
+    // Atomically claim the token to prevent race conditions.
+    // If two concurrent requests try to use the same token, only one will succeed.
+    const claimed = await db.claimToken(token.id);
+    if (!claimed) {
       throw new Error('Installation token has already been used');
     }
+
+    // From this point forward, the token is claimed. If anything fails below,
+    // the token remains used (operator must request a new one via support).
 
     // Validate public key format
     if (!attestationService.validatePublicKey(request.publicKey)) {
@@ -178,9 +186,6 @@ export class AuthService {
       ...(request.walletAddress ? { walletAddress: request.walletAddress } : {}),
       ...(request.systemInfo ? { systemInfo: request.systemInfo } : {}),
     } as any);
-
-    // Mark token as used
-    await db.markTokenAsUsed(token.id);
 
     // Generate API key
     const apiKey = this.generateApiKey();

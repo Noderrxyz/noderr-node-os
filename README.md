@@ -11,45 +11,83 @@
 
 Noderr Node OS is the institutional-grade software that powers the Noderr Protocol's decentralized network of node operators. It provides secure, autonomous operation with zero-downtime updates, hardware-attested authentication, and comprehensive monitoring.
 
+## Quick Start (Node Operators)
+
+After purchasing a node license and receiving your install token:
+
+```bash
+# Linux
+curl -fsSL https://raw.githubusercontent.com/Noderrxyz/noderr-node-os/master/installation-scripts/linux/install.sh | sudo bash -s -- <YOUR_INSTALL_TOKEN>
+```
+
+```powershell
+# Windows (PowerShell as Administrator)
+Set-ExecutionPolicy Bypass -Scope Process -Force
+irm https://raw.githubusercontent.com/Noderrxyz/noderr-node-os/master/installation-scripts/windows/install.ps1 | iex
+```
+
+**📚 [Full Node Operator Guide](./docs/NODE_OPERATOR_GUIDE.md)**
+
 ## Architecture
 
-The Node OS implements a **three-node decentralized trading architecture** designed to compete with institutional systems like BlackRock's Aladdin. Each node type has a specific, non-overlapping responsibility in the trading lifecycle.
+The Node OS implements a **three-tier decentralized architecture** designed for institutional-grade intelligence infrastructure. Each node tier has a specific, non-overlapping responsibility.
 
-### The 3-Node System
+### The 3-Tier System
 
-| Node Type | Count | Responsibility | Key Functions |
-| :--- | :--- | :--- | :--- |
-| **Oracle Nodes** | 25-50 | **Intelligence & Consensus** | Market analysis, alpha generation, BFT consensus on trading signals |
-| **Guardian Nodes** | 50-100 | **Risk & Compliance** | Pre-trade risk assessment, portfolio monitoring, majority voting on approvals |
-| **Validator Nodes** | 100-500 | **Execution & Optimization** | Smart order routing, liquidity aggregation, MEV protection, trade execution |
-
-**📚 [Complete Architecture Documentation](./docs/architecture/)**
+| Node Tier | Responsibility | Key Services |
+| :--- | :--- | :--- |
+| **Oracle** (Tier 4) | Intelligence, ML & Consensus | Market analysis, alpha generation, BFT consensus, ML inference |
+| **Guardian** (Tier 3) | Risk, Compliance & Execution | Pre-trade risk assessment, trade execution, portfolio monitoring |
+| **Validator** (Tier 2) | On-Chain Validation & Relay | On-chain verification, data relay, market data distribution |
 
 ### Information Flow
-
-The protocol follows a strict, sequential flow to ensure security and performance:
 
 ```
 Oracle Consensus (WHAT) → Guardian Approval (WHETHER) → Validator Execution (HOW) → Feedback Loop (LEARN)
 ```
 
-1.  **Oracle Consensus**: Oracle nodes generate or receive a trading signal and use Byzantine Fault Tolerant (BFT) consensus to agree on its validity.
-2.  **Guardian Approval**: The consensus-approved signal is sent to the Guardian network, which votes on whether the trade is within acceptable risk parameters (majority voting, 50%+).
-3.  **Validator Execution**: If the Guardians approve, the trade is passed to the Validator network for optimized execution across multiple venues using algorithms like TWAP, VWAP, and Iceberg.
-4.  **Feedback Loop**: Execution results are fed back into the Oracle network to improve future signal generation.
+1. **Oracle Consensus**: Oracle nodes generate trading signals and use Byzantine Fault Tolerant (BFT) consensus to agree on validity, verified on-chain via `OracleVerifier.sol`.
+2. **Guardian Approval**: The consensus-approved signal is sent to the Guardian network for risk assessment and majority voting (50%+).
+3. **Validator Execution**: If approved, the trade is passed to Validators for optimized execution across multiple venues.
+4. **Feedback Loop**: Execution results feed back into the Oracle network for continuous improvement.
 
-Each node type operates independently but coordinates through Byzantine Fault Tolerant consensus mechanisms. See the [architecture documentation](./docs/architecture/) for detailed analysis and diagrams.
+**📚 [Architecture Documentation](./docs/architecture/)**
 
 ## Key Features
 
-- **NFT-as-License:** Nodes are cryptographically bound to on-chain Utility NFTs
-- **Zero-Downtime Updates:** Hot-swappable components with automatic rollback
-- **Hardware-Attested Security:** TPM-based key generation and authentication
-- **Autonomous Operation:** Self-healing, self-updating nodes with minimal operator intervention
+- **One-Click Deployment**: Fully automated installation from Typeform purchase to running node
+- **Auto-Generated Credentials**: Unique cryptographic identity per node (no shared keys)
+- **Zero-Downtime Updates**: Heartbeat-driven update detection with systemd timer safety net
+- **Hardware-Attested Security**: TPM-based key generation with software fallback
+- **SHA256 Image Verification**: Every Docker image download is checksum-verified
+- **P2P Networking**: Direct peer-to-peer communication via libp2p (TCP + WebSocket)
+- **Comprehensive Monitoring**: Optional Prometheus/Grafana/Loki stack
+- **Log Rotation**: PM2 logrotate + Docker json-file driver with size limits
 
-## Security
+## Project Structure
 
-This repository contains proprietary software. Unauthorized distribution or use is strictly prohibited.
+```
+noderr-node-os/
+├── packages/                        # Monorepo packages (47 packages)
+│   ├── oracle-consensus/           # Oracle BFT consensus engine
+│   ├── guardian-consensus/         # Guardian risk approval voting
+│   ├── validator-consensus/        # Validator consensus participation
+│   ├── heartbeat-client/           # Network heartbeat & JWT refresh
+│   ├── decentralized-core/         # P2P networking (libp2p)
+│   ├── on-chain-service/           # On-chain validation
+│   ├── ml-client/                  # ML gRPC client
+│   ├── telemetry/                  # Monitoring, health checks
+│   ├── types/                      # Shared TypeScript types
+│   ├── utils/                      # Shared utilities
+│   └── .../                        # Additional packages
+├── auth-api/                        # Authentication & registration API
+├── docker/                          # Dockerfiles (oracle, guardian, validator)
+├── contracts/                       # Solidity smart contracts
+├── installation-scripts/            # Linux & Windows installers
+├── monitoring/                      # Prometheus/Grafana stack
+├── .github/workflows/               # CI/CD pipelines
+└── docs/                            # Documentation
+```
 
 ## Development
 
@@ -69,37 +107,24 @@ pnpm build
 
 # Run tests
 pnpm test
-
-# Lint code
-pnpm lint
-```
-
-### Project Structure
-
-```
-noderr-node-os/
-├── packages/                    # Monorepo packages
-│   ├── oracle-consensus/       # Oracle BFT consensus engine
-│   ├── guardian-consensus/     # Guardian risk approval voting
-│   ├── execution/              # Validator smart order routing
-│   ├── autonomous-execution/   # Autonomous trading orchestrator
-│   ├── floor-engine/           # Low-risk yield generation
-│   ├── risk-engine/            # Risk management system
-│   ├── types/                  # Shared TypeScript types
-│   ├── utils/                  # Shared utilities
-│   ├── telemetry/              # Monitoring and metrics
-│   └── .../                    # Additional packages
-├── .github/                    # GitHub Actions workflows
-└── docs/                       # Documentation
 ```
 
 ### CI/CD
 
-All pull requests are automatically tested via GitHub Actions:
-- TypeScript compilation
-- Unit tests
-- Linting
-- Type checking
+- **Auth API**: Automated build, test, and deploy to Railway on push to master
+- **Docker Images**: Build, checksum, and upload to R2 on version tags
+- **Pull Requests**: TypeScript compilation, unit tests, linting
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Node Operator Guide](./docs/NODE_OPERATOR_GUIDE.md) | Installation, configuration, troubleshooting |
+| [Architecture](./docs/architecture/) | System design and diagrams |
+| [Docker Architecture](./docs/DOCKER_ARCHITECTURE.md) | Container structure and build process |
+| [Network Testing](./docs/NETWORK_TESTING_GUIDE.md) | Testnet deployment and validation |
+| [Security Audit](./docs/SECURITY_AUDIT.md) | Security analysis and hardening |
+| [Bootstrap Nodes](./docs/BOOTSTRAP_NODES_DEPLOYMENT.md) | P2P bootstrap node deployment |
 
 ## License
 

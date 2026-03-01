@@ -7,10 +7,8 @@
 # Features:
 # - Validates environment configuration
 # - Starts all services in correct order
-# - Monitors service health
+# - Automatic log rotation via pm2-logrotate
 # - Graceful shutdown handling
-# 
-# Quality: PhD-Level + Production-Grade
 #
 
 set -e
@@ -34,10 +32,25 @@ if [ -z "$NETWORK_ID" ]; then
   export NETWORK_ID="testnet"
 fi
 
+if [ -z "$DEPLOYMENT_ENGINE_URL" ]; then
+    echo "WARNING: DEPLOYMENT_ENGINE_URL not set."
+    export DEPLOYMENT_ENGINE_URL="${AUTH_API_URL:-https://auth.noderr.xyz}"
+fi
+
 # Create necessary directories
 mkdir -p /app/logs
 mkdir -p /app/data/state
 mkdir -p /app/data/cache
+
+# Install pm2-logrotate for automatic log rotation (P1-1)
+echo "Installing pm2-logrotate..."
+pm2 install pm2-logrotate 2>/dev/null || true
+pm2 set pm2-logrotate:max_size 50M 2>/dev/null || true
+pm2 set pm2-logrotate:retain 5 2>/dev/null || true
+pm2 set pm2-logrotate:compress true 2>/dev/null || true
+pm2 set pm2-logrotate:dateFormat YYYY-MM-DD_HH-mm-ss 2>/dev/null || true
+pm2 set pm2-logrotate:workerInterval 30 2>/dev/null || true
+pm2 set pm2-logrotate:rotateInterval '0 0 * * *' 2>/dev/null || true
 
 echo ""
 echo "Environment Configuration:"
