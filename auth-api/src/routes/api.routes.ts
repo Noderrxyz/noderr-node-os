@@ -33,7 +33,7 @@ const SystemInfoSchema = z.object({
   diskGB: z.number().min(1),
   osVersion: z.string().optional(),
   kernelVersion: z.string().optional(),
-  gpuHardwareId: z.string().optional(), // For Oracle nodes
+  gpuHardwareId: z.string().nullable().optional(), // For Oracle nodes
 });
 
 const RegisterNodeRequestSchema = z.object({
