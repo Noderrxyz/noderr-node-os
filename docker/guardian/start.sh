@@ -37,9 +37,11 @@ pm2 set pm2-logrotate:dateFormat YYYY-MM-DD_HH-mm-ss 2>/dev/null || true
 pm2 set pm2-logrotate:workerInterval 30 2>/dev/null || true
 pm2 set pm2-logrotate:rotateInterval '0 0 * * *' 2>/dev/null || true
 
-# Check version from Deployment Engine
-echo "Checking for updates..."
-CURRENT_VERSION=$(cat /app/VERSION 2>/dev/null || echo "0.0.0")
+# Resolve current version: env-file (node.env) takes priority, then /app/VERSION, then fallback
+if [ -z "$CURRENT_VERSION" ]; then
+  CURRENT_VERSION=$(cat /app/VERSION 2>/dev/null || echo "1.0.0")
+  export CURRENT_VERSION
+fi
 echo "Current version: $CURRENT_VERSION"
 
 echo "========================================="
