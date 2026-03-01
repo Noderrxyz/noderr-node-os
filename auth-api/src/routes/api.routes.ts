@@ -54,18 +54,24 @@ const VerifyNodeRequestSchema = z.object({
 const HeartbeatRequestSchema = z.object({
   nodeId: z.string().min(1),
   jwtToken: z.string().min(1),
+  // metrics is optional to support both heartbeat-client (full metrics)
+  // and auto-updater telemetry (partial or no metrics)
   metrics: z.object({
-    uptime: z.number().min(0),
-    cpu: z.number().min(0).max(100),
-    memory: z.number().min(0).max(100),
+    uptime: z.number().min(0).optional(),
+    cpu: z.number().min(0).max(100).optional(),
+    memory: z.number().min(0).max(100).optional(),
     disk: z.number().min(0).max(100).optional(),
     network: z.object({
       rx: z.number().min(0),
       tx: z.number().min(0),
     }).optional(),
-    version: z.string(),
-  }),
-});
+    version: z.string().optional(),
+  }).optional(),
+  // Additional fields from auto-updater telemetry (ignored but accepted)
+  nodeTier: z.string().optional(),
+  timestamp: z.number().optional(),
+  updateResult: z.any().optional(),
+}).passthrough();
 type HeartbeatRequest = z.infer<typeof HeartbeatRequestSchema>;
 
 export async function registerApiRoutes(fastify: FastifyInstance) {
@@ -253,7 +259,7 @@ export async function registerApiRoutes(fastify: FastifyInstance) {
         await authService.processHeartbeat(
           validatedRequest.nodeId,
           validatedRequest.jwtToken,
-          validatedRequest.metrics!
+          validatedRequest.metrics
         );
 
         fastify.log.debug({
