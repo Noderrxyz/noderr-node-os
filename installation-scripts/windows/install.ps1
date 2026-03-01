@@ -697,6 +697,17 @@ function Install-DockerContainer {
         "SIMULATION_MODE=true",
         "PAPER_TRADING=true",
         "",
+        "# Auto-Updater Configuration",
+        "VERSION_BEACON_ADDRESS=0xA5Be5522bb3C748ea262a2A7d877d00AE387FDa6",
+        "RPC_ENDPOINT=https://sepolia.base.org",
+        "DOCKER_REGISTRY=$($InstallConfig.config.dockerRegistry)",
+        "DOCKER_IMAGE_PREFIX=noderr-node-os",
+        "HEALTH_CHECK_URL=http://localhost:8080/health",
+        "BACKUP_DIRECTORY=/app/backups",
+        "CHECK_INTERVAL=300000",
+        "AUTO_UPDATE_ENABLED=true",
+        "CURRENT_VERSION=$nodeVersion",
+        "",
         "# Node Wallet (Hot Wallet) - auto-generated unique key for this node",
         "PRIVATE_KEY=$($Wallet.PrivateKey)"
     )
@@ -779,6 +790,7 @@ $gpuDeployYaml
       - "4002:4002/tcp"
     volumes:
       - $configDir\credentials.json:/app/config/credentials.json:rw
+      - //var/run/docker.sock:/var/run/docker.sock:ro
     logging:
       driver: json-file
       options:
@@ -887,6 +899,7 @@ function Start-NodeService {
             --publish 4001:4001/tcp `
             --publish 4002:4002/tcp `
             --volume "$Script:CONFIG_DIR\credentials.json:/app/config/credentials.json:rw" `
+            --volume //var/run/docker.sock:/var/run/docker.sock:ro `
             --log-driver json-file `
             --log-opt max-size=50m `
             --log-opt max-file=5 `

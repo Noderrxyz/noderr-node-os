@@ -281,6 +281,28 @@ module.exports = {
       }
     },
     
+    // Auto-Updater - Checks VersionBeacon contract for new versions
+    {
+      name: 'auto-updater',
+      script: 'packages/auto-updater/dist/index.js',
+      instances: 1,
+      exec_mode: 'fork',
+      restart_delay: 30000,
+      max_restarts: 5,
+      min_uptime: 30000,
+      max_memory_restart: '256M',
+      error_file: '/app/logs/auto-updater-error.log',
+      out_file: '/app/logs/auto-updater-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      merge_logs: true,
+      autorestart: true,
+      watch: false,
+      env: {
+        NODE_ENV: 'production',
+        SERVICE_NAME: 'auto-updater',
+      }
+    },
+    
     {
       name: 'heartbeat-client',
       script: 'packages/heartbeat-client/dist/index.js',

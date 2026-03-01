@@ -59,6 +59,7 @@ COPY packages/floor-engine ./packages/floor-engine
 COPY packages/integration-layer ./packages/integration-layer
 COPY packages/system-orchestrator ./packages/system-orchestrator
 COPY packages/heartbeat-client ./packages/heartbeat-client
+COPY packages/auto-updater ./packages/auto-updater
 
 # Install dependencies for GUARDIAN packages
 RUN pnpm install --frozen-lockfile \
@@ -80,7 +81,8 @@ RUN pnpm install --frozen-lockfile \
     --filter "@noderr/floor-engine" \
     --filter "@noderr/integration-layer" \
     --filter "@noderr/system-orchestrator" \
-    --filter "@noderr/heartbeat-client"
+    --filter "@noderr/heartbeat-client" \
+    --filter "@noderr/auto-updater"
 
 # Build packages in dependency order
 RUN pnpm --filter "@noderr/types" build && \
@@ -101,7 +103,8 @@ RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/floor-engine" build && \
     pnpm --filter "@noderr/integration-layer" build && \
     pnpm --filter "@noderr/system-orchestrator" build && \
-    pnpm --filter "@noderr/heartbeat-client" build
+    pnpm --filter "@noderr/heartbeat-client" build && \
+    pnpm --filter "@noderr/auto-updater" build
 
 # Remove dev dependencies
 RUN pnpm install --frozen-lockfile --prod \
@@ -123,7 +126,8 @@ RUN pnpm install --frozen-lockfile --prod \
     --filter "@noderr/floor-engine" \
     --filter "@noderr/integration-layer" \
     --filter "@noderr/system-orchestrator" \
-    --filter "@noderr/heartbeat-client"
+    --filter "@noderr/heartbeat-client" \
+    --filter "@noderr/auto-updater"
 
 # ============================================================================
 # Production Stage
@@ -169,6 +173,7 @@ COPY --from=builder --chown=noderr:noderr /build/packages/floor-engine ./package
 COPY --from=builder --chown=noderr:noderr /build/packages/integration-layer ./packages/integration-layer
 COPY --from=builder --chown=noderr:noderr /build/packages/system-orchestrator ./packages/system-orchestrator
 COPY --from=builder --chown=noderr:noderr /build/packages/heartbeat-client ./packages/heartbeat-client
+COPY --from=builder --chown=noderr:noderr /build/packages/auto-updater ./packages/auto-updater
 
 # Copy PM2 ecosystem configuration
 COPY --chown=noderr:noderr docker/guardian/ecosystem.config.js /app/ecosystem.config.js
@@ -178,7 +183,7 @@ COPY --chown=noderr:noderr docker/guardian/start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
 # Create directories for logs and data
-RUN mkdir -p /app/logs /app/data && chown -R noderr:noderr /app/logs /app/data
+RUN mkdir -p /app/logs /app/data /app/backups && chown -R noderr:noderr /app/logs /app/data /app/backups
 
 # Set environment variables (INCREASED MEMORY for execution services)
 ENV NODE_ENV=production \

@@ -747,7 +747,18 @@ P2P_WS_PORT=4002
 SIMULATION_MODE=true
 PAPER_TRADING=true
 
-# Node Wallet (Hot Wallet) - replace with your node wallet private key
+# Auto-Updater Configuration
+VERSION_BEACON_ADDRESS=0xA5Be5522bb3C748ea262a2A7d877d00AE387FDa6
+RPC_ENDPOINT=https://sepolia.base.org
+DOCKER_REGISTRY=$(echo "${install_config}" | jq -r '.config.dockerRegistry')
+DOCKER_IMAGE_PREFIX=noderr-node-os
+HEALTH_CHECK_URL=http://localhost:8080/health
+BACKUP_DIRECTORY=/app/backups
+CHECK_INTERVAL=300000
+AUTO_UPDATE_ENABLED=true
+CURRENT_VERSION=$(echo "${install_config}" | jq -r '.config.latestVersion // "1.0.0"')
+
+# Node Wallet (Hot Wallet) - auto-generated during install
 PRIVATE_KEY=<REPLACE_WITH_YOUR_NODE_WALLET_PRIVATE_KEY>
 EOF
 
@@ -857,6 +868,7 @@ ${gpu_deploy_section}
       - "4002:4002/tcp"
     volumes:
       - ${CONFIG_DIR}/credentials.json:/app/config/credentials.json:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     logging:
       driver: json-file
       options:
@@ -920,6 +932,7 @@ ExecStart=/usr/bin/docker run \\
     --publish 4001:4001/tcp \\
     --publish 4002:4002/tcp \\
     --volume ${CONFIG_DIR}/credentials.json:/app/config/credentials.json:rw \\
+    --volume /var/run/docker.sock:/var/run/docker.sock:ro \\
     --log-driver json-file \\
     --log-opt max-size=50m \\
     --log-opt max-file=5 \\

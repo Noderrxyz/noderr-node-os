@@ -6,11 +6,27 @@
 import { Contract, JsonRpcProvider } from 'ethers';
 import { NodeTier, Version, RolloutConfig } from '../models/types';
 
+/**
+ * ABI matching the deployed VersionBeacon proxy at:
+ *   0xA5Be5522bb3C748ea262a2A7d877d00AE387FDa6 (Base Sepolia)
+ *
+ * Source of truth: noderr-protocol/contracts/contracts/core/VersionBeacon.sol
+ */
 const VERSION_BEACON_ABI = [
-  'function getCurrentVersion(uint8 tier) external view returns (uint256)',
-  'function getVersion(uint256 versionId) external view returns (tuple(string versionString, string dockerImageTag, bytes32 configHash, uint256 timestamp, address publisher, bool isActive, bool isEmergencyRollback))',
-  'function getRolloutConfig() external view returns (tuple(uint8 canaryPercentage, uint8 cohortPercentage, uint256 cohortDelayHours, bool isActive))',
-  'function nextVersionId() external view returns (uint256)',
+  // Auto-generated getter for mapping(NodeTier => uint256) — returns 0 if unset
+  'function currentVersionId(uint8 tier) view returns (uint256)',
+  // Auto-generated getter for mapping(uint256 => Version) — flattened struct
+  'function versions(uint256 versionId) view returns (string versionString, string dockerImageTag, bytes32 configHash, uint256 timestamp, address publisher, bool isActive, bool isEmergencyRollback)',
+  // Auto-generated getter for RolloutConfig struct
+  'function rolloutConfig() view returns (uint8 canaryPercentage, uint8 cohortPercentage, uint256 cohortDelayHours, bool isActive)',
+  // State variable
+  'function nextVersionId() view returns (uint256)',
+  // Explicit view — reverts if no version set for tier
+  'function getCurrentVersion(uint8 tier) view returns (tuple(string versionString, string dockerImageTag, bytes32 configHash, uint256 timestamp, address publisher, bool isActive, bool isEmergencyRollback))',
+  // Explicit view — reverts if invalid ID
+  'function getVersion(uint256 versionId) view returns (tuple(string versionString, string dockerImageTag, bytes32 configHash, uint256 timestamp, address publisher, bool isActive, bool isEmergencyRollback))',
+  // Explicit view
+  'function getRolloutConfig() view returns (tuple(uint8 canaryPercentage, uint8 cohortPercentage, uint256 cohortDelayHours, bool isActive))',
 ];
 
 export class VersionBeaconService {
@@ -32,7 +48,9 @@ export class VersionBeaconService {
    */
   async getCurrentVersionId(tier: NodeTier): Promise<number> {
     const tierIndex = this.getTierIndex(tier);
-    const versionId = await this.contract.getCurrentVersion(tierIndex);
+    // Use currentVersionId (returns 0 if unset) instead of getCurrentVersion
+    // (which reverts if no version is set for the tier)
+    const versionId = await this.contract.currentVersionId(tierIndex);
     return Number(versionId);
   }
 
@@ -61,8 +79,11 @@ export class VersionBeaconService {
    * @param tier Node tier
    * @returns Version details
    */
-  async getCurrentVersion(tier: NodeTier): Promise<Version> {
+  async getCurrentVersion(tier: NodeTier): Promise<Version | null> {
     const versionId = await this.getCurrentVersionId(tier);
+    if (versionId === 0) {
+      return null;
+    }
     return this.getVersion(versionId);
   }
 
@@ -91,18 +112,20 @@ export class VersionBeaconService {
   }
 
   /**
-   * Convert NodeTier enum to contract tier index
-   * @param tier Node tier
-   * @returns Tier index for contract
+   * Convert NodeTier enum to the on-chain uint8 index.
+   *
+   * Contract enum: VALIDATOR = 0, GUARDIAN = 1, ORACLE = 2
    */
   private getTierIndex(tier: NodeTier): number {
     switch (tier) {
-      case NodeTier.ALL:
+      case NodeTier.VALIDATOR:
         return 0;
-      case NodeTier.ORACLE:
-        return 1;
       case NodeTier.GUARDIAN:
+        return 1;
+      case NodeTier.ORACLE:
         return 2;
+      case NodeTier.ALL:
+        return 0; // Default; caller should iterate for broadcast
       default:
         throw new Error(`Invalid tier: ${tier}`);
     }

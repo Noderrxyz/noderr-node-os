@@ -42,6 +42,7 @@ COPY packages/decentralized-core ./packages/decentralized-core
 COPY packages/on-chain-service ./packages/on-chain-service
 COPY packages/validator-consensus ./packages/validator-consensus
 COPY packages/heartbeat-client ./packages/heartbeat-client
+COPY packages/auto-updater ./packages/auto-updater
 
 # Install dependencies for VALIDATOR packages only
 RUN pnpm install --frozen-lockfile \
@@ -54,7 +55,8 @@ RUN pnpm install --frozen-lockfile \
     --filter "@noderr/decentralized-core" \
     --filter "@noderr/on-chain-service" \
     --filter "@noderr/validator-consensus" \
-    --filter "@noderr/heartbeat-client"
+    --filter "@noderr/heartbeat-client" \
+    --filter "@noderr/auto-updater"
 
 # Build packages in dependency order
 RUN pnpm --filter "@noderr/types" build && \
@@ -66,7 +68,8 @@ RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/decentralized-core" build && \
     pnpm --filter "@noderr/on-chain-service" build && \
     pnpm --filter "@noderr/validator-consensus" build && \
-    pnpm --filter "@noderr/heartbeat-client" build
+    pnpm --filter "@noderr/heartbeat-client" build && \
+    pnpm --filter "@noderr/auto-updater" build
 
 # Remove dev dependencies
 RUN pnpm install --frozen-lockfile --prod \
@@ -79,7 +82,8 @@ RUN pnpm install --frozen-lockfile --prod \
     --filter "@noderr/decentralized-core" \
     --filter "@noderr/on-chain-service" \
     --filter "@noderr/validator-consensus" \
-    --filter "@noderr/heartbeat-client"
+    --filter "@noderr/heartbeat-client" \
+    --filter "@noderr/auto-updater"
 
 # ============================================================================
 # Production Stage
@@ -116,6 +120,7 @@ COPY --from=builder --chown=noderr:noderr /build/packages/data-connectors ./pack
 COPY --from=builder --chown=noderr:noderr /build/packages/on-chain-service ./packages/on-chain-service
 COPY --from=builder --chown=noderr:noderr /build/packages/validator-consensus ./packages/validator-consensus
 COPY --from=builder --chown=noderr:noderr /build/packages/heartbeat-client ./packages/heartbeat-client
+COPY --from=builder --chown=noderr:noderr /build/packages/auto-updater ./packages/auto-updater
 
 # Copy PM2 ecosystem configuration
 COPY --chown=noderr:noderr docker/validator/ecosystem.config.js /app/ecosystem.config.js
@@ -125,7 +130,7 @@ COPY --chown=noderr:noderr docker/validator/start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
 # Create directories for logs and data
-RUN mkdir -p /app/logs /app/data && chown -R noderr:noderr /app/logs /app/data
+RUN mkdir -p /app/logs /app/data /app/backups && chown -R noderr:noderr /app/logs /app/data /app/backups
 
 # Set environment variables (REDUCED MEMORY for lightweight tier)
 ENV NODE_ENV=production \

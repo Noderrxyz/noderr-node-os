@@ -229,6 +229,28 @@ module.exports = {
       }
     },
     
+    // Auto-Updater - Checks VersionBeacon contract for new versions
+    {
+      name: 'auto-updater',
+      script: 'packages/auto-updater/dist/index.js',
+      instances: 1,
+      exec_mode: 'fork',
+      restart_delay: 30000,        // Wait 30 seconds before restart (avoid hammering RPC)
+      max_restarts: 5,
+      min_uptime: 30000,
+      max_memory_restart: '256M',
+      error_file: '/app/logs/auto-updater-error.log',
+      out_file: '/app/logs/auto-updater-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      merge_logs: true,
+      autorestart: true,
+      watch: false,
+      env: {
+        NODE_ENV: 'production',
+        SERVICE_NAME: 'auto-updater',
+      }
+    },
+    
     // Heartbeat Client - Maintains node active status with auth-API
     {
       name: 'heartbeat-client',

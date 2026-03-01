@@ -42,6 +42,7 @@ COPY packages/compliance ./packages/compliance
 COPY packages/testing ./packages/testing
 COPY packages/oracle-consensus ./packages/oracle-consensus
 COPY packages/heartbeat-client ./packages/heartbeat-client
+COPY packages/auto-updater ./packages/auto-updater
 
 # Install dependencies for all packages
 RUN pnpm install --frozen-lockfile \
@@ -63,7 +64,8 @@ RUN pnpm install --frozen-lockfile \
     --filter "@noderr/compliance" \
     --filter "@noderr/testing" \
     --filter "@noderr/oracle-consensus" \
-    --filter "@noderr/heartbeat-client"
+    --filter "@noderr/heartbeat-client" \
+    --filter "@noderr/auto-updater"
 
 # Build packages in dependency order
 RUN pnpm --filter "@noderr/types" build && \
@@ -84,7 +86,8 @@ RUN pnpm --filter "@noderr/types" build && \
     pnpm --filter "@noderr/compliance" build && \
     pnpm --filter "@noderr/testing" build && \
     pnpm --filter "@noderr/oracle-consensus" build && \
-    pnpm --filter "@noderr/heartbeat-client" build
+    pnpm --filter "@noderr/heartbeat-client" build && \
+    pnpm --filter "@noderr/auto-updater" build
 
 # Remove dev dependencies
 RUN pnpm install --frozen-lockfile --prod \
@@ -106,7 +109,8 @@ RUN pnpm install --frozen-lockfile --prod \
     --filter "@noderr/compliance" \
     --filter "@noderr/testing" \
     --filter "@noderr/oracle-consensus" \
-    --filter "@noderr/heartbeat-client"
+    --filter "@noderr/heartbeat-client" \
+    --filter "@noderr/auto-updater"
 
 # ============================================================================
 # Production Stage
@@ -153,6 +157,7 @@ COPY --from=builder --chown=noderr:noderr /build/packages/compliance ./packages/
 COPY --from=builder --chown=noderr:noderr /build/packages/testing ./packages/testing
 COPY --from=builder --chown=noderr:noderr /build/packages/oracle-consensus ./packages/oracle-consensus
 COPY --from=builder --chown=noderr:noderr /build/packages/heartbeat-client ./packages/heartbeat-client
+COPY --from=builder --chown=noderr:noderr /build/packages/auto-updater ./packages/auto-updater
 
 # Copy PM2 ecosystem configuration
 COPY --chown=noderr:noderr docker/oracle/ecosystem.config.js /app/ecosystem.config.js
@@ -162,7 +167,7 @@ COPY --chown=noderr:noderr docker/oracle/start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
 # Create directories for logs and data
-RUN mkdir -p /app/logs /app/data && chown -R noderr:noderr /app/logs /app/data
+RUN mkdir -p /app/logs /app/data /app/backups && chown -R noderr:noderr /app/logs /app/data /app/backups
 
 # Set environment variables
 ENV NODE_ENV=production \

@@ -3,9 +3,10 @@
  */
 
 export enum NodeTier {
-  ALL = 'ALL',
-  ORACLE = 'ORACLE',
+  VALIDATOR = 'VALIDATOR',
   GUARDIAN = 'GUARDIAN',
+  ORACLE = 'ORACLE',
+  ALL = 'ALL',  // Meta-tier for publishing to all tiers at once
 }
 
 export enum Cohort {
