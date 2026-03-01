@@ -48,7 +48,8 @@ if (require.main === module) {
 
       logger.info('Autonomous Execution Service started successfully');
 
-      await new Promise(() => {});
+      // Keep the event loop alive with a periodic heartbeat
+    setInterval(() => { /* keep-alive */ }, 60000);
     } catch (error) {
       logger.error('Fatal error starting Autonomous Execution Service:', error);
       process.exit(1);

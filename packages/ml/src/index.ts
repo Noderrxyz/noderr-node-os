@@ -319,7 +319,8 @@ export async function startMLService(): Promise<void> {
     logger.info('ML Service started successfully');
     
     // Keep process alive
-    await new Promise(() => {});  // Never resolves
+    // Keep the event loop alive with a periodic heartbeat
+    setInterval(() => { /* keep-alive */ }, 60000);
   } catch (error) {
     logger.error('Failed to start ML Service', error);
     throw error;

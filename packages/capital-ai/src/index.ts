@@ -41,7 +41,8 @@ export async function startCapitalAIService(): Promise<void> {
     }, 10000);
     
     logger.info('Capital AI Service started successfully');
-    await new Promise(() => {});
+    // Keep the event loop alive with a periodic heartbeat
+    setInterval(() => { /* keep-alive */ }, 60000);
   } catch (error) {
     logger.error('Failed to start Capital AI Service', error);
     throw error;

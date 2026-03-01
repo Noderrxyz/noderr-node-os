@@ -169,7 +169,8 @@ export async function startRiskEngineService(): Promise<void> {
     }, 15000);
     
     logger.info('Risk Engine Service started successfully');
-    await new Promise(() => {});
+    // Keep the event loop alive with a periodic heartbeat
+    setInterval(() => { /* keep-alive */ }, 60000);
   } catch (error) {
     logger.error('Failed to start Risk Engine Service', error);
     throw error;

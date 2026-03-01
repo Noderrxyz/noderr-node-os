@@ -95,7 +95,8 @@ export async function startStrategyService(): Promise<void> {
     }, 15000);
     
     logger.info('Strategy Service started successfully');
-    await new Promise(() => {});
+    // Keep the event loop alive with a periodic heartbeat
+    setInterval(() => { /* keep-alive */ }, 60000);
   } catch (error) {
     logger.error('Failed to start Strategy Service', error);
     throw error;

@@ -176,7 +176,8 @@ export async function startExecutionService(): Promise<void> {
     logger.info('Execution Service started successfully');
     
     // Keep process alive
-    await new Promise(() => {});  // Never resolves
+    // Keep the event loop alive with a periodic heartbeat
+    setInterval(() => { /* keep-alive */ }, 60000);
   } catch (error) {
     logger.error('Failed to start Execution Service', error);
     throw error;

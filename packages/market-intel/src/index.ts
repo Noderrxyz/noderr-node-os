@@ -101,7 +101,8 @@ export async function startMarketIntelService(): Promise<void> {
     }, 15000);
     
     logger.info('Market Intelligence Service started successfully');
-    await new Promise(() => {});
+    // Keep the event loop alive with a periodic heartbeat
+    setInterval(() => { /* keep-alive */ }, 60000);
   } catch (error) {
     logger.error('Failed to start Market Intelligence Service', error);
     throw error;

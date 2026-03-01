@@ -83,7 +83,8 @@ export async function startGuardianConsensusService(): Promise<void> {
     logger.info('Guardian Consensus Service started successfully');
     logger.info('Majority threshold:', process.env.MAJORITY_THRESHOLD || '0.5');
     
-    await new Promise(() => {});
+    // Keep the event loop alive with a periodic heartbeat
+    setInterval(() => { /* keep-alive */ }, 60000);
   } catch (error) {
     logger.error('Failed to start Guardian Consensus Service', error);
     throw error;

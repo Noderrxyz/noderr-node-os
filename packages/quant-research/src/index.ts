@@ -54,7 +54,8 @@ export async function startQuantResearchService(): Promise<void> {
     }, 10000);
     
     logger.info('Quant Research Service started successfully');
-    await new Promise(() => {});
+    // Keep the event loop alive with a periodic heartbeat
+    setInterval(() => { /* keep-alive */ }, 60000);
   } catch (error) {
     logger.error('Failed to start Quant Research Service', error);
     throw error;

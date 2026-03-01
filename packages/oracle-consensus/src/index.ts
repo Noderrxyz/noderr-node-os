@@ -118,7 +118,8 @@ export async function startOracleConsensusService(): Promise<void> {
     logger.info('Committee size:', process.env.COMMITTEE_SIZE || '10');
     logger.info('Consensus threshold:', process.env.CONSENSUS_THRESHOLD || '0.67');
     
-    await new Promise(() => {});
+    // Keep the event loop alive with a periodic heartbeat
+    setInterval(() => { /* keep-alive */ }, 60000);
   } catch (error) {
     logger.error('Failed to start Oracle Consensus Service', error);
     throw error;
