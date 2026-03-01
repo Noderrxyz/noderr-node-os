@@ -191,8 +191,8 @@ export function validateConfig(config: AutoUpdaterConfig): void {
     throw new Error(`rollbackTimeout too low: ${config.rollbackTimeout}ms (minimum 60000ms)`);
   }
   
-  // Validate node ID format
-  if (!/^[a-zA-Z0-9-]{8,64}$/.test(config.nodeId)) {
+  // Validate node ID format (0x-prefixed hex hash or alphanumeric identifier)
+  if (!/^(0x)?[a-fA-F0-9]{8,64}$/.test(config.nodeId) && !/^[a-zA-Z0-9-]{8,64}$/.test(config.nodeId)) {
     throw new Error(`Invalid nodeId format: ${config.nodeId}`);
   }
   
