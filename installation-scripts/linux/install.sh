@@ -744,16 +744,16 @@ setup_docker_container() {
     local hot_wallet_address
     hot_wallet_private_key=$(openssl rand -hex 32)
     # Derive Ethereum address from private key using Python (keccak256 of public key)
+    # Install eth_keys if not already available (lightweight, no native deps)
+    pip3 install -q eth_keys 2>/dev/null || pip install -q eth_keys 2>/dev/null || true
     hot_wallet_address=$(python3 -c "
-import hashlib, struct
 try:
     from eth_keys import keys
     pk = keys.PrivateKey(bytes.fromhex('${hot_wallet_private_key}'))
     print(pk.public_key.to_checksum_address())
-except ImportError:
-    # Fallback: store private key without address derivation
-    # The node software will derive the address at runtime
-    print('0x' + hashlib.sha256(bytes.fromhex('${hot_wallet_private_key}')).hexdigest()[:40])
+except Exception:
+    # Fallback: address will be derived at runtime by the node software
+    print('address-pending')
 " 2>/dev/null || echo "address-pending")
     
     # Save hot wallet info securely
@@ -774,7 +774,7 @@ WALLET_EOF
     cat > "${CONFIG_DIR}/node.env" <<EOF
 NODE_ID=${node_id}
 NODE_TIER=${tier}
-NODE_VERSION=$(echo "${install_config}" | jq -r '.config.latestVersion // "1.0.0"')
+NODE_VERSION=$(echo "${install_config}" | jq -r 'if .config.latestVersion then .config.latestVersion else "1.0.0" end')
 API_KEY=${api_key}
 JWT_TOKEN=${jwt_token}
 CREDENTIALS_PATH=/app/config/credentials.json
@@ -795,15 +795,18 @@ PAPER_TRADING=true
 VERSION_BEACON_ADDRESS=0xA5Be5522bb3C748ea262a2A7d877d00AE387FDa6
 # RPC_ENDPOINT is set below from the operator's Typeform-provided endpoint
 DOCKER_REGISTRY=$(echo "${install_config}" | jq -r '.config.dockerRegistry')
-DOCKER_IMAGE_PREFIX=noderr-node-os
+DOCKER_IMAGE_PREFIX=noderr
 HEALTH_CHECK_URL=http://localhost:8080/health
 BACKUP_DIRECTORY=/app/backups
 CHECK_INTERVAL=300000
 AUTO_UPDATE_ENABLED=true
-CURRENT_VERSION=$(echo "${install_config}" | jq -r '.config.latestVersion // "1.0.0"')
+CURRENT_VERSION=$(echo "${install_config}" | jq -r 'if .config.latestVersion then .config.latestVersion else "1.0.0" end')
 
 # Operator's RPC Endpoint (from Typeform — each operator provides their own for decentralization)
 RPC_ENDPOINT=$(echo "${install_config}" | jq -r '.rpcEndpoint')
+
+# Operator's personal wallet address (from Typeform — used for staking/rewards)
+WALLET_ADDRESS=${wallet_address}
 
 # Node Hot Wallet (auto-generated during install — NOT the operator's personal wallet)
 PRIVATE_KEY=${hot_wallet_private_key}
@@ -915,7 +918,7 @@ ${gpu_deploy_section}
       - "4002:4002/tcp"
     volumes:
       - ${CONFIG_DIR}/credentials.json:/app/config/credentials.json:rw
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:rw
     logging:
       driver: json-file
       options:
@@ -979,7 +982,7 @@ ExecStart=/usr/bin/docker run \\
     --publish 4001:4001/tcp \\
     --publish 4002:4002/tcp \\
     --volume ${CONFIG_DIR}/credentials.json:/app/config/credentials.json:rw \\
-    --volume /var/run/docker.sock:/var/run/docker.sock:ro \\
+    --volume /var/run/docker.sock:/var/run/docker.sock:rw \\
     --log-driver json-file \\
     --log-opt max-size=50m \\
     --log-opt max-file=5 \\

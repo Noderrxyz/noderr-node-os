@@ -103,8 +103,8 @@ export class AuthService {
       config: {
         deploymentEngineUrl: process.env.DEPLOYMENT_ENGINE_URL || 'https://deploy.noderr.xyz',
         authApiUrl: this.getAuthApiUrl(),
-        dockerRegistry: process.env.DOCKER_REGISTRY || 'ghcr.io/noderrxyz',
-        telemetryEndpoint: process.env.TELEMETRY_ENDPOINT || 'https://telemetry.noderr.xyz',
+        dockerRegistry: process.env.DOCKER_REGISTRY || 'https://pub-66ad852cb9e54582bd0af64bce8d0a04.r2.dev',
+        telemetryEndpoint: process.env.TELEMETRY_ENDPOINT || '',
         // Bootstrap nodes for P2P peer discovery (comma-separated multiaddrs)
         bootstrapNodes: process.env.BOOTSTRAP_NODES || '',
         // Latest version — nodes stamp this in NODE_VERSION and heartbeat-client compares it
