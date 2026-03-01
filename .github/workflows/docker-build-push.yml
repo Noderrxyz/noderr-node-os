@@ -1,0 +1,110 @@
+name: Build & Push Docker Images
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tier:
+        description: 'Node tier to build (oracle, guardian, validator, all)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - oracle
+          - guardian
+          - validator
+
+env:
+  R2_BUCKET: ${{ secrets.R2_BUCKET }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+
+jobs:
+  build-and-push:
+    name: Build ${{ matrix.tier }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tier: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tier != 'all' && fromJSON(format('["{0}"]', github.event.inputs.tier)) || fromJSON('["oracle", "guardian", "validator"]') }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          else
+            echo "version=$(date +%Y%m%d)-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f docker/${{ matrix.tier }}/Dockerfile \
+            -t noderr-${{ matrix.tier }}:latest \
+            -t noderr-${{ matrix.tier }}:${{ steps.version.outputs.version }} \
+            .
+
+      - name: Write VERSION file into image
+        run: |
+          echo "${{ steps.version.outputs.version }}" > /tmp/VERSION
+          # Re-tag with VERSION baked in
+          cat > /tmp/Dockerfile.version <<EOF
+          FROM noderr-${{ matrix.tier }}:latest
+          COPY VERSION /app/VERSION
+          EOF
+          docker build -f /tmp/Dockerfile.version -t noderr-${{ matrix.tier }}:latest -t noderr-${{ matrix.tier }}:${{ steps.version.outputs.version }} /tmp/
+
+      - name: Export image as tarball
+        run: |
+          mkdir -p /tmp/images
+          docker save noderr-${{ matrix.tier }}:latest | gzip > /tmp/images/${{ matrix.tier }}-latest.tar.gz
+
+      - name: Generate SHA256 checksum
+        run: |
+          cd /tmp/images
+          sha256sum ${{ matrix.tier }}-latest.tar.gz > ${{ matrix.tier }}-latest.tar.gz.sha256
+
+      - name: Install AWS CLI (for R2)
+        run: |
+          sudo apt-get update && sudo apt-get install -y awscli
+
+      - name: Upload to R2
+        run: |
+          aws s3 cp /tmp/images/${{ matrix.tier }}-latest.tar.gz \
+            s3://${R2_BUCKET}/${{ matrix.tier }}/${{ matrix.tier }}-latest.tar.gz \
+            --endpoint-url ${R2_ENDPOINT}
+
+          aws s3 cp /tmp/images/${{ matrix.tier }}-latest.tar.gz.sha256 \
+            s3://${R2_BUCKET}/${{ matrix.tier }}/${{ matrix.tier }}-latest.tar.gz.sha256 \
+            --endpoint-url ${R2_ENDPOINT}
+
+          # Also upload versioned copy
+          aws s3 cp /tmp/images/${{ matrix.tier }}-latest.tar.gz \
+            s3://${R2_BUCKET}/${{ matrix.tier }}/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz \
+            --endpoint-url ${R2_ENDPOINT}
+
+          aws s3 cp /tmp/images/${{ matrix.tier }}-latest.tar.gz.sha256 \
+            s3://${R2_BUCKET}/${{ matrix.tier }}/${{ matrix.tier }}-${{ steps.version.outputs.version }}.tar.gz.sha256 \
+            --endpoint-url ${R2_ENDPOINT}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+
+      - name: Summary
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tier**: ${{ matrix.tier }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Checksum**: $(cat /tmp/images/${{ matrix.tier }}-latest.tar.gz.sha256 | awk '{print $1}')" >> $GITHUB_STEP_SUMMARY
+          echo "- **Size**: $(du -h /tmp/images/${{ matrix.tier }}-latest.tar.gz | awk '{print $1}')" >> $GITHUB_STEP_SUMMARY
+
