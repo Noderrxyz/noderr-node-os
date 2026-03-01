@@ -36,12 +36,15 @@ export function determineNodeCohort(
   nodeId: string,
   versionInfo: VersionInfo
 ): Cohort {
-  const { canaryPercent, cohortPercent, delayBetweenCohorts } = versionInfo.rollout;
+  const { canaryPercentage, cohortPercentage, cohortDelayHours } = versionInfo.rollout;
   const deployedAt = versionInfo.deployedAt;
   
   // Calculate time since deployment
   const now = Math.floor(Date.now() / 1000);
   const timeSinceDeployment = now - deployedAt;
+  
+  // Convert cohort delay from hours to seconds for comparison
+  const cohortDelaySeconds = cohortDelayHours * 3600;
   
   // Deterministic hash of nodeId
   const hash = keccak256(toUtf8Bytes(nodeId));
@@ -52,24 +55,24 @@ export function determineNodeCohort(
     nodeId,
     percentage,
     timeSinceDeployment,
-    canaryPercent,
-    cohortPercent,
-    delayBetweenCohorts,
+    canaryPercentage,
+    cohortPercentage,
+    cohortDelayHours,
   });
   
   // Canary cohort (immediate)
-  if (percentage <= canaryPercent) {
+  if (percentage <= canaryPercentage) {
     logger.info('Node assigned to canary cohort', { nodeId, percentage });
     return Cohort.CANARY;
   }
   
   // Calculate cohort thresholds
-  let threshold = canaryPercent;
+  let threshold = canaryPercentage;
   const cohorts = [Cohort.COHORT_1, Cohort.COHORT_2, Cohort.COHORT_3, Cohort.COHORT_4];
   
   for (let i = 0; i < cohorts.length; i++) {
-    threshold += cohortPercent;
-    const cohortDelay = delayBetweenCohorts * (i + 1);
+    threshold += cohortPercentage;
+    const cohortDelay = cohortDelaySeconds * (i + 1);
     
     if (percentage <= threshold) {
       // Check if enough time has passed for this cohort
@@ -136,8 +139,11 @@ export function getTimeUntilEligible(
   nodeId: string,
   versionInfo: VersionInfo
 ): number {
-  const { canaryPercent, cohortPercent, delayBetweenCohorts } = versionInfo.rollout;
+  const { canaryPercentage, cohortPercentage, cohortDelayHours } = versionInfo.rollout;
   const deployedAt = versionInfo.deployedAt;
+  
+  // Convert cohort delay from hours to seconds
+  const cohortDelaySeconds = cohortDelayHours * 3600;
   
   // Deterministic hash of nodeId
   const hash = keccak256(toUtf8Bytes(nodeId));
@@ -145,19 +151,19 @@ export function getTimeUntilEligible(
   const percentage = Number((hashValue % 100n) + 1n);
   
   // Canary is immediate
-  if (percentage <= canaryPercent) {
+  if (percentage <= canaryPercentage) {
     return 0;
   }
   
   // Calculate which cohort this node belongs to
-  let threshold = canaryPercent;
+  let threshold = canaryPercentage;
   const cohorts = [1, 2, 3, 4];
   
   for (const cohortNum of cohorts) {
-    threshold += cohortPercent;
+    threshold += cohortPercentage;
     
     if (percentage <= threshold) {
-      const cohortDelay = delayBetweenCohorts * cohortNum;
+      const cohortDelay = cohortDelaySeconds * cohortNum;
       const now = Math.floor(Date.now() / 1000);
       const timeSinceDeployment = now - deployedAt;
       
