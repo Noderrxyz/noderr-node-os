@@ -344,11 +344,12 @@ export async function registerAdminRoutes(fastify: FastifyInstance) {
             os = choice.includes('windows') ? 'windows' : 'linux';
           }
           // Operator's personal wallet address (required for staking/rewards)
-          if (ref.includes('wallet') || ref.includes('eth_address') || ref.includes('ethereum')) {
+          // Use exact ref match to avoid matching 'node_wallet_address' (obsolete hot wallet field)
+          if (ref === 'wallet_address' || ref === 'eth_address' || ref === 'ethereum_wallet_address') {
             walletAddress = (answer.text || answer.url || '').trim();
           }
           // Operator's own RPC endpoint (required for decentralization)
-          if (ref.includes('rpc') || ref.includes('rpc_endpoint') || ref.includes('rpc_url')) {
+          if (ref === 'rpc_endpoint' || ref === 'rpc_url' || ref === 'rpc') {
             rpcEndpoint = (answer.text || answer.url || '').trim();
           }
         }
